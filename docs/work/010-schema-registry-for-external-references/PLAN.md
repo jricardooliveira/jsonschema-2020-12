@@ -1,7 +1,7 @@
 # PLAN #10: Controlled schema registry for external references
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #145, 2026-10-16 21:56 UTC)
 - Design: see `ADR-010-*.md` under `docs/architecture/adr/`
 
 ## Files that change

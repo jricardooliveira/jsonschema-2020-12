@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #10
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #145, 2026-10-16 21:56 UTC)
 
 ## Decision
 New code goes into new files: internal/registry/sources.go (reading the listed sources), registry_options.go (public options) and cmd/jsonschema/refflags.go (flag parsing). The crowded files (internal/compile/compile.go, jsonschema.go, options.go and cmd/jsonschema/run.go) are touched only to wire the new pieces in. internal/registry/index.go is extended in two ways: it indexes external resources, and it walks $ref targets under unknown keywords (finding F1 from story 186). internal/compile/refs.go looks in the registry after the document's own index. The registry is built once per Compile and is read-only afterwards. testdata/registry/ is a new folder that holds only the fixture files listed. Symbolic-link cases are created at test time in t.TempDir and are not committed. --base-uri already exists in run.go (line 83, from story 186) and is reused; it is only given to the new default file:// base logic, not redeclared.
