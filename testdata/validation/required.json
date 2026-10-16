@@ -1,0 +1,15 @@
+[
+  {"spec":"validation 6.5.3","description":"required lists","schema":{"required":["foo","bar"]},"tests":[
+    {"description":"both present","data":{"foo":1,"bar":2},"valid":true},
+    {"description":"one missing","data":{"foo":1},"valid":false},
+    {"description":"all missing","data":{},"valid":false},
+    {"description":"array ignored","data":[],"valid":true},
+    {"description":"string ignored","data":"foo","valid":true},
+    {"description":"number ignored","data":1,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"validation 6.5.3","description":"required empty array","schema":{"required":[]},"tests":[
+    {"description":"empty object","data":{},"valid":true}]},
+  {"spec":"validation 6.5.3","description":"required null-valued member is present","schema":{"required":["a"]},"tests":[
+    {"description":"null member","data":{"a":null},"valid":true}]}
+]

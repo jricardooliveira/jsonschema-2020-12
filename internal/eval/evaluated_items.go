@@ -47,15 +47,23 @@ type itemKey struct{ instance, keyword string }
 // with Mark and Rollback.
 type EvaluatedItems struct {
 	entries []itemEntry
+	// steps counts evaluation steps for this call (see Step); Rollback never
+	// resets it.
+	steps, maxSteps int
 }
 
 type itemEntry struct {
 	key itemKey
 	ann ItemAnnotation
+	// props marks a property-name entry (see RecordProperties); names holds them.
+	props bool
+	names []string
 }
 
 // NewEvaluatedItems returns an empty record.
-func NewEvaluatedItems() *EvaluatedItems { return &EvaluatedItems{} }
+func NewEvaluatedItems() *EvaluatedItems { return newEvaluatedItems(DefaultMaxEvalSteps) }
+
+func newEvaluatedItems(maxSteps int) *EvaluatedItems { return &EvaluatedItems{maxSteps: maxSteps} }
 
 // Mark returns a position to pass to Rollback.
 func (r *EvaluatedItems) Mark() int { return len(r.entries) }
@@ -70,7 +78,7 @@ func (r *EvaluatedItems) Rollback(mark int) {
 
 func (r *EvaluatedItems) add(inst, kw string, a ItemAnnotation) {
 	a.Keyword = kw
-	r.entries = append(r.entries, itemEntry{itemKey{inst, kw}, a})
+	r.entries = append(r.entries, itemEntry{key: itemKey{inst, kw}, ann: a})
 }
 
 // RecordPrefixItems records prefixItems applied to elements 0..largest; all
@@ -99,7 +107,7 @@ func (r *EvaluatedItems) RecordContains(instLoc, kwLoc string, indices []int, al
 func (r *EvaluatedItems) At(instLoc string) map[string]ItemAnnotation {
 	out := map[string]ItemAnnotation{}
 	for _, e := range r.entries {
-		if e.key.instance == instLoc {
+		if !e.props && e.key.instance == instLoc {
 			out[e.key.keyword] = e.ann
 		}
 	}

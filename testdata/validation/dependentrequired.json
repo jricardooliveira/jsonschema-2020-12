@@ -1,0 +1,15 @@
+[
+  {"spec":"validation 6.5.4","description":"dependentRequired","schema":{"dependentRequired":{"bar":["foo"]}},"tests":[
+    {"description":"neither","data":{},"valid":true},
+    {"description":"trigger absent","data":{"foo":1},"valid":true},
+    {"description":"both","data":{"foo":1,"bar":2},"valid":true},
+    {"description":"trigger without dependency","data":{"bar":2},"valid":false},
+    {"description":"array ignored","data":["bar"],"valid":true},
+    {"description":"string ignored","data":"bar","valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"validation 6.5.4","description":"dependentRequired empty list","schema":{"dependentRequired":{"bar":[]}},"tests":[
+    {"description":"trigger present","data":{"bar":2},"valid":true}]},
+  {"spec":"validation 6.5.4","description":"dependentRequired multiple","schema":{"dependentRequired":{"quux":["foo","bar"]}},"tests":[
+    {"description":"all","data":{"foo":1,"bar":2,"quux":3},"valid":true},
+    {"description":"one missing","data":{"foo":1,"quux":3},"valid":false}]}
+]

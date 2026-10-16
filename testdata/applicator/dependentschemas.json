@@ -1,0 +1,15 @@
+[
+  {"spec":"core 10.2.2.4","description":"dependentSchemas applies when trigger present","schema":{"dependentSchemas":{"foo":{"type":"array"}}},"tests":[
+    {"description":"trigger present, subschema fails","data":{"foo":1},"valid":false},
+    {"description":"trigger absent","data":{"bar":"x"},"valid":true},
+    {"description":"empty object","data":{},"valid":true},
+    {"description":"array ignored","data":["foo"],"valid":true},
+    {"description":"string ignored","data":"foo","valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"core 10.2.2.4","description":"dependentSchemas boolean schemas","schema":{"dependentSchemas":{"a":true,"b":false}},"tests":[
+    {"description":"no triggers","data":{"c":1},"valid":true},
+    {"description":"true trigger","data":{"a":1},"valid":true},
+    {"description":"false trigger","data":{"b":1},"valid":false}]},
+  {"spec":"core 10.2.2.4","description":"dependentSchemas applies to the whole object","schema":{"dependentSchemas":{"foo":{"type":"object"}}},"tests":[
+    {"description":"object satisfies subschema","data":{"foo":1},"valid":true}]}
+]

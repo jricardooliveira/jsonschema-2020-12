@@ -1,0 +1,13 @@
+[
+  {"spec":"core 10.3.2.2","description":"patternProperties","schema":{"patternProperties":{"^f":{"type":"integer"},"o$":{"type":"string"}}},"tests":[
+    {"description":"match valid","data":{"fa":1,"bo":"x"},"valid":true},
+    {"description":"invalid","data":{"fa":"x"},"valid":false},
+    {"description":"both patterns, fails one","data":{"fo":1},"valid":false},
+    {"description":"no match","data":{"zzz":1},"valid":true},
+    {"description":"array ignored","data":["f"],"valid":true},
+    {"description":"string ignored","data":"f","valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"core 10.3.2.2","description":"patternProperties boolean schemas","schema":{"patternProperties":{"^a":true,"^b":false}},"tests":[
+    {"description":"a","data":{"a1":1},"valid":true},
+    {"description":"b","data":{"b1":1},"valid":false}]}
+]

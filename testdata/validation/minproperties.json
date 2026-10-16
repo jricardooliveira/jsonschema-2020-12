@@ -1,0 +1,11 @@
+[
+  {"spec":"validation 6.5.2","description":"minProperties 1","schema":{"minProperties":1},"tests":[
+    {"description":"longer","data":{"a":1,"b":2},"valid":true},
+    {"description":"exact","data":{"a":1},"valid":true},
+    {"description":"empty","data":{},"valid":false},
+    {"description":"array ignored","data":[],"valid":true},
+    {"description":"string ignored","data":"","valid":true},
+    {"description":"number ignored","data":0,"valid":true},
+    {"description":"boolean ignored","data":false,"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]}
+]
