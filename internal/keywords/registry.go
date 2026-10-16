@@ -5,9 +5,25 @@ package keywords
 
 import "github.com/neoface/jsonschema/internal/jsonvalue"
 
-// CompileContext is passed to a keyword's Compile function. It is empty for
-// now; later stories add fields (base URI, limits, sub-schema compiler).
-type CompileContext struct{}
+// CompileContext is passed to a keyword's Compile function.
+type CompileContext struct {
+	// Location is the JSON Pointer of the keyword being compiled.
+	Location string
+	// Siblings are the raw values of every keyword in the same schema object.
+	// Read only.
+	Siblings map[string]any
+	// Sub compiles a sub-schema found at Location+rel (rel is "" or a JSON
+	// Pointer suffix such as "/0"), so its units carry the right keyword
+	// location. The result is a compiled node to pass to EvalChild.
+	Sub func(value any, rel string) (any, error)
+}
+
+// ItemRecorder is what keywords need from the per-evaluation item record.
+type ItemRecorder interface {
+	RecordPrefixItems(instLoc, kwLoc string, largest int, all bool)
+	RecordItems(instLoc, kwLoc string)
+	RecordContains(instLoc, kwLoc string, indices []int, all bool)
+}
 
 // Unit is one failure record: where it failed and which rule, with a
 // sentence that never contains an instance value.
@@ -23,10 +39,14 @@ type Unit struct {
 type EvalContext struct {
 	InstanceLocation string // JSON Pointer of the instance being checked
 	KeywordLocation  string // JSON Pointer of the keyword being evaluated
-	units            []Unit
-	count            *int
-	max              int
-	evalNode         func(ctx *EvalContext, node any, instance any) (bool, error)
+	// Items is the per-evaluation record of item annotations (an
+	// *eval.EvaluatedItems, which implements ItemRecorder), shared with every
+	// child context. It is typed any so this package need not import eval.
+	Items    any
+	units    []Unit
+	count    *int
+	max      int
+	evalNode func(ctx *EvalContext, node any, instance any) (bool, error)
 }
 
 // NewEvalContext returns a root context. evalNode evaluates a compiled child
@@ -57,7 +77,7 @@ func (c *EvalContext) Keep(units []Unit) { c.units = append(c.units, units...) }
 // instLoc. It returns the child's units; the caller calls Keep to retain them
 // or drops them. Every unit is counted when appended, kept or not.
 func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, []Unit, error) {
-	child := &EvalContext{InstanceLocation: instLoc, count: c.count, max: c.max, evalNode: c.evalNode}
+	child := &EvalContext{InstanceLocation: instLoc, count: c.count, max: c.max, evalNode: c.evalNode, Items: c.Items}
 	ok, err := c.evalNode(child, node, instance)
 	return ok, child.units, err
 }

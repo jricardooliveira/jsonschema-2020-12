@@ -45,17 +45,28 @@ func compileAt(v any, loc string) (*Node, error) {
 		}
 		sort.Strings(names)
 		n := &Node{Location: loc}
-		ctx := &keywords.CompileContext{}
 		for _, name := range names {
 			kw, ok := keywords.Lookup(name)
 			if !ok {
 				continue // ponytail: unknown keywords ignored; annotations come later
 			}
+			kwLoc := loc + "/" + escape.Replace(name)
+			ctx := &keywords.CompileContext{
+				Location: kwLoc,
+				Siblings: s,
+				Sub: func(v any, rel string) (any, error) {
+					c, err := compileAt(v, kwLoc+rel)
+					if err != nil {
+						return nil, err
+					}
+					return c, nil
+				},
+			}
 			data, err := kw.Compile(ctx, s[name])
 			if err != nil {
 				return nil, err
 			}
-			n.Items = append(n.Items, Item{kw, data, loc + "/" + escape.Replace(name)})
+			n.Items = append(n.Items, Item{kw, data, kwLoc})
 		}
 		return n, nil
 	}

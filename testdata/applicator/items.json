@@ -1,0 +1,20 @@
+[
+  {"spec":"core 10.3.1.2","description":"items applies to every element without prefixItems","schema":{"items":{"type":"integer"}},"tests":[
+    {"description":"all integers","data":[1,2,3],"valid":true},
+    {"description":"one string","data":[1,"a",3],"valid":false},
+    {"description":"empty","data":[],"valid":true},
+    {"description":"non-array ignored","data":"a","valid":true},
+    {"description":"object ignored","data":{"a":"b"},"valid":true}]},
+  {"spec":"core 10.3.1.2","description":"items after prefixItems","schema":{"prefixItems":[{"type":"string"}],"items":{"type":"integer"}},"tests":[
+    {"description":"prefix then integers","data":["a",1,2],"valid":true},
+    {"description":"prefix element not checked by items","data":["a"],"valid":true},
+    {"description":"remaining wrong","data":["a",1,"b"],"valid":false}]},
+  {"spec":"core 10.3.1.2","description":"items false after prefixItems","schema":{"prefixItems":[{}],"items":false},"tests":[
+    {"description":"no extras","data":[1],"valid":true},
+    {"description":"extra rejected","data":[1,2],"valid":false}]},
+  {"spec":"core 10.3.1.2","description":"items true","schema":{"items":true},"tests":[
+    {"description":"anything","data":[1,"a"],"valid":true}]},
+  {"spec":"core 10.3.1.2","description":"items false on empty array","schema":{"items":false},"tests":[
+    {"description":"empty","data":[],"valid":true},
+    {"description":"one element","data":[1],"valid":false}]}
+]
