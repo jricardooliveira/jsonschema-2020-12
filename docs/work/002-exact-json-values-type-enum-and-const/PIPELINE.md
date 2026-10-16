@@ -3,26 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:42:36 UTC
+- **Run:** #135 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:43:46 UTC
 - **Story spend:** ~$31.40 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-135-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Files changed outside the tasks' declared scope (§6): ['docs/cli-contract.md', 'docs/limits.md']
-  >   ◦ Release-agent note: Breaking change: Schemas and documents with non-UTF-8 bytes, duplicate object member names, unpaired Unicode surrogates, or trailing JSON values are now rejected as errors. Any existing input of these kinds must be fixed or the change must not be deployed.
-  >   ◦ Release-agent note: Error type change: LimitError is a new error type for exceeded caps (number digits, number exponent). Code that only checks for SyntaxError will miss these. Use errors.As(err, &jsonvalue.LimitError) to handle both parse and limit errors.
-  >   ◦ Release-agent note: Files outside declared task scope: docs/cli-contract.md and docs/limits.md document the new CLI flags and number cap defaults; they are necessary for users but were not in the original task files list. This is noted in the architecture review.
-  >   ◦ Release-agent note: Two new test files (prescan_test.go, decode_strict_test.go) in internal/jsonvalue demonstrate the strict parsing and UTF-8 validation behavior; they are not in the original scope but are required for the acceptance criteria.
-  >   ◦ Release-agent note: Later stories (180+) depend on this exact number model and deep equality. Any deviation from the Number format, Cmp behavior, or Equal semantics may break multipleOf, uniqueItems, unevaluatedProperties and const validation.
-  >   ◦ Release-agent note: The number cap defaults (10000 digits, 10000 exponent) are generous but hostile input with exponents near int64 limits (e.g., 1e-9223372036854775807) may still succeed at compile time and fail at validation time with a limit error; this is by design.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -151,9 +142,10 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 18:40:16 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 11; findings: 0 new, 0 persistent, 3 resolved |
 | 2026-10-16 18:40:16 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 18:42:35 | agent | release-agent | ✅ pass · 39.8s · $0.1171 |
-| 2026-10-16 18:42:36 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 18:42:36 | run | run waiting_human | ⏸️ |
+| 2026-10-16 18:42:36 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 18:43:46 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 18:43:46 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
-- none
+- released NOT READY: the evidence gaps named at Checkpoint 3 were accepted by the operator
