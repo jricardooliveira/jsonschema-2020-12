@@ -3,25 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:57:35 UTC
+- **Run:** #135 · **Status:** failed · **Stage:** coder-agent
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:58:52 UTC
 - **Story spend:** ~$25.67 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+None — the run stopped (failed). Nothing proceeds until the cause under Blockers is fixed and a new run is started.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Files changed outside the tasks' declared scope (§6): ['docs/cli-contract.md', 'docs/limits.md']
-  >   ◦ Release-agent note: Number-limit error reporting: The tester found that *LimitError diagnostics may not include the required location (byte offset, line, column) in the error message. Verify the error string reports location the same way *SyntaxError does.
-  >   ◦ Release-agent note: Schema-side cap regression test: The test asserting over-cap numbers in the schema are rejected may pass for the wrong reason. Explicitly verify: (1) Compile rejects a schema with 1e(DefaultMaxNumberExponent+1), (2) the error is specifically a *LimitError not a syntax error, (3) CompileWithOptions with a raised cap accepts the same number.
-  >   ◦ Release-agent note: Race-detector confirmation: The concurrent test in equal_test.go should be run with `go test -race ./...` but the factory's gate did not report whether -race was executed. Confirm TestEqualConcurrent passes under the race detector.
-  >   ◦ Release-agent note: Documentation scope variance: docs/cli-contract.md and docs/limits.md were created but not declared in task scope. While correct, they represent scope variance. Future documentation changes should be explicitly planned.
-  >   ◦ Release-agent note: The parse_errors_test.go uses a secret string to verify error messages do not leak instance values. Ensure the secret is distinct from any fixed error-message text in the implementation.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.09 (nine in ten recent calls), so this one would likely pass the cap. Raise [budget] max_story_cost_usd in factory.toml (or FACTORY_MAX_STORY_COST_USD) to continue.
 
 ## Trail
 
@@ -128,8 +120,10 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:56:38 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 2 new, 0 persistent, 3 resolved |
 | 2026-10-16 17:56:38 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 17:57:34 | agent | release-agent | ✅ warn · 56.0s · $0.1269 |
-| 2026-10-16 17:57:35 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 17:57:35 | run | run waiting_human | ⏸️ |
+| 2026-10-16 17:57:35 | gate | gate-release | ❌ REJECTED: Fix only these two, change nothing else. (F4) LimitError.Error for number-digit and number-exponent limits must include the original-input location like SyntaxError does (line:column and offset, never conten… |
+| 2026-10-16 17:58:52 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 17:58:52 | agent | coder-agent | ❌ error |
+| 2026-10-16 17:58:52 | run | run failed | ❌ story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.09 (nine in ten recent calls), so this one would likely pass the cap. Raise [budget] max_story_cost_usd in factory.toml (or FACTO… |
 
 ## Warnings (recorded, not blocking)
 
