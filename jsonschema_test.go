@@ -10,7 +10,7 @@ import (
 var docs = []string{`null`, `true`, `1`, `"s"`, `[1,2]`, `{"a":{}}`}
 
 func TestValidateSchemas(t *testing.T) {
-	cases := map[string]bool{`true`: true, `false`: false, `{}`: true, `{"type":"string"}`: true, `{"foo":1}`: true}
+	cases := map[string]bool{`true`: true, `false`: false, `{}`: true, `{"x-unknown":"string"}`: true, `{"foo":1}`: true}
 	for sch, want := range cases {
 		s, err := Compile([]byte(sch))
 		if err != nil {
