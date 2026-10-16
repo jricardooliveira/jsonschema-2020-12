@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #142 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 20:40:08 UTC · **Stopped:** 2026-10-16 20:51:47 UTC
-- **Story spend:** ~$5.12 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-16 20:40:08 UTC · **Stopped:** 2026-10-16 20:54:54 UTC
+- **Story spend:** ~$6.85 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,13 +14,13 @@ The operator decides at gate-release: `factory approve 142` to accept, or `facto
 ## Blockers
 
 - Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: No insecure defaults found. A child evaluation error (including the output-unit LimitError) is returned from allOf, anyOf, oneOf, not and if. It is never turned into valid or invalid, and tests cover this for allOf, not and if. Messages are built only from keyword names and choice indices. Schema errors fail closed at compile time.
-  >   ◦ Release-agent note: F1 (medium, from tester): No concurrent test exercises these keywords with 'go test -race'. The code reads as immutable, but thread-safety is unproven. Recommendation: Before shipping to production, add a test that calls Schema.Validate on the same compiled schema from multiple goroutines with applicator keywords.
-  >   ◦ Release-agent note: F2 (low, from tester): spec_applicator_test.go added as a new file, but if spec_test.go's glob pattern already covers testdata/applicator/, the same cases run twice (harmless but redundant). Action: Check spec_test.go's glob; if it matches testdata/**, consider removing spec_applicator_test.go or narrowing the pattern.
-  >   ◦ Release-agent note: F3 (low, from tester): testdata/applicator/oneOf.json line 24 case is labeled 'none matches' (invalid expected) but tests oneOf of [string, boolean] against integer 12, which genuinely matches neither, so the label is accurate but confusing. Consider relabeling to 'both choices fail to match'.
-  >   ◦ Release-agent note: Story 180 dependency: Test assumes units_test.go is internal/output/units_test.go and child units precede parent units in the output. If story 180 changes the unit type, location, or report-building order, this story's rooted-location assertions and nested-failure reporting will need adjustment.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: Story 180 (output units and basic rendering of nested failures) is a dependency. This change assumes its Units type, KeywordLocation field, and output.Render are already available. The diff modifies internal/eval/units_test.go (x-test-keep helper and TestUnitOrderAndNoValues assertion); verify story 180's output package can accept rooted locations without further changes.
+  >   ◦ Release-agent note: CompileContext signature changed (added CompileAt field). Stories 181–184 (properties, patternProperties, additionalProperties, items) must be scheduled after this one and use the new rooted-location API.
+  >   ◦ Release-agent note: All seven new keywords register from init() calls. Verify internal/keywords/all/all.go blank-imports internal/keywords/applicator so they load automatically.
+  >   ◦ Release-agent note: Thread-safety verified by concurrent_test.go. Compiled schemas are immutable; per-evaluation state stays in the evaluation context. Confirm no per-schema mutable state was added.
+  >   ◦ Security note (low): No value leaks. Every applicator message is built only from the keyword name and choice indices. Child evaluation errors propagate in allOf, anyOf, oneOf, not and if, and are never turned into valid or invalid (fail-closed). The output-unit cap counts discarded units: evaluation goes through the shared counter in EvalContext.Report. Compiled nodes are immutable. The 'if' handler changes ctx.KeywordLocation only temporarily, on the per-call context. concurrent_test.go passes under -race.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -68,8 +68,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 20:50:54 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 10; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-16 20:50:54 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 20:51:46 | agent | release-agent | ✅ warn · 51.6s · $0.0934 |
-| 2026-10-16 20:51:47 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 20:51:47 | run | run waiting_human | ⏸️ |
+| 2026-10-16 20:51:47 | gate | gate-release | ❌ REJECTED: One addition only (F1): add a test in internal/keywords/applicator that compiles one schema using allOf, anyOf, oneOf, not and if/then/else with nested rooted locations, then validates valid and invalid docu… |
+| 2026-10-16 20:52:34 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 20:53:22 | agent | coder-agent | ✅ complete · remediation · 46.9s · $0.9352 |
+| 2026-10-16 20:53:25 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 20:53:25 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-16 20:54:13 | agent | tester-agent | ✅ pass · 47.7s · $0.6995 |
+| 2026-10-16 20:54:13 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 10; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-16 20:54:13 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-16 20:54:53 | agent | release-agent | ✅ pass · 40.1s · $0.0881 |
+| 2026-10-16 20:54:54 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-16 20:54:54 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
