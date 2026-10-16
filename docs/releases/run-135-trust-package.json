@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "warn",
   "candidate": {
-    "commit": "1aa1d0e4ec6003ab78f5f9167aceb16874ba5939",
+    "commit": "297d2c88fd13ec5fb6d86288e93058b83826798b",
     "base_commit": "534cb31b6831b8981c241fa099aed7fd1320d755"
   },
   "tests": {
@@ -82,7 +82,7 @@
       {
         "path": "cmd/jsonschema/parse_errors_test.go",
         "change": "added",
-        "additions": 77,
+        "additions": 88,
         "deletions": 0
       },
       {
@@ -100,7 +100,7 @@
       {
         "path": "docs/limits.md",
         "change": "added",
-        "additions": 38,
+        "additions": 39,
         "deletions": 0
       },
       {
@@ -136,13 +136,13 @@
       {
         "path": "internal/jsonvalue/number.go",
         "change": "added",
-        "additions": 123,
+        "additions": 134,
         "deletions": 0
       },
       {
         "path": "internal/jsonvalue/number_test.go",
         "change": "added",
-        "additions": 218,
+        "additions": 234,
         "deletions": 0
       },
       {
@@ -227,7 +227,7 @@
       {
         "path": "numberlimits_test.go",
         "change": "added",
-        "additions": 57,
+        "additions": 69,
         "deletions": 0
       },
       {
@@ -264,11 +264,11 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-e36947e963d34b52ac24b0a276362ba9/docs/architecture/adr/ADR-002-exact-json-value-model-deep-equality-and-the-type.md",
-    "summary": "The implementation covers all eleven story acceptance criteria and resolves the substantive previous coverage failures. Strict parsing, exact equality, independently registered keywords and default nu"
+    "summary": "The implementation covers all eleven acceptance criteria with substantive positive, negative and boundary tests. Exact compact decimals avoid exponent-driven expansion during decoding and keyword eval"
   },
   "security_boundary": {
     "overall": "pass",
-    "highest_severity": "medium",
+    "highest_severity": "none",
     "breaking_changes": [
       "The `type` keyword is now enforced, which changes 178's TestValidateSchemas expectation for {\"type\":\"string\"}; that entry becomes an unknown keyword.",
       "Input that 178 accepted is now rejected as broken JSON (exit 2): invalid UTF-8, unpaired \\u surrogates, and numbers over the digit or exponent cap. A leading BOM is now accepted (178 rejected it).",
@@ -282,9 +282,9 @@
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 9.81458,
-    "tokens_in": 9567693,
-    "tokens_out": 168107
+    "usd": 14.089918,
+    "tokens_in": 13921741,
+    "tokens_out": 194625
   },
   "assumptions": [
     {
@@ -390,6 +390,34 @@
     {
       "task": "remediation",
       "text": "The 9-million-token count comes from 900 \u00d7 DefaultMaxNumberDigits so it follows the exported constant. The test still skips under -short."
+    },
+    {
+      "task": "remediation",
+      "text": "The old 'min fit' assertion in TestNumberExponentOverflow expected 1.5e-MaxInt64 to decode with exp == MinInt64, which is exactly the state this finding removes. I replaced it with a rejection case and with near values that still fit. Every other assertion is unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "The rule for 'fails closed' in pow10 is a panic. It marks an internal invariant violation that newNumber now makes unreachable, and Rat() has no error return. A wrong value would be worse."
+    },
+    {
+      "task": "remediation",
+      "text": "Flag values are parsed with strconv.ParseInt(s, 0, strconv.IntSize), the same parsing flag.Int used before, so accepted input does not change."
+    },
+    {
+      "task": "remediation",
+      "text": "The unknown-flag line uses the '-name' that the flag package puts in its 'flag provided but not defined' error. That is the flag name only, without any '=value'."
+    },
+    {
+      "task": "remediation",
+      "text": "spec_test.go is a test file, so editing it is within scope. Every assertion it had before is kept; I only added the citation-loader test and the leak check."
+    },
+    {
+      "task": "remediation",
+      "text": "The pipeline log does not record the tester's 3 findings. The only one I know of is the earlier scope request, which asked for docs/cli-contract.md and docs/limits.md to be approved; they now are. I fixed what I found when checking the docs against the code (the wrong LimitError statement) and closed one test gap (oversized input files). If the tester had other findings, they are not addressed here."
+    },
+    {
+      "task": "remediation",
+      "text": "parse_errors_test.go is this story's own test file. I only added a test to it and changed no existing assertion."
     }
   ],
   "blockers": [
