@@ -45,7 +45,7 @@ The shorthands and the dot work inside character classes too. Negated shorthands
 - Anything RE2 refuses after translation, for example a repeat count over 1000 (`a{2000}`).
 - A pattern longer than the size limit.
 
-Errors name the problem and its position in the pattern, and never include the instance.
+Errors name the keyword (`pattern`), the pattern text (quoted, so it stays on one line), the problem and its position in the pattern. They never include the instance.
 
 ## Unicode properties
 
@@ -69,4 +69,4 @@ Errors: `Script_Extensions` / `scx`, Cased_Letter (`LC`), Unassigned (`Cn`), bin
 
 ## Pattern size limit
 
-A pattern may be at most `DefaultMaxPatternSize` bytes (64 KiB, counted in bytes of the schema's UTF-8 text). The check runs before translation and compilation. A longer pattern is a schema error (exit code 2). Currently the limit is a fixed constant in `internal/keywords/validation/pattern.go`; it is not yet configurable by a library option or CLI flag.
+A pattern may be at most `DefaultMaxPatternSize` bytes (64 KiB, counted in bytes of the schema's UTF-8 text). The check runs before translation and compilation. A longer pattern is a schema error (exit code 2). For now the limit is a fixed constant in `internal/keywords/validation/pattern.go`. Story 193 (Limits) adds the library option and the CLI flag that let callers raise it, together with every other limit.
