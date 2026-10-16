@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #7
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #140, 2026-10-16 19:56 UTC)
 
 ## Decision
 The applicator keywords (prefixItems, items, contains) go in the applicator vocabulary package. The validation keywords (maxContains, minContains, maxItems, minItems, uniqueItems) go in the validation vocabulary package. Each is one file plus its own test, and each registers itself from init(). Neither all.go nor registry.go is edited. items reads its sibling prefixItems length, and contains reads its sibling minContains and maxContains values, through whatever sibling-keyword access the skeleton's compile step provides. minContains and maxContains register as compile-only keywords that check their own value and do nothing on their own. Item annotations go into a new per-evaluation record, internal/eval/evaluated_items.go. Per the operator note, that record extends internal/eval/evaluated.go when story 183 has created it, using the same style. The compiled schema holds no per-evaluation state. The only edit to the crowded internal/eval/eval.go is at most one line attaching the record to the evaluation context. The uniqueItems duplicate finder is an unexported function in uniqueitems.go that returns the groups and the number of full deep-equality comparisons. The fingerprint must give equal values the same key (numbers by their normalised exact value, objects independent of key order), and it is built on internal/jsonvalue deep equality from story 179.
