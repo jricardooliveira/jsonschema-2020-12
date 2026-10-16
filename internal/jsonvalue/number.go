@@ -52,6 +52,12 @@ func newNumber(text string, writtenExp int64, off int64) (*Number, error) {
 	return n, nil
 }
 
+// Decimal returns the sign, a fresh copy of the mantissa and the exponent:
+// value = (-1)^neg * mant * 10^exp. It never raises 10 to a power.
+func (n *Number) Decimal() (neg bool, mant *big.Int, exp int64) {
+	return n.neg, new(big.Int).Set(&n.mant), n.exp
+}
+
 // IsInteger reports whether the value has a zero fractional part.
 func (n *Number) IsInteger() bool { return n.exp >= 0 }
 

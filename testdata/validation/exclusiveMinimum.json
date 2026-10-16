@@ -1,0 +1,11 @@
+[
+  {"spec":"validation 6.2.5","description":"exclusiveMinimum 1.1","schema":{"exclusiveMinimum":1.1},"tests":[
+    {"description":"above","data":1.2,"valid":true},
+    {"description":"boundary","data":1.1,"valid":false},
+    {"description":"below","data":0.6,"valid":false},
+    {"description":"object ignored","data":{},"valid":true},
+    {"description":"string ignored","data":"0","valid":true}]},
+  {"spec":"validation 6.2.5","description":"big exclusiveMinimum","schema":{"exclusiveMinimum":12345678901234567890},"tests":[
+    {"description":"equal","data":12345678901234567890,"valid":false},
+    {"description":"one more","data":12345678901234567891,"valid":true}]}
+]

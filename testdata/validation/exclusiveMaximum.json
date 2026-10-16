@@ -1,0 +1,12 @@
+[
+  {"spec":"validation 6.2.3","description":"exclusiveMaximum 3","schema":{"exclusiveMaximum":3},"tests":[
+    {"description":"below","data":2.2,"valid":true},
+    {"description":"boundary","data":3,"valid":false},
+    {"description":"1.0 style boundary","data":3.0,"valid":false},
+    {"description":"above","data":3.5,"valid":false},
+    {"description":"string ignored","data":"5","valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"validation 6.2.3","description":"big exclusiveMaximum","schema":{"exclusiveMaximum":12345678901234567890},"tests":[
+    {"description":"equal","data":12345678901234567890,"valid":false},
+    {"description":"one less","data":12345678901234567889,"valid":true}]}
+]

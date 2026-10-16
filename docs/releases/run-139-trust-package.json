@@ -1,0 +1,257 @@
+{
+  "work_id": "US-0139",
+  "parent_story": "US-0139",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "aee226c98794b0b4dd46738edf6df1f0c329ae3d",
+    "base_commit": "3ea83effc0e5ac6fc00c3f5105222c33a2ac81b3"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "multipleOf, maximum, exclusiveMaximum, minimum and exclusiveMinimum each live in their own file under internal/keywords/validation/. Each registers itself from init() into the keyword registry with its name, the 2020-12 validation vocabulary URI, a compile function and an evaluate function. No central keyword list or switch is edited.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "multipleOf is exact using the existing exact number model (math/big). 0.3 is a multiple of 0.1, 0.35 is not a multiple of 0.1, 4.5 is a multiple of 1.5, and big integers such as 12345678901234567890 are checked exactly against integer and decimal divisors. multipleOf is valid when instance / divisor is an integer.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "maximum and minimum pass when the instance is less than or equal to (maximum) or greater than or equal to (minimum) the limit. exclusiveMaximum and exclusiveMinimum pass only when the instance is strictly less than or strictly greater than the limit. Each comparison is exact by mathematical value, including integers beyond 64 bits and long decimals that differ only in the last digit.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "1.0 and 1 are the same number for every keyword: maximum 1 accepts 1.0, exclusiveMaximum 1 rejects 1.0, and multipleOf 1 accepts 2.0.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The five keywords apply only to number instances. Strings, booleans, null, arrays and objects are valid against them regardless of the keyword value. This includes numeric-looking strings such as \"5\".",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A keyword value that is not a JSON number is a schema error (exit code 2), never 'invalid'. So is a multipleOf value that is not strictly greater than 0.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A failing keyword is reported with its instance location and keyword location through the existing output, without quoting the instance value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "This story adds no number-size cap, no library option and no CLI flag. It relies on the number model and number-size limit owned by story 179.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Spec-derived positive and negative JSON test cases exist in testdata/validation/<keyword>.json, one file per keyword. Each cites the 2020-12 validation spec section (6.2.1 to 6.2.5). They include decimal multipleOf, big-number and exclusive-bound edge cases. They run through the shared table-driven runner from a <keyword>_test.go per keyword, with no network.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 9,
+    "covered": 9,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "internal/jsonvalue/number.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/exclusivemaximum.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/exclusivemaximum_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/exclusiveminimum.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/exclusiveminimum_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maximum.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maximum_test.go",
+        "change": "added",
+        "additions": 73,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minimum.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minimum_test.go",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/multipleof.go",
+        "change": "added",
+        "additions": 96,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/multipleof_test.go",
+        "change": "added",
+        "additions": 87,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/numeric.go",
+        "change": "added",
+        "additions": 24,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/numeric_output_test.go",
+        "change": "added",
+        "additions": 63,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/exclusiveMaximum.json",
+        "change": "added",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/exclusiveMinimum.json",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/maximum.json",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/minimum.json",
+        "change": "added",
+        "additions": 10,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/multipleOf.json",
+        "change": "added",
+        "additions": 25,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-a99b6cd9214c4bdc82df682d98a6f007/docs/architecture/adr/ADR-004-numeric-validation-keywords-multipleof-maximum-exc.md",
+    "summary": "All three earlier gaps are fixed. A new test file, numeric_output_test.go, renders basic output for a failure of each of the five numeric keywords. It checks the instance location, the keyword locatio"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [
+      "Insecure defaults: none found. Type assertions on keyword values are checked, and invalid values become compile errors. Failure messages are fixed sentences that never include the instance value. Bounds use only Cmp, and multipleOf computes d with big.Int, so it cannot overflow. need is capped by ma.BitLen() before hasFactors runs, so a hostile exponent cannot cause a hang or a memory blow-up. No Rat, power of ten or float64 is used."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.232548,
+    "tokens_in": 2500039,
+    "tokens_out": 44649
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The helpers are covered by the keyword tests in T2 to T4, as the task's completion evidence says. This task adds no tests of its own."
+    },
+    {
+      "task": "T1",
+      "text": "The Decimal() accessor in number.go is left to T2, which needs it."
+    },
+    {
+      "task": "T2",
+      "text": "The hostile-scale cases for maximum 1 are left to T3, because maximum is not implemented yet."
+    },
+    {
+      "task": "T2",
+      "text": "Instance 0 is always a multiple."
+    },
+    {
+      "task": "T2",
+      "text": "TestMultipleOfMatchesRat cross-checks against big.Rat in test code only, over small values."
+    },
+    {
+      "task": "T3",
+      "text": "The task text asks for big.Rat comparison, but the boundary rules forbid it, so I used jsonvalue.Cmp, which is exact."
+    },
+    {
+      "task": "T3",
+      "text": "The shared runBounds helper lives in maximum_test.go and minimum_test.go uses it. The two test files therefore depend on each other."
+    },
+    {
+      "task": "T4",
+      "text": "Test helper runBounds is reused from maximum_test.go (same package)."
+    },
+    {
+      "task": "T5",
+      "text": "The clean tree means the earlier tasks T1 to T4 are already committed. So `git diff HEAD` shows nothing for the four protected files, whether or not those tasks touched them. I did not diff against base commit 3ea83eff to check that."
+    },
+    {
+      "task": "remediation",
+      "text": "The finding asked for a nested failure ({\"properties\":{\"a\":{\"maximum\":1}}} giving instanceLocation \"/a\"). The applicator package has no keywords yet, so 'properties' is ignored and no nested failure can happen. The output test therefore uses a failure at the root (instanceLocation \"\", keywordLocation \"/<keyword>\"), which still exercises the real rendering path for every new keyword."
+    },
+    {
+      "task": "remediation",
+      "text": "The hostile-scale bounds test reuses the multipleOfValid helper from multipleof_test.go (same test package) instead of copying it."
+    },
+    {
+      "task": "remediation",
+      "text": "These are tests for code that already exists, so they did not fail before passing in this pass."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}
