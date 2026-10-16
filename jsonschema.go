@@ -14,15 +14,17 @@ import (
 
 // Schema is a compiled schema, immutable and safe for concurrent use.
 type Schema struct {
-	root *compile.Node
-	lim  jsonvalue.NumberLimits
-	max  int // output-unit cap
+	root   *compile.Node
+	lim    jsonvalue.NumberLimits
+	max    int // output-unit cap
+	maxAnn int // annotation cap
 }
 
 // Result is the outcome of one Validate call.
 type Result struct {
-	valid bool
-	units []keywords.Unit
+	valid       bool
+	units       []keywords.Unit
+	annotations []eval.Annotation
 }
 
 // Valid reports whether the document satisfied the schema.
@@ -42,6 +44,10 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, err
 	}
+	maxAnn, err := opts.maxAnnotations()
+	if err != nil {
+		return nil, err
+	}
 	base, err := opts.baseURI()
 	if err != nil {
 		return nil, fmt.Errorf("options: %w", err)
@@ -54,7 +60,7 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	return &Schema{root: n, lim: lim, max: max}, nil
+	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn}, nil
 }
 
 // Validate checks a JSON document. An error means it could not be checked.
@@ -63,9 +69,9 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("document: %w", err)
 	}
-	ok, units, err := eval.EvaluateUnits(s.root, v, s.max)
+	ev, err := eval.EvaluateFull(s.root, v, s.max, s.maxAnn)
 	if err != nil {
 		return Result{}, fmt.Errorf("document: %w", err)
 	}
-	return Result{valid: ok, units: units}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations}, nil
 }
