@@ -3,17 +3,19 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** failed · **Stage:** coder-agent
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:33:43 UTC
-- **Story spend:** ~$25.67 of $35.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:38:20 UTC
+- **Story spend:** ~$29.26 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-None — the run stopped (failed). Nothing proceeds until the cause under Blockers is fixed and a new run is started.
+The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
 
 ## Blockers
 
-- story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.10 (nine in ten recent calls), so this one would likely pass the cap. This story's batch reserved $26.00 for it; factory.toml allows more, but the reservation is the cap that binds.
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: F1: docs/cli-contract.md and docs/limits.md are required by the boundary rules (document both flags, their defaults, exit 2 and the accepted-input changes) but are not in the reservation's file list. Please add both paths to the reservation so the existing pages can be accepted. Deleting them would break the boundary rule. Not granted automatically: docs/cli-contract.md (not in the approved design and not a test); docs/limits.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: docs/cli-contract.md, docs/limits.md
 
 ## Trail
 
@@ -125,7 +127,16 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:58:52 | agent | coder-agent | ❌ error |
 | 2026-10-16 18:33:43 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
 | 2026-10-16 18:33:43 | agent | coder-agent | ❌ error |
-| 2026-10-16 18:33:43 | run | run failed | ❌ story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.10 (nine in ten recent calls), so this one would likely pass the cap. This story's batch reserved $26.00 for it; factory.toml all… |
+| 2026-10-16 18:34:47 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 18:36:10 | agent | coder-agent | ✅ complete · remediation · 81.9s · $1.2792 |
+| 2026-10-16 18:36:12 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 18:36:13 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 18:37:10 | agent | tester-agent | ❌ fail · 57.2s |
+| 2026-10-16 18:37:10 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: [unspecified]; findings: 2 new, 0 persistent, 0 resolved |
+| 2026-10-16 18:37:10 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 3 finding(s) |
+| 2026-10-16 18:38:20 | agent | coder-agent | ✅ scope-request · remediation · 69.1s · $1.3359 |
+| 2026-10-16 18:38:20 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-16 18:38:20 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
