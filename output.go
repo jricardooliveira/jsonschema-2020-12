@@ -12,5 +12,9 @@ const DefaultMaxOutputUnits = eval.DefaultMaxOutputUnits
 // Output renders the result as a 2020-12 output object. shape is "flag" or
 // "basic"; an unknown shape is an error. The output never holds instance values.
 func (r Result) Output(shape string) ([]byte, error) {
-	return output.Render(shape, r.valid, r.units)
+	return output.RenderReport(shape, output.Report{Valid: r.valid, Units: r.units, Annotations: r.annotations}, r.maxReport)
 }
+
+// DefaultMaxReportBytes is the default cap on one rendered report. Exceeding
+// it is a LimitError; a report is never truncated.
+const DefaultMaxReportBytes = output.DefaultMaxReportBytes

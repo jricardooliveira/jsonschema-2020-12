@@ -23,6 +23,8 @@ type Options struct {
 	// MaxAnnotations caps the annotations one Validate may record; 0 means
 	// DefaultMaxAnnotations.
 	MaxAnnotations int
+	// MaxReportBytes caps one rendered report; 0 means DefaultMaxReportBytes.
+	MaxReportBytes int
 	// BaseURI overrides the base URI of a root schema without $id. It must be
 	// absolute with no fragment. See docs/references.md.
 	BaseURI string
@@ -39,6 +41,16 @@ func (o Options) maxUnits() (int, error) {
 		return DefaultMaxOutputUnits, nil
 	}
 	return o.MaxOutputUnits, nil
+}
+
+func (o Options) maxReportBytes() (int, error) {
+	if o.MaxReportBytes < 0 {
+		return 0, errors.New("options: MaxReportBytes must not be negative")
+	}
+	if o.MaxReportBytes == 0 {
+		return DefaultMaxReportBytes, nil
+	}
+	return o.MaxReportBytes, nil
 }
 
 func (o Options) maxAnnotations() (int, error) {

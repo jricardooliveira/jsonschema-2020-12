@@ -18,6 +18,8 @@ type Schema struct {
 	lim    jsonvalue.NumberLimits
 	max    int // output-unit cap
 	maxAnn int // annotation cap
+	// maxReport is the rendered-report byte cap.
+	maxReport int
 }
 
 // Result is the outcome of one Validate call.
@@ -25,6 +27,7 @@ type Result struct {
 	valid       bool
 	units       []keywords.Unit
 	annotations []eval.Annotation
+	maxReport   int
 }
 
 // Valid reports whether the document satisfied the schema.
@@ -48,6 +51,10 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, err
 	}
+	maxRep, err := opts.maxReportBytes()
+	if err != nil {
+		return nil, err
+	}
 	base, err := opts.baseURI()
 	if err != nil {
 		return nil, fmt.Errorf("options: %w", err)
@@ -60,7 +67,7 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn}, nil
+	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep}, nil
 }
 
 // Validate checks a JSON document. An error means it could not be checked.
@@ -73,5 +80,5 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("document: %w", err)
 	}
-	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport}, nil
 }
