@@ -150,6 +150,32 @@ func TestNumberCap(t *testing.T) {
 	}
 }
 
+// A number cap error names the line, column and offset in the original
+// input (BOM included), like SyntaxError, and never the number text.
+// RFC 8259 §6, §9.
+func TestNumberLimitErrorLocation(t *testing.T) {
+	cases := map[string]string{
+		"number exponent": fmt.Sprintf("1e%d", DefaultMaxNumberExponent+1),
+		"number digits":   strings.Repeat("7", DefaultMaxNumberDigits+1),
+	}
+	prefix := "\xEF\xBB\xBF{\n  \"a\": {\n    \"b\": "
+	wantOff := int64(len(prefix))
+	for limit, n := range cases {
+		_, err := DecodeLimited([]byte(prefix+n+"\n  }\n}\n"), NumberLimits{})
+		le, ok := err.(*LimitError)
+		if !ok || le.Limit != limit {
+			t.Fatalf("%s: want LimitError, got %v", limit, err)
+		}
+		if le.Line != 3 || le.Column != 10 || le.Offset != wantOff {
+			t.Errorf("%s: got line %d column %d offset %d", limit, le.Line, le.Column, le.Offset)
+		}
+		msg := le.Error()
+		if !strings.Contains(msg, fmt.Sprintf("line 3, column 10 (offset %d)", wantOff)) || strings.Contains(msg, "777") || strings.Contains(msg, "10001") {
+			t.Errorf("%s: message %q", limit, msg)
+		}
+	}
+}
+
 // With absurdly raised caps, int64 overflow in the normalised exponent or in
 // the adjusted exponent (ndig + exp) is a "number exponent" limit error,
 // never a wrapped value. RFC 8259 §6, §9 (implementation limits).

@@ -42,8 +42,12 @@ func TestNumberCapOption(t *testing.T) {
 	if !errors.As(err, &le) || strings.Contains(err.Error(), over) {
 		t.Fatalf("want content-free LimitError, got %v", err)
 	}
-	if _, err := Compile([]byte(over)); err == nil {
-		t.Error("schema over cap must error")
+	overSchema := []byte(`{"const":` + over + `}`)
+	if _, err := Compile(overSchema); !errors.As(err, &le) || le.Limit != "number exponent" {
+		t.Errorf("schema over cap: want number exponent LimitError, got %v", err)
+	}
+	if _, err := CompileWithOptions(overSchema, Options{MaxNumberExponent: DefaultMaxNumberExponent + 1}); err != nil {
+		t.Errorf("raised cap must compile the schema: %v", err)
 	}
 	s, err = CompileWithOptions([]byte(`true`), Options{MaxNumberExponent: DefaultMaxNumberExponent + 1})
 	if err != nil {

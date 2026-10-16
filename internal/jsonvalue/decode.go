@@ -23,14 +23,19 @@ func (e *SyntaxError) Error() string {
 	return fmt.Sprintf("invalid JSON at line %d, column %d (offset %d): %s", e.Line, e.Column, e.Offset, e.Reason)
 }
 
-// LimitError reports that a built-in limit was exceeded.
+// LimitError reports that a built-in limit was exceeded. Number limits also
+// carry the line and column of the number in the original input.
 type LimitError struct {
-	Limit  string
-	Max    int
-	Offset int64
+	Limit        string
+	Max          int
+	Offset       int64
+	Line, Column int // 0 when not located
 }
 
 func (e *LimitError) Error() string {
+	if e.Line > 0 {
+		return fmt.Sprintf("%s exceeds limit %d at line %d, column %d (offset %d)", e.Limit, e.Max, e.Line, e.Column, e.Offset)
+	}
 	return fmt.Sprintf("%s exceeds limit %d", e.Limit, e.Max)
 }
 
@@ -45,6 +50,15 @@ func syntaxErr(data []byte, off int64, reason string) *SyntaxError {
 	line := 1 + bytes.Count(head, []byte("\n"))
 	col := int(off) - (bytes.LastIndexByte(head, '\n') + 1) + 1
 	return &SyntaxError{Offset: off, Line: line, Column: col, Reason: reason}
+}
+
+// locate fills a LimitError's line and column from its offset in orig.
+func locate(orig []byte, err error) error {
+	if le, ok := err.(*LimitError); ok {
+		se := syntaxErr(orig, le.Offset, "")
+		le.Line, le.Column = se.Line, se.Column
+	}
+	return err
 }
 
 type frame struct {
@@ -163,7 +177,7 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 			off := dec.InputOffset() - int64(len(t)) + base
 			e, err := checkNumber(string(t), lim, off)
 			if err != nil {
-				return nil, err
+				return nil, locate(orig, err)
 			}
 			if !exact {
 				put(t)
@@ -171,7 +185,7 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 			}
 			n, err := newNumber(string(t), e, off)
 			if err != nil {
-				return nil, err
+				return nil, locate(orig, err)
 			}
 			put(n)
 		case string, bool, nil:
