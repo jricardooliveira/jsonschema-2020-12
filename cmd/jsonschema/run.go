@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/neoface/jsonschema"
+	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/output"
 )
 
@@ -82,6 +83,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	baseURI := flags.String("base-uri", "", "")
 	digits := intFlag("max-number-digits")
 	exponent := intFlag("max-number-exponent")
+	maxAnn := intFlag("max-annotations")
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return fail("usage: jsonschema validate [-o flag|basic] <schema-file> [<document-file>|-]...")
@@ -97,7 +99,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	badFlag := ""
 	flags.Visit(func(f *flag.Flag) {
-		if (f.Name == "max-number-digits" && *digits <= 0) || (f.Name == "max-number-exponent" && *exponent <= 0) {
+		if (f.Name == "max-number-digits" && *digits <= 0) || (f.Name == "max-number-exponent" && *exponent <= 0) || (f.Name == "max-annotations" && *maxAnn <= 0) {
 			badFlag = f.Name
 		}
 	})
@@ -119,7 +121,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err.Error())
 	}
-	s, err := jsonschema.CompileWithOptions(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent, BaseURI: *baseURI, SchemaPath: rest[0]})
+	s, err := jsonschema.CompileWithOptions(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent, MaxAnnotations: *maxAnn, BaseURI: *baseURI, SchemaPath: rest[0]})
 	if err != nil {
 		return fail(err.Error())
 	}
@@ -145,6 +147,10 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		out, err := res.Output(shape)
 		if err != nil {
+			var le *jsonvalue.LimitError
+			if errors.As(err, &le) { // limit name and max only, no content
+				return nil, exitError, le
+			}
 			return nil, exitError, errors.New("cannot render result")
 		}
 		if res.Valid() {

@@ -1,0 +1,4 @@
+[
+  {"spec":"validation 8.3 contentEncoding and 8.4 contentMediaType","description":"annotation only","schema":{"contentEncoding":"base64","contentMediaType":"application/json"},"tests":[{"description":"not base64","data":"!!!","valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/contentEncoding","keyword":"contentEncoding","value":"base64"},{"instanceLocation":"","keywordLocation":"/contentMediaType","keyword":"contentMediaType","value":"application/json"}]}]},
+  {"spec":"validation 8.5 contentSchema","description":"contentSchema is not applied","schema":{"contentSchema":{"type":"integer"}},"tests":[{"description":"string instance","data":"text","valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/contentSchema","keyword":"contentSchema","value":{"type":"integer"}}]}]}
+]

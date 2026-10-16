@@ -1,21 +1,52 @@
 // Package output is the one registration point for report shapes. A shape
-// file calls Register from init(); callers find shapes only through Render.
+// file calls Register or RegisterReport from init(); callers find shapes only
+// through Render and RenderReport.
 package output
 
 import (
+	"bytes"
 	"fmt"
 
+	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/keywords"
 )
+
+// DefaultMaxReportBytes caps the size of one rendered report.
+const DefaultMaxReportBytes = 256 << 20
 
 // Renderer turns a validation outcome and its failure units into JSON.
 type Renderer func(valid bool, units []keywords.Unit) ([]byte, error)
 
-// registry is written only by init() functions and read-only afterwards.
-var registry = map[string]Renderer{}
+// Report is everything a shape may render. Annotations is empty unless Valid.
+type Report struct {
+	Valid       bool
+	Units       []keywords.Unit
+	Annotations []keywords.Annotation
+}
 
-// Register adds a shape. It panics on an empty name, nil renderer or duplicate.
-func Register(name string, r Renderer) {
+// Budget is a byte buffer that refuses to grow past its cap.
+type Budget struct {
+	buf bytes.Buffer
+	max int
+}
+
+// Write appends p, or returns a "report bytes" LimitError (writing nothing)
+// when the total would exceed the cap.
+func (b *Budget) Write(p []byte) (int, error) {
+	if b.buf.Len()+len(p) > b.max {
+		return 0, &jsonvalue.LimitError{Limit: "report bytes", Max: b.max}
+	}
+	return b.buf.Write(p)
+}
+
+// ReportRenderer writes a report into the budget.
+type ReportRenderer func(r Report, w *Budget) error
+
+// registry is written only by init() functions and read-only afterwards.
+var registry = map[string]ReportRenderer{}
+
+// RegisterReport adds a shape. It panics on an empty name, nil renderer or duplicate.
+func RegisterReport(name string, r ReportRenderer) {
 	if name == "" || r == nil {
 		panic("output: incomplete registration")
 	}
@@ -25,11 +56,39 @@ func Register(name string, r Renderer) {
 	registry[name] = r
 }
 
-// Render renders the named shape. An unknown name is an error.
-func Render(name string, valid bool, units []keywords.Unit) ([]byte, error) {
-	r, ok := registry[name]
+// Register adds an old-style shape; its bytes still go through the budget.
+func Register(name string, r Renderer) {
+	if r == nil {
+		panic("output: incomplete registration")
+	}
+	RegisterReport(name, func(rep Report, w *Budget) error {
+		b, err := r(rep.Valid, rep.Units)
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(b)
+		return err
+	})
+}
+
+// RenderReport renders the named shape within maxBytes. A cap of 0 or less
+// means DefaultMaxReportBytes, never unlimited. No partial report is returned.
+func RenderReport(name string, r Report, maxBytes int) ([]byte, error) {
+	fn, ok := registry[name]
 	if !ok {
 		return nil, fmt.Errorf("unknown output format %q", name)
 	}
-	return r(valid, units)
+	if maxBytes <= 0 {
+		maxBytes = DefaultMaxReportBytes
+	}
+	w := &Budget{max: maxBytes}
+	if err := fn(r, w); err != nil {
+		return nil, err
+	}
+	return w.buf.Bytes(), nil
+}
+
+// Render renders the named shape under the default byte cap.
+func Render(name string, valid bool, units []keywords.Unit) ([]byte, error) {
+	return RenderReport(name, Report{Valid: valid, Units: units}, DefaultMaxReportBytes)
 }

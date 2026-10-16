@@ -86,6 +86,5 @@ func evalPatternProperties(ctx *keywords.EvalContext, compiled any, instance any
 			applied = append(applied, k)
 		}
 	}
-	recordProps(ctx, applied)
-	return valid, nil
+	return valid, recordProps(ctx, applied, valid)
 }

@@ -84,6 +84,11 @@ func evalContains(ctx *keywords.EvalContext, compiled any, instance any) (bool, 
 		if rec, ok := ctx.Items.(keywords.ItemRecorder); ok {
 			rec.RecordContains(ctx.InstanceLocation, ctx.KeywordLocation, matches, len(matches) == len(arr))
 		}
+		var v any = matches
+		if len(matches) == len(arr) {
+			v = true
+		}
+		return true, ctx.Annotate(v)
 	}
 	return true, nil
 }

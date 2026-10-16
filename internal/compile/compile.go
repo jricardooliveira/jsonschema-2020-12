@@ -48,7 +48,9 @@ func compileAt(v any, loc string) (*Node, error) {
 		for _, name := range names {
 			kw, ok := keywords.Lookup(name)
 			if !ok {
-				continue // ponytail: unknown keywords ignored; annotations come later
+				// Unknown keywords never affect validity; they are annotated (core 6.5).
+				n.Items = append(n.Items, Item{keywords.AnnotateOnly(name, ""), s[name], loc + "/" + escape.Replace(name)})
+				continue
 			}
 			kwLoc := loc + "/" + escape.Replace(name)
 			ctx := &keywords.CompileContext{

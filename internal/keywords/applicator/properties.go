@@ -25,10 +25,17 @@ type propRecorder interface {
 	RecordProperties(instLoc, kwLoc string, names []string)
 }
 
-func recordProps(ctx *keywords.EvalContext, names []string) {
+// recordProps records the applied names for unevaluated* tracking and, when
+// the keyword passed, annotates them (core 10.3.2). Names are already in the
+// instance location; no instance value is annotated.
+func recordProps(ctx *keywords.EvalContext, names []string, valid bool) error {
 	if rec, ok := ctx.Items.(propRecorder); ok {
 		rec.RecordProperties(ctx.InstanceLocation, ctx.KeywordLocation, names)
 	}
+	if valid && len(names) > 0 {
+		return ctx.Annotate(append([]string(nil), names...))
+	}
+	return nil
 }
 
 // step counts one evaluation step (see validation.CountStep).
@@ -99,6 +106,5 @@ func evalProperties(ctx *keywords.EvalContext, compiled any, instance any) (bool
 		}
 		valid = valid && ok
 	}
-	recordProps(ctx, applied)
-	return valid, nil
+	return valid, recordProps(ctx, applied, valid)
 }

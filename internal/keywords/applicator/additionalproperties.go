@@ -84,6 +84,5 @@ func evalAdditionalProperties(ctx *keywords.EvalContext, compiled any, instance 
 		}
 		valid = valid && ok
 	}
-	recordProps(ctx, applied)
-	return valid, nil
+	return valid, recordProps(ctx, applied, valid)
 }
