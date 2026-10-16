@@ -9,17 +9,37 @@ import (
 // Evaluate reports whether instance is valid. An error is never valid.
 // It only reads n; per-call state lives in the EvalContext.
 func Evaluate(n *compile.Node, instance any) (bool, error) {
+	ok, _, err := EvaluateUnits(n, instance, DefaultMaxOutputUnits)
+	return ok, err
+}
+
+// evalNode evaluates a compiled schema into ctx. Units of failing keywords
+// and applicators accumulate in ctx in evaluation order.
+func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
+	n := node.(*compile.Node)
 	if n.Bool != nil {
-		return *n.Bool, nil
+		if *n.Bool {
+			return true, nil
+		}
+		ctx.KeywordLocation = n.Location
+		return false, ctx.Report("schema is false, no value is valid")
 	}
-	ctx := &keywords.EvalContext{}
 	valid := true
 	for _, it := range n.Items {
+		ctx.KeywordLocation = it.Location
+		before := len(ctx.Units())
 		ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
 		if err != nil {
 			return false, err
 		}
-		valid = valid && ok
+		if !ok {
+			valid = false
+			if len(ctx.Units()) == before { // keyword gave no unit of its own
+				if err := ctx.Report("rule " + it.Keyword.Name + " failed"); err != nil {
+					return false, err
+				}
+			}
+		}
 	}
 	return valid, nil
 }

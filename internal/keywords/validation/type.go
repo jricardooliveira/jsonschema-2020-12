@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/keywords"
@@ -52,13 +53,13 @@ func compileType(_ *keywords.CompileContext, value any) (any, error) {
 	return names, nil
 }
 
-func evalType(_ *keywords.EvalContext, compiled any, instance any) (bool, error) {
+func evalType(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
 	for _, n := range compiled.([]string) {
 		if matchesType(n, instance) {
 			return true, nil
 		}
 	}
-	return false, nil
+	return false, ctx.Report("value must be of type " + strings.Join(compiled.([]string), " or "))
 }
 
 func matchesType(name string, inst any) bool {

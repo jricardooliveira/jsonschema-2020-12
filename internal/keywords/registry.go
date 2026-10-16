@@ -3,13 +3,64 @@
 // keywords only through Lookup.
 package keywords
 
+import "github.com/neoface/jsonschema/internal/jsonvalue"
+
 // CompileContext is passed to a keyword's Compile function. It is empty for
 // now; later stories add fields (base URI, limits, sub-schema compiler).
 type CompileContext struct{}
 
-// EvalContext holds per-call evaluation state. It is empty for now; later
-// stories add dynamic scope, annotations and limit counters.
-type EvalContext struct{}
+// Unit is one failure record: where it failed and which rule, with a
+// sentence that never contains an instance value.
+type Unit struct {
+	InstanceLocation string
+	KeywordLocation  string
+	Error            string
+}
+
+// EvalContext holds per-call evaluation state: the current locations, the
+// units reported at this level, and the output-unit counter shared with every
+// child context. Create one with NewEvalContext.
+type EvalContext struct {
+	InstanceLocation string // JSON Pointer of the instance being checked
+	KeywordLocation  string // JSON Pointer of the keyword being evaluated
+	units            []Unit
+	count            *int
+	max              int
+	evalNode         func(ctx *EvalContext, node any, instance any) (bool, error)
+}
+
+// NewEvalContext returns a root context. evalNode evaluates a compiled child
+// schema into the context it is given. max is the output-unit cap.
+func NewEvalContext(max int, evalNode func(ctx *EvalContext, node any, instance any) (bool, error)) *EvalContext {
+	return &EvalContext{count: new(int), max: max, evalNode: evalNode}
+}
+
+// Report appends a failure unit at the current locations and counts it. It
+// returns a LimitError once the count of every appended unit exceeds the cap.
+// msg must not contain instance values.
+func (c *EvalContext) Report(msg string) error {
+	*c.count++
+	if *c.count > c.max {
+		return &jsonvalue.LimitError{Limit: "output units", Max: c.max}
+	}
+	c.units = append(c.units, Unit{c.InstanceLocation, c.KeywordLocation, msg})
+	return nil
+}
+
+// Units returns the units reported so far, in order.
+func (c *EvalContext) Units() []Unit { return c.units }
+
+// Keep adds a child's units (already counted) to this context's list.
+func (c *EvalContext) Keep(units []Unit) { c.units = append(c.units, units...) }
+
+// EvalChild evaluates a compiled child schema against instance, located at
+// instLoc. It returns the child's units; the caller calls Keep to retain them
+// or drops them. Every unit is counted when appended, kept or not.
+func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, []Unit, error) {
+	child := &EvalContext{InstanceLocation: instLoc, count: c.count, max: c.max, evalNode: c.evalNode}
+	ok, err := c.evalNode(child, node, instance)
+	return ok, child.units, err
+}
 
 // CompileFunc turns a keyword's schema value into compiled data. The result
 // must be immutable: it is shared by every Validate call.

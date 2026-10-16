@@ -20,11 +20,11 @@ func compileEnum(_ *keywords.CompileContext, value any) (any, error) {
 	return a, nil
 }
 
-func evalEnum(_ *keywords.EvalContext, compiled any, instance any) (bool, error) {
+func evalEnum(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
 	for _, v := range compiled.([]any) {
 		if jsonvalue.Equal(v, instance) {
 			return true, nil
 		}
 	}
-	return false, nil
+	return false, ctx.Report("value must equal one of the values in enum")
 }
