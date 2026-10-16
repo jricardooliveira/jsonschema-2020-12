@@ -86,11 +86,10 @@ exactly this order:
 
 ## Risks
 
-- internal/eval/evaluated_items.go is outside the original reservation. It must gain a property-entry field so one Mark/Rollback log covers both item and property annotations. Without that, a failed subschema would leak property annotations, or registry.go (crowded) would need a second record. The edit is small, and this file is not crowded.
-- internal/eval/eval.go was dropped from the plan: attachItems already wires the record. The reservation can release it.
-- Sorted keyword evaluation means dependentRequired failures (keyword 'dependentRequired' sorts before 'properties') come before the per-member failures of properties in the same object. The operator's 'members, then missing names' order holds exactly for required and is documented per keyword for dependentRequired. Changing the order across keywords would require editing the crowded compile.go/eval.go and is not done here.
-- Sorted key order replaces the earlier document-order answer. The operator has revised it, and the story text that says 'order the keys appear in the document' is read as sorted key order.
-- patternProperties repeats the size-check, Translate and Compile steps from validation/pattern.go (about 6 lines), and the duplicated code is internal/keywords/validation/pattern.go and internal/keywords/applicator/patternproperties.go. Moving them into ecmaregex would change the translation package, which is a non-goal. Recorded as a follow-up: share a CompilePattern helper.
+- internal/eval/evaluated_items.go is outside the original reservation. It must gain a property-entry field so that one Mark/Rollback log covers both item and property annotations. Without that, a failed subschema would leak property annotations, or the crowded registry.go would need a second record. The edit is small, and the file is not crowded.
+- internal/eval/eval.go is no longer needed, because attachItems already wires the record. The reservation can release it.
+- The acceptance criterion and T2/T5 wording ('order the keys appear in the document') are superseded by the operator's ordering rule (sorted keyword names, then sorted member names, then schema order for missing names). Reviewers should check against the ADR rule, not the original story text.
+- patternProperties repeats about 6 lines of size check, Translate and Compile from internal/keywords/validation/pattern.go, in internal/keywords/applicator/patternproperties.go. Moving them into ecmaregex would change the translation package, which is a non-goal. Follow-up: share a CompilePattern helper.
 - Story 191 may define its own annotation mechanism. It should build on the EvaluatedItems log (evaluated_items.go and evaluated.go) rather than duplicate it.
 
 Implementation constraints the coder must honor:
@@ -98,12 +97,13 @@ Implementation constraints the coder must honor:
 - Go standard library only, and go.mod is not edited.
 - The compiled Schema stays immutable. Compiled data (subschema nodes, *regexp.Regexp, property-name sets, required lists) is built once in Compile and only read afterwards. Evaluated names live only in ctx.Items. This is verified with go test -race.
 - Messages never contain instance values or keys. Keys appear only in the JSON Pointer instance location, with ~0/~1 escaping.
-- patternProperties (and additionalProperties for its sibling patterns) must call ecmaregex.Translate and regexp.Compile after the size check against validation.DefaultMaxPatternSize, and must not reimplement translation. An untranslatable or uncompilable pattern is a compile error (exit code 2).
-- Member iteration is in sorted key order (sort.Strings on a copy of the map keys, which is byte-wise UTF-8 order), never Go map range order. Trigger names of dependentSchemas and dependentRequired are also walked in sorted order. Missing required and dependentRequired names are reported in schema array order. The decoder (internal/jsonvalue/decode.go) is not touched.
-- Within one schema object, the unit order is the engine's existing keyword order (sorted keyword names from compile.go), then the per-keyword order above. Document this in a doc comment in properties.go.
-- additionalProperties takes its siblings from CompileContext.Siblings, never from the evaluated record (it is evaluated before properties and patternProperties).
+- patternProperties, and additionalProperties for its sibling patterns, must run the size check against validation.DefaultMaxPatternSize, then call ecmaregex.Translate and regexp.Compile. They must not reimplement translation. An untranslatable or uncompilable pattern is a compile error (exit code 2).
+- Ordering rule (operator decision, record it in the ADR): keywords are evaluated and reported in sorted keyword-name order. Within one keyword, member failures come in sorted member-name order (sort.Strings on a copy of the map keys, never Go map range order), and dependentSchemas/dependentRequired walk their trigger names in sorted order. Missing required and dependentRequired names are reported in schema array order. The decoder (internal/jsonvalue/decode.go) is not touched.
+- Document the ordering rule in a doc comment in properties.go.
+- additionalProperties takes its siblings from CompileContext.Siblings, never from the evaluated record, because it is evaluated before properties and patternProperties.
 - Keywords reach the record only through a local interface type-asserted from ctx.Items. registry.go and eval.go are not edited.
-- Tests read limits and messages from the code where defined (for example DefaultMaxPatternSize), not from repeated literals. The determinism test renders basic output twice for a document with more than 20 keys inserted out of order and compares the bytes.
+- Tests read limits and messages from the code where they are defined (for example DefaultMaxPatternSize), not from repeated literals.
+- The determinism test renders basic output twice for a document with more than 20 keys inserted out of order and compares the bytes. A second test asserts the unit order: keyword order, then sorted member names, then missing names in schema order.
 
 - DB impact: no · API impact: no · Migration needed: no
 
