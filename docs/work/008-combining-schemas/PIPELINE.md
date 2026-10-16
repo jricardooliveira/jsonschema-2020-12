@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #142 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 20:40:08 UTC · **Stopped:** 2026-10-16 20:54:54 UTC
+- **Run:** #142 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 20:40:08 UTC · **Stopped:** 2026-10-16 20:55:12 UTC
 - **Story spend:** ~$6.85 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 142` to accept, or `factory reject 142 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-142-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Story 180 (output units and basic rendering of nested failures) is a dependency. This change assumes its Units type, KeywordLocation field, and output.Render are already available. The diff modifies internal/eval/units_test.go (x-test-keep helper and TestUnitOrderAndNoValues assertion); verify story 180's output package can accept rooted locations without further changes.
-  >   ◦ Release-agent note: CompileContext signature changed (added CompileAt field). Stories 181–184 (properties, patternProperties, additionalProperties, items) must be scheduled after this one and use the new rooted-location API.
-  >   ◦ Release-agent note: All seven new keywords register from init() calls. Verify internal/keywords/all/all.go blank-imports internal/keywords/applicator so they load automatically.
-  >   ◦ Release-agent note: Thread-safety verified by concurrent_test.go. Compiled schemas are immutable; per-evaluation state stays in the evaluation context. Confirm no per-schema mutable state was added.
-  >   ◦ Security note (low): No value leaks. Every applicator message is built only from the keyword name and choice indices. Child evaluation errors propagate in allOf, anyOf, oneOf, not and if, and are never turned into valid or invalid (fail-closed). The output-unit cap counts discarded units: evaluation goes through the shared counter in EvalContext.Report. Compiled nodes are immutable. The 'if' handler changes ctx.KeywordLocation only temporarily, on the per-call context. concurrent_test.go passes under -race.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -77,8 +70,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 20:54:13 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 10; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-16 20:54:13 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 20:54:53 | agent | release-agent | ✅ pass · 40.1s · $0.0881 |
-| 2026-10-16 20:54:54 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 20:54:54 | run | run waiting_human | ⏸️ |
+| 2026-10-16 20:54:54 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 20:55:12 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 20:55:12 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
