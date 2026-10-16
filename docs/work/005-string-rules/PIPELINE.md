@@ -3,22 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #138 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 19:55:54 UTC · **Stopped:** 2026-10-16 20:10:45 UTC
+- **Run:** #138 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 19:55:54 UTC · **Stopped:** 2026-10-16 20:11:10 UTC
 - **Story spend:** ~$6.17 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 138` to accept, or `factory reject 138 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-138-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Pattern-size option and CLI flag originally planned for this story were moved to story 193 by operator decision (confirmed in approved batch reservation). Constant default is in place and tested; configuration infrastructure deferred.
-  >   ◦ Release-agent note: Tester identified three LOW findings: possible Unicode property list drift with Go 1.25+ (acceptable, documented set validated); JSON Pointer needed for nested pattern errors in future (hub concern, not this story); Number allocation in length keywords per evaluation (minor efficiency, correctness unaffected). All non-blocking.
-  >   ◦ Security note (low): Translator fails closed. Every escape or group it does not explicitly handle returns *Error. '[' inside a class is escaped through lit(). Compile failures are returned with %w and never skipped, so no nil *regexp.Regexp reaches evaluation. Patterns in error text are %q-quoted, and run.go's oneLine also strips newlines. The size check runs on the raw bytes before the []rune conversion. No instance values are found in any message.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -66,8 +61,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 20:09:53 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 2 resolved |
 | 2026-10-16 20:09:53 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 20:10:45 | agent | release-agent | ✅ pass · 51.6s · $0.0916 |
-| 2026-10-16 20:10:45 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 20:10:45 | run | run waiting_human | ⏸️ |
+| 2026-10-16 20:10:45 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 20:11:10 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 20:11:10 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
