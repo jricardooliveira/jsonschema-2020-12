@@ -2,10 +2,12 @@ package applicator_test
 
 import (
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/compile"
 	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/neoface/jsonschema/internal/keywords"
 )
 
 func TestIfThenElseValidity(t *testing.T) {
@@ -77,6 +79,46 @@ func TestIfThenElseSchemaErrors(t *testing.T) {
 			if err == nil || !strings.Contains(err.Error(), k) {
 				t.Errorf("%s %s: err=%v", k, v, err)
 			}
+		}
+	}
+}
+
+// x-count counts how often any schema holding it is compiled and evaluated.
+var countCompiles, countEvals atomic.Int64
+
+func init() {
+	keywords.Register(keywords.Keyword{Name: "x-count", Vocabulary: "test",
+		Compile:  func(*keywords.CompileContext, any) (any, error) { countCompiles.Add(1); return nil, nil },
+		Evaluate: func(*keywords.EvalContext, any, any) (bool, error) { countEvals.Add(1); return true, nil }})
+}
+
+// TestNestedIfWorkIsLinear: 'if' is compiled and evaluated once per level, so
+// work grows linearly with nesting (not 2^n or 3^n).
+func TestNestedIfWorkIsLinear(t *testing.T) {
+	const depth = 12
+	leaf := `{"x-count":true}`
+	inIf, inThen := leaf, leaf
+	for i := 0; i < depth; i++ {
+		inIf = `{"x-count":true,"if":` + inIf + `,"then":` + leaf + `,"else":` + leaf + `}`
+		inThen = `{"x-count":true,"if":true,"then":` + inThen + `}`
+	}
+	for _, c := range []struct {
+		name, schema          string
+		compiles, evaluations int64
+	}{
+		// per level: itself, then, else compiled; itself and one branch evaluated
+		{"nested in if", inIf, 3*depth + 1, 2*depth + 1},
+		{"nested in then", inThen, depth + 1, depth + 1},
+	} {
+		countCompiles.Store(0)
+		countEvals.Store(0)
+		n := mustCompile(t, c.schema)
+		if _, err := eval.Evaluate(n, mustDecode(t, `1`)); err != nil {
+			t.Fatal(err)
+		}
+		if countCompiles.Load() != c.compiles || countEvals.Load() != c.evaluations {
+			t.Errorf("%s: compiles=%d evals=%d, want %d %d", c.name,
+				countCompiles.Load(), countEvals.Load(), c.compiles, c.evaluations)
 		}
 	}
 }

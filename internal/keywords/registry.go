@@ -16,6 +16,9 @@ type CompileContext struct {
 	// Pointer suffix such as "/0"), so its units carry the right keyword
 	// location. The result is a compiled node to pass to EvalChild.
 	Sub func(value any, rel string) (any, error)
+	// CompileAt compiles a sub-schema at the absolute JSON Pointer loc, for a
+	// keyword that compiles a sibling's value (as 'if' does for then/else).
+	CompileAt func(value any, loc string) (any, error)
 }
 
 // ItemRecorder is what keywords need from the per-evaluation item record.
