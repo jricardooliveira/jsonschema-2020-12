@@ -45,7 +45,8 @@ Schemas and documents must be one JSON value (RFC 8259) in UTF-8:
 - A `\u` escape that leaves a surrogate without its partner (for example
   `"\uD800"`) is broken JSON. A valid surrogate pair decodes to one code point.
 - An object that repeats a member name, at any depth, is broken JSON. Names are
-  compared after unescaping, so `"a"` and `"a"` are the same name. The
+  compared after unescaping, so `"a"` and the same letter written as a `\u`
+  escape (code point 0061) are the same name. The
   error gives the location of the repeat.
 - A number over the digit or exponent cap is a limit error.
 
