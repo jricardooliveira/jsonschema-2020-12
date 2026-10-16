@@ -98,6 +98,30 @@ func TestDeepUnknownKeywordTargetsCompileOnce(t *testing.T) {
 	}
 }
 
+// Each target under an unknown keyword refers to its parent, so every batch
+// reaches an ancestor of a node an earlier batch compiled. Each node is still
+// compiled once (no quadratic recompilation of descendants).
+func TestAncestorAfterDescendantTargetsCompileOnce(t *testing.T) {
+	const n = 200
+	at := func(k int) string { return `"#/definitions/x` + strings.Repeat("/not", k) + `"` }
+	level := `{"$ref":` + at(n-1) + `}`
+	for k := n - 1; k >= 1; k-- {
+		level = `{"$ref":` + at(k-1) + `,"not":` + level + `}`
+	}
+	src := `{"$ref":` + at(n) + `,"definitions":{"x":{"not":` + level + `}}}`
+	v, err := jsonvalue.DecodeLimited([]byte(src), jsonvalue.NumberLimits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, _, err := compileDocument(v, "file:///s.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := 1 + n + 1; len(r.nodes) != want || len(r.refs) != n+1 { // root, x and its n levels
+		t.Errorf("nodes=%d refs=%d, want %d and %d", len(r.nodes), len(r.refs), want, n+1)
+	}
+}
+
 // core 8.2.2 with RFC 3986: a percent-encoded plain-name fragment is decoded.
 func TestPercentEncodedAnchor(t *testing.T) {
 	if _, err := load(t, `{"$defs":{"a":{"$anchor":"A"}},"$ref":"#%41"}`); err != nil {

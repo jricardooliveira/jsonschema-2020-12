@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/neoface/jsonschema/internal/keywords"
 	"github.com/neoface/jsonschema/internal/keywords/core"
 	"github.com/neoface/jsonschema/internal/registry"
 	"github.com/neoface/jsonschema/internal/uri"
@@ -66,12 +66,11 @@ func compileDocument(doc any, baseURI string) (*resolver, *Node, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	root, err := compileAt(doc, "")
+	r := &resolver{doc: doc, idx: idx, memo: map[string]*Node{}}
+	root, err := r.compile(doc, "")
 	if err != nil {
 		return nil, nil, err
 	}
-	r := &resolver{doc: doc, idx: idx, memo: map[string]*Node{"": root}}
-	r.add(root)
 	// References inside $defs and other uncompiled branches are checked too.
 	ptrs := make([]string, 0, len(idx.Bases))
 	for p := range idx.Bases {
@@ -88,29 +87,18 @@ func compileDocument(doc any, baseURI string) (*resolver, *Node, error) {
 			}
 		}
 	}
-	// Resolve in batches; each batch compiles its targets in pointer order so
-	// an ancestor is compiled (and memoizes its subtree) before a descendant.
-	// ponytail: a later batch can still recompile below an earlier target
-	// under an unknown keyword; add a node budget if that ever matters.
-	for start := 0; start < len(r.refs); {
-		end := len(r.refs)
-		batch := make([]located, 0, end-start)
-		for _, ref := range r.refs[start:end] {
-			l, err := r.locate(ref)
-			if err != nil {
-				return nil, nil, err
-			}
-			batch = append(batch, l)
+	// Compiling a target appends the $refs it holds; every node is memoized,
+	// so the order targets are reached never causes a recompile.
+	for i := 0; i < len(r.refs); i++ {
+		l, err := r.locate(r.refs[i])
+		if err != nil {
+			return nil, nil, err
 		}
-		sort.SliceStable(batch, func(i, j int) bool { return batch[i].ptr < batch[j].ptr })
-		for _, l := range batch {
-			n, err := r.target(l.ptr, l.v)
-			if err != nil {
-				return nil, nil, fmt.Errorf("schema location #%s: $ref %q: %v", l.ref.Location, l.ref.Ref, err)
-			}
-			l.ref.Target = n
+		n, err := r.target(l.ptr, l.v)
+		if err != nil {
+			return nil, nil, fmt.Errorf("schema location #%s: $ref %q: %v", l.ref.Location, l.ref.Ref, err)
 		}
-		start = end
+		l.ref.Target = n
 	}
 	return r, root, r.checkPureCycles()
 }
@@ -130,32 +118,64 @@ type resolver struct {
 	refs  []*core.Ref
 }
 
-// add records n and every node reachable from it, and their $ref keywords.
-// Each node is memoized by location, so no later target compiles it again.
-func (r *resolver) add(n *Node) {
-	for _, m := range collectNodes(n) {
-		if _, ok := r.memo[m.Location]; !ok {
-			r.memo[m.Location] = m
-		}
-		r.nodes = append(r.nodes, m)
-		for _, it := range m.Items {
-			if ref, ok := it.Data.(*core.Ref); ok {
-				r.refs = append(r.refs, ref)
-			}
-		}
-	}
-}
+func (r *resolver) target(ptr string, v any) (*Node, error) { return r.compile(v, ptr) }
 
-func (r *resolver) target(ptr string, v any) (*Node, error) {
-	if n, ok := r.memo[ptr]; ok {
+// compile is compileAt with the memo consulted at every node it visits, so
+// each schema location is compiled once, whatever order root and $ref
+// targets reach it in. It records each new node and its $ref keywords.
+// Locations are document pointers, so one location always holds one value.
+// ponytail: mirrors compileAt's body; fold compileAt into this if compile.go
+// is ever in scope.
+func (r *resolver) compile(v any, loc string) (*Node, error) {
+	if n, ok := r.memo[loc]; ok {
 		return n, nil
 	}
-	n, err := compileAt(v, ptr)
-	if err != nil {
-		return nil, err
+	s, isMap := v.(map[string]any)
+	if !isMap {
+		n, err := compileAt(v, loc) // boolean (or error): no children
+		if err != nil {
+			return nil, err
+		}
+		r.memo[loc] = n
+		r.nodes = append(r.nodes, n)
+		return n, nil
 	}
-	r.memo[ptr] = n
-	r.add(n)
+	names := make([]string, 0, len(s))
+	for name := range s {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	n := &Node{Location: loc}
+	at := func(v any, at string) (any, error) {
+		c, err := r.compile(v, at)
+		if err != nil {
+			return nil, err
+		}
+		return c, nil
+	}
+	for _, name := range names {
+		kw, ok := keywords.Lookup(name)
+		if !ok {
+			continue
+		}
+		kwLoc := loc + "/" + escape.Replace(name)
+		ctx := &keywords.CompileContext{
+			Location:  kwLoc,
+			Siblings:  s,
+			Sub:       func(v any, rel string) (any, error) { return at(v, kwLoc+rel) },
+			CompileAt: at,
+		}
+		data, err := kw.Compile(ctx, s[name])
+		if err != nil {
+			return nil, err
+		}
+		n.Items = append(n.Items, Item{kw, data, kwLoc})
+		if ref, ok := data.(*core.Ref); ok {
+			r.refs = append(r.refs, ref)
+		}
+	}
+	r.memo[loc] = n
+	r.nodes = append(r.nodes, n)
 	return n, nil
 }
 
@@ -297,52 +317,4 @@ func navigate(v any, toks []string) (any, bool) {
 		}
 	}
 	return v, true
-}
-
-const modulePath = "github.com/neoface/jsonschema"
-
-var nodeType = reflect.TypeOf((*Node)(nil))
-
-// collectNodes finds every *Node reachable from n through keyword data.
-// Keyword data is opaque to this package, so it is walked by reflection,
-// read-only, and only through types of this module.
-func collectNodes(n *Node) []*Node {
-	var out []*Node
-	seen := map[uintptr]bool{}
-	var walk func(v reflect.Value)
-	walk = func(v reflect.Value) {
-		switch v.Kind() {
-		case reflect.Interface:
-			walk(v.Elem())
-		case reflect.Pointer:
-			if v.IsNil() || !strings.HasPrefix(v.Type().Elem().PkgPath(), modulePath) || seen[v.Pointer()] {
-				return
-			}
-			seen[v.Pointer()] = true
-			if v.Type() == nodeType { // UnsafePointer: Interface() panics on unexported fields
-				out = append(out, (*Node)(v.UnsafePointer()))
-			}
-			walk(v.Elem())
-		case reflect.Struct:
-			if !strings.HasPrefix(v.Type().PkgPath(), modulePath) {
-				return
-			}
-			for i := 0; i < v.NumField(); i++ {
-				walk(v.Field(i))
-			}
-		case reflect.Slice, reflect.Array:
-			switch v.Type().Elem().Kind() {
-			case reflect.Interface, reflect.Pointer, reflect.Struct, reflect.Slice, reflect.Map, reflect.Array:
-				for i := 0; i < v.Len(); i++ {
-					walk(v.Index(i))
-				}
-			}
-		case reflect.Map:
-			for it := v.MapRange(); it.Next(); {
-				walk(it.Value())
-			}
-		}
-	}
-	walk(reflect.ValueOf(n))
-	return out
 }
