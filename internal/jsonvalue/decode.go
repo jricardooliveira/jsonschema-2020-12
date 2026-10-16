@@ -55,8 +55,24 @@ type frame struct {
 }
 
 // Decode parses exactly one JSON value into map[string]any, []any,
-// json.Number, string, bool or nil.
-func Decode(data []byte) (any, error) {
+// json.Number, string, bool or nil, with the default number caps.
+func Decode(data []byte) (any, error) { return decode(data, NumberLimits{}, false) }
+
+// DecodeLimited is Decode with *Number leaves and the given number caps.
+func DecodeLimited(data []byte, lim NumberLimits) (any, error) { return decode(data, lim, true) }
+
+var bom = []byte{0xEF, 0xBB, 0xBF}
+
+func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
+	lim = lim.resolved()
+	data := bytes.TrimPrefix(orig, bom) // at most one BOM
+	base := int64(len(orig) - len(data))
+	syntaxErr := func(_ []byte, off int64, reason string) *SyntaxError {
+		return syntaxErr(orig, off+base, reason)
+	}
+	if off, reason := scanText(data, nil); reason != "" {
+		return nil, syntaxErr(data, int64(off), reason)
+	}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.UseNumber()
 	var stack []*frame
@@ -90,7 +106,7 @@ func Decode(data []byte) (any, error) {
 			// encoding/json has its own depth cap (same value) and fails first
 			// when the opener is the one that would exceed it.
 			if rest := bytes.TrimLeft(data[min(dec.InputOffset(), int64(len(data))):], " \t\r\n,:"); len(stack) >= MaxDepth && len(rest) > 0 && (rest[0] == '[' || rest[0] == '{') {
-				return nil, &LimitError{Limit: "nesting depth", Max: MaxDepth, Offset: dec.InputOffset()}
+				return nil, &LimitError{Limit: "nesting depth", Max: MaxDepth, Offset: dec.InputOffset() + base}
 			}
 			return nil, syntaxErr(data, dec.InputOffset(), "syntax error")
 		}
@@ -118,7 +134,7 @@ func Decode(data []byte) (any, error) {
 			switch t {
 			case '{', '[':
 				if len(stack)+1 > MaxDepth {
-					return nil, &LimitError{Limit: "nesting depth", Max: MaxDepth, Offset: dec.InputOffset()}
+					return nil, &LimitError{Limit: "nesting depth", Max: MaxDepth, Offset: dec.InputOffset() + base}
 				}
 				if t == '{' {
 					stack = append(stack, &frame{obj: map[string]any{}, keys: true})
@@ -135,7 +151,22 @@ func Decode(data []byte) (any, error) {
 			default:
 				return nil, syntaxErr(data, dec.InputOffset(), "syntax error")
 			}
-		case json.Number, string, bool, nil:
+		case json.Number:
+			off := dec.InputOffset() - int64(len(t)) + base
+			e, err := checkNumber(string(t), lim, off)
+			if err != nil {
+				return nil, err
+			}
+			if !exact {
+				put(t)
+				break
+			}
+			n, err := newNumber(string(t), e, off)
+			if err != nil {
+				return nil, err
+			}
+			put(n)
+		case string, bool, nil:
 			put(t)
 		default:
 			return nil, syntaxErr(data, dec.InputOffset(), "syntax error")
