@@ -1,0 +1,310 @@
+{
+  "work_id": "US-0138",
+  "parent_story": "US-0138",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "5929d5eae982e21e2d826e436cb572f64296639b",
+    "base_commit": "3ea83effc0e5ac6fc00c3f5105222c33a2ac81b3"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "maxLength and minLength each live in their own file under internal/keywords/validation/. Each registers itself from init() through the keyword registry, and no central keyword list or switch is edited.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "maxLength and minLength count Unicode code points of the already-valid string. A string of N multi-byte characters, emoji included, has length N. They apply only to string instances: every other type passes. A non-negative-integer value such as 2.0 is accepted as the integer 2 using the exact number model.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'pattern' lives in its own file and registers through the keyword registry. It applies only to string instances, and it matches unanchored, as ECMA-262 does: the pattern may match anywhere in the string unless it uses ^ or $.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A reusable translation step in its own package (internal/ecmaregex) turns an ECMA-262 pattern into an RE2 pattern with Unicode-mode semantics, as follows. \\d and \\D mean ASCII 0-9. \\w and \\W mean ASCII [0-9A-Za-z_]. \\s and \\S use ECMA's whitespace and line-terminator set. '.' excludes \\n, \\r, U+2028 and U+2029. All of these also work inside character classes. \\uXXXX, surrogate pairs written as two \\u escapes, \\u{...}, \\cX, \\0 (not followed by a digit), \\/ and (?<name>...) are translated. A pattern counts characters the way maxLength does: ^.$ matches a single emoji.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Unicode property escapes accept both short and long General_Category names, for example \\p{L} and \\p{Letter}, and \\P{...} as well. Script=/sc= names that Go has tables for are also accepted. Any property name Go has no table for, including Script_Extensions/scx, is a schema error.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Identity escapes with a clear meaning are accepted as literals: for example \\_, \\- and other escaped syntax or punctuation characters. A lone { or ] is also accepted as a literal. An escape with no clear meaning, such as \\a, is a schema error. Constructs that are valid in RE2 but not in ECMA-262, such as \\z, \\A, \\Q...\\E, (?i) flags and [[:alpha:]] POSIX classes, never silently get their RE2 meaning.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A pattern that the translation step or RE2 cannot handle is a schema error with exit code 2, never 'invalid'. This covers lookahead and lookbehind, backreferences (\\1, \\k<name>), lone surrogate escapes, unknown escapes and anything RE2 refuses to compile, such as a repeat count over 1000. The error message names the problem and the schema location.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'pattern' has a size limit with a generous default. It is named in the same style as story 179's number-size option and flag, and the caller can raise it through a library option and a CLI flag. A pattern over the limit is a schema error with exit code 2. Tests read the default from the code instead of repeating the number.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A failing 'pattern' reports a message that shows the pattern from the schema, for example 'does not match pattern ^[a-z]+$', and never the instance value. maxLength and minLength messages never contain the instance value either.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Spec-derived positive and negative tests cite validation spec sections 6.3.1-6.3.3 and are stored as testdata/validation/maxLength.json, minLength.json and pattern.json, run by the shared table-driven runner. They cover multi-byte characters, emoji, non-string instances and translated patterns. Unit tests for the translation step cover every translated construct and every rejected construct.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/regex-deviations.md lists what the translation step translates, what it accepts as literals, what is a schema error, the supported Unicode property names, and every remaining difference between ECMA-262 and RE2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Compiled patterns are part of the immutable compiled Schema. Evaluation keeps no shared mutable state, and the tests pass under go test -race.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/pattern_test.go",
+        "change": "added",
+        "additions": 31,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/patternsize_test.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "docs/regex-deviations.md",
+        "change": "added",
+        "additions": 72,
+        "deletions": 0
+      },
+      {
+        "path": "internal/ecmaregex/properties.go",
+        "change": "added",
+        "additions": 59,
+        "deletions": 0
+      },
+      {
+        "path": "internal/ecmaregex/properties_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/ecmaregex/translate.go",
+        "change": "added",
+        "additions": 441,
+        "deletions": 0
+      },
+      {
+        "path": "internal/ecmaregex/translate_test.go",
+        "change": "added",
+        "additions": 95,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxlength.go",
+        "change": "added",
+        "additions": 45,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxlength_test.go",
+        "change": "added",
+        "additions": 39,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minlength.go",
+        "change": "added",
+        "additions": 24,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minlength_test.go",
+        "change": "added",
+        "additions": 19,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/pattern.go",
+        "change": "added",
+        "additions": 52,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/pattern_test.go",
+        "change": "added",
+        "additions": 62,
+        "deletions": 0
+      },
+      {
+        "path": "patternsize_test.go",
+        "change": "added",
+        "additions": 24,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/maxLength.json",
+        "change": "added",
+        "additions": 21,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/minLength.json",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/pattern.json",
+        "change": "added",
+        "additions": 24,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "options.go",
+      "internal/compile/limits.go",
+      "cmd/jsonschema/main.go"
+    ],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-47ebc5b98983427b97c3a631d911cc28/docs/architecture/adr/ADR-005-string-keywords-maxlength-minlength-and-pattern-wi.md",
+    "summary": "Second pass. F1 and F2 are resolved. The operator moved the pattern-size option and CLI flag to story 193 and forbade hub edits, and the change follows that exactly: the 64 KiB default is enforced in "
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [
+      "Translator fails closed. Every escape or group it does not explicitly handle returns *Error. '[' inside a class is escaped through lit(). Compile failures are returned with %w and never skipped, so no nil *regexp.Regexp reaches evaluation. Patterns in error text are %q-quoted, and run.go's oneLine also strips newlines. The size check runs on the raw bytes before the []rune conversion. No instance values are found in any message."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 6.172045,
+    "tokens_in": 4859429,
+    "tokens_out": 76244
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Cased_Letter (LC) and Unassigned (Cn) have no Go table, so they are schema errors."
+    },
+    {
+      "task": "T1",
+      "text": "A lone script name such as \\p{Greek} is rejected, because ECMA requires Script= for scripts."
+    },
+    {
+      "task": "T1",
+      "text": "Group names are limited to ASCII letters, digits and _, because RE2 requires that."
+    },
+    {
+      "task": "T1",
+      "text": "Only ASCII punctuation identity escapes are accepted as literals."
+    },
+    {
+      "task": "T1",
+      "text": "Tests check matching behaviour after compiling the translated output, not exact RE2 strings."
+    },
+    {
+      "task": "T2",
+      "text": "The count is wrapped as an exact Number via jsonvalue.DecodeLimited and compared with jsonvalue.Cmp, so no overflowing conversion happens."
+    },
+    {
+      "task": "T2",
+      "text": "The shared helpers compileLength and number live in maxlength.go and minlength.go reuses them."
+    },
+    {
+      "task": "T2",
+      "text": "The tests use r.Output(\"basic\") to check that the instance value never appears in the report."
+    },
+    {
+      "task": "T3",
+      "text": "The pattern-size limit is T4's job. CompileContext is currently empty, so pattern.go has no size check yet. T4 should add it before Translate."
+    },
+    {
+      "task": "T3",
+      "text": "`[[:alpha:]` is valid in ECMA-262. It is a class containing `[`, `:`, `a`, `l`, `p`, `h`, so I did not put it in the schema-error cases."
+    },
+    {
+      "task": "T3",
+      "text": "The translator output was not changed."
+    },
+    {
+      "task": "T4",
+      "text": "Compile-time options are already built in jsonschema.go (CompileWithOptions) and numberlimits.go (the Options struct). CLI flags are parsed in cmd/jsonschema/run.go. main.go only calls os.Exit(run(...))."
+    },
+    {
+      "task": "T4",
+      "text": "The design says the main.go edit is one flag line passed to the existing options. In the repo, main.go has no flags, so that line has nowhere to go."
+    },
+    {
+      "task": "T4",
+      "text": "Limit counts bytes (len of the Go string)."
+    },
+    {
+      "task": "T4",
+      "text": "The raise-the-limit option and CLI flag from the task's done-when are deferred to story 193, as the operator said."
+    },
+    {
+      "task": "T5",
+      "text": "The code has no pattern-size option or CLI flag: the limit is the constant DefaultMaxPatternSize (64 KiB, counted in bytes) in internal/keywords/validation/pattern.go. The doc says so rather than describing a configurable limit."
+    },
+    {
+      "task": "T5",
+      "text": "The accepted-literals and error lists come from translate.go and the T1 tests; I did not re-run those tests."
+    },
+    {
+      "task": "remediation",
+      "text": "F1 cannot be built inside the approved files. Options is defined in numberlimits.go (story 179), so options.go cannot add a field to it. Compile builds keywords.CompileContext{} itself inside internal/compile/compile.go, and CompileContext is an empty struct in internal/keywords/registry.go (read-only for this story). jsonschema.go is the only caller of compile.Compile. The CLI flags (max-number-digits and the others) are parsed in cmd/jsonschema/run.go, and ADR-002 says main.go is not touched. So the flag cannot be added with one line in main.go as the design says."
+    },
+    {
+      "task": "remediation",
+      "text": "F2 needs internal/compile/compile.go. Keyword compile errors are returned there without a location, and only compileAt knows the keyword's JSON Pointer."
+    },
+    {
+      "task": "remediation",
+      "text": "A package-level variable for the limit was rejected. It would be shared mutable state, and the boundary rules require the limit to be fixed per Compile and safe for concurrent use."
+    },
+    {
+      "task": "remediation",
+      "text": "By the operator's decision, the MaxPatternSize library option and --max-pattern-size CLI flag (AC8), with their semantics (0 means the default, a negative value is an error), belong to story 193. options.go, internal/compile/limits.go and cmd/jsonschema/main.go were not changed."
+    },
+    {
+      "task": "remediation",
+      "text": "AC7 schema location: compile.go passes keyword compile errors through unchanged, and CompileContext has no location field. pattern.go can therefore name only the keyword and the pattern, not a full JSON Pointer. Today 'pattern' can only appear at the schema root (/pattern) because there are no applicators yet. Adding the JSON Pointer means changing hub files (compile.go/registry.go), which the operator ruled out for this story."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
