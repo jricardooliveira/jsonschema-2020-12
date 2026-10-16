@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/neoface/jsonschema"
@@ -61,23 +62,32 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	flags := flag.NewFlagSet("validate", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
-	digits := flags.Int("max-number-digits", 0, "")
-	exponent := flags.Int("max-number-exponent", 0, "")
+	badValue := "" // name of the flag whose value failed to parse
+	intFlag := func(name string) *int {
+		p := new(int)
+		flags.Func(name, "", func(s string) error {
+			n, err := strconv.ParseInt(s, 0, strconv.IntSize)
+			if err != nil {
+				badValue = name
+				return err
+			}
+			*p = int(n)
+			return nil
+		})
+		return p
+	}
+	digits := intFlag("max-number-digits")
+	exponent := intFlag("max-number-exponent")
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return fail("usage: jsonschema validate <schema-file> [<document-file>|-]")
 		}
-		for _, a := range args[1:] {
-			if a == "--" {
-				break
-			}
-			if strings.HasPrefix(a, "-") && a != "-" {
-				name, _, _ := strings.Cut(strings.TrimLeft(a, "-"), "=")
-				if flags.Lookup(name) == nil {
-					return fail("unknown flag " + a)
-				}
-				return fail("invalid value for flag -" + name)
-			}
+		if badValue != "" {
+			return fail("invalid value for flag -" + badValue)
+		}
+		// ponytail: the flag package's message holds only the name here, never a value.
+		if name, ok := strings.CutPrefix(err.Error(), "flag provided but not defined: -"); ok {
+			return fail("unknown flag -" + name)
 		}
 		return fail("invalid arguments")
 	}

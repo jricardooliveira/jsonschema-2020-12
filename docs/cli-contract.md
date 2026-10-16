@@ -29,8 +29,8 @@ document. A usage error may echo only the flag name as typed.
 Both caps apply to the schema and to the document. `N` must be a whole number
 greater than 0: `0`, a negative value or a non-number is a usage error (exit 2,
 one stderr line, `invalid value for flag -<name>` or
-`flag -<name> must be greater than 0`). An unknown flag is reported as
-`unknown flag <flag>`. `-h` / `-help` print the usage line and exit 2.
+`flag -<name> must be greater than 0`), naming the flag whose value failed.
+An unknown flag is reported as `unknown flag -<name>`, without any `=value`. `-h` / `-help` print the usage line and exit 2.
 
 Defaults and the other built-in limits are listed in [limits.md](limits.md).
 

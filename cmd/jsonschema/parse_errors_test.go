@@ -86,3 +86,16 @@ func TestNumberCapFlags(t *testing.T) {
 		t.Errorf("bad value: %d %q", c, e)
 	}
 }
+
+// The usage line names the flag whose parsing failed, never its value.
+func TestFlagErrorNamesFailingFlag(t *testing.T) {
+	sch := writeTemp(t, `true`)
+	c, out, e := runCLI(t, "1", "validate", "--max-number-digits=10", "--max-number-exponent="+secret, sch)
+	if c != 2 || out != "" || strings.TrimSpace(e) != "invalid value for flag -max-number-exponent" {
+		t.Errorf("two flags: %d %q %q", c, out, e)
+	}
+	c, out, e = runCLI(t, "1", "validate", "--max-number-digits=10", "--bogus="+secret, sch)
+	if c != 2 || out != "" || strings.TrimSpace(e) != "unknown flag -bogus" {
+		t.Errorf("unknown name=value: %d %q %q", c, out, e)
+	}
+}
