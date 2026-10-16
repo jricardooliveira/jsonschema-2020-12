@@ -5,10 +5,10 @@
 | 1 | Walking skeleton | released | [001-walking-skeleton/](001-walking-skeleton/) | 134 |
 | 2 | Exact JSON values, type, enum and const | released | [002-exact-json-values-type-enum-and-const/](002-exact-json-values-type-enum-and-const/) | 135 |
 | 3 | Error reports: flag and basic output, multiple documents | released | [003-error-reports-flag-and-basic-output-multiple/](003-error-reports-flag-and-basic-output-multiple/) | 136, 137 |
-| 4 | Number rules | to do |  |  |
-| 5 | String rules | to do |  |  |
+| 4 | Number rules | released | [004-number-rules/](004-number-rules/) | 139 |
+| 5 | String rules | released | [005-string-rules/](005-string-rules/) | 138 |
 | 6 | Object rules | to do |  |  |
-| 7 | Array rules | to do |  |  |
+| 7 | Array rules | released | [007-array-rules/](007-array-rules/) | 140 |
 | 8 | Combining schemas | to do |  |  |
 | 9 | Base URIs, anchors and local references | to do |  |  |
 | 10 | Schema registry for external references | to do |  |  |
@@ -35,11 +35,11 @@
    Make the validator produce the standard 2020-12 output formats 'flag' and 'basic' as JSON, in both the library and the CLI. The CLI picks the shape with an output-format option, and 'basic' is the default. Every reported error gives the instance location, the keyword location, the absolute keyword location where one is known, and which rule failed. A report never quotes the document's values, so it is safe to save in logs. Give output formats one registration point so later shapes can be added as new files. The CLI accepts several document paths in one run. When exactly one document is checked, stdout is exactly one 2020-12 output object for the chosen shape and nothing else. When several documents are checked, the CLI prints one JSON report per line. Each line carries a label for its document, and the label does not change the standard output object inside the line. The worst result sets the exit code: 2 if any document could not be checked, otherwise 1 if any document is invalid, otherwise 0. Add CLI contract tests for both shapes, stdin input, multiple documents and exit codes.
    Why: Fixes the machine-readable result contract early so every keyword story reports errors the same way.
 
-4. **Number rules** — to do
+4. **Number rules** — released
    Add the 2020-12 numeric validation keywords multipleOf, maximum, exclusiveMaximum, minimum and exclusiveMinimum. Each keyword lives in its own file and registers through the keyword registry. All comparisons use the exact number model. For example, 0.3 is a multiple of 0.1, comparisons on huge integers are exact, and 1.0 behaves as the integer 1. The keywords apply only to number instances and ignore every other type. Write spec-derived positive and negative tests, including decimal and big-number cases.
    Why: Isolated numeric rules that only need the value model and can be built alongside the other assertion stories.
 
-5. **String rules** — to do
+5. **String rules** — released
    Add the 2020-12 string keywords maxLength, minLength and pattern. Each keyword lives in its own file and registers through the keyword registry. Lengths count Unicode code points, not bytes. The 'pattern' keyword uses Go's standard regexp package through a small translation step that handles common ECMA-262 differences, for example \d meaning ASCII digits only. A pattern the translation step or RE2 cannot handle, such as lookahead or a backreference, is a schema error with exit code 2. Put the translation step in its own reusable file so patternProperties and the regex format can use it later. The keywords apply only to string instances. Write spec-derived positive and negative tests, including multi-byte characters and translated patterns.
    Why: Delivers the string rules and the shared regex translation that object rules and formats later reuse.
 
@@ -47,7 +47,7 @@
    Add the 2020-12 object keywords properties, patternProperties, additionalProperties, propertyNames, dependentSchemas, maxProperties, minProperties, required and dependentRequired. Each keyword lives in its own file and registers through the keyword registry. patternProperties uses the existing ECMA-262-to-RE2 translation step. additionalProperties applies only to properties not matched by properties or patternProperties in the same schema object. The keywords apply only to object instances. Errors report the failing instance location without quoting values. Write spec-derived positive and negative tests for every keyword.
    Why: Groups the object keywords, which depend on each other, so they can be built in parallel with the array and combining rules.
 
-7. **Array rules** — to do
+7. **Array rules** — released
    Add the 2020-12 array keywords prefixItems, items, contains, maxContains, minContains, maxItems, minItems and uniqueItems. Each keyword lives in its own file and registers through the keyword registry. 'items' applies only to elements after those covered by prefixItems. maxContains and minContains work with contains, and minContains 0 makes contains always pass. uniqueItems uses deep JSON equality, so 1 and 1.0 are duplicates and objects compare regardless of key order. The keywords apply only to array instances. Write spec-derived positive and negative tests for every keyword.
    Why: Groups the array keywords, which depend on each other, as a separate part that can be built at the same time as the object rules.
 
