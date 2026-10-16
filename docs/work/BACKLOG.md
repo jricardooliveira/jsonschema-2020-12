@@ -2,7 +2,7 @@
 
 | # | Story | Status | Evidence | Runs |
 |---|---|---|---|---|
-| 1 | Walking skeleton | to do |  |  |
+| 1 | Walking skeleton | released | [001-walking-skeleton/](001-walking-skeleton/) | 134 |
 | 2 | Exact JSON values, type, enum and const | to do |  |  |
 | 3 | Error reports: flag and basic output, multiple documents | to do |  |  |
 | 4 | Number rules | to do |  |  |
@@ -23,7 +23,7 @@
 | 19 | Format assertion: URI, IRI, templates, pointers and regex | to do |  |  |
 | 20 | User documentation: CLI contract and scope | to do |  |  |
 
-1. **Walking skeleton** — to do
+1. **Walking skeleton** — released
    Create the smallest end-to-end version of the JSON Schema Draft 2020-12 validator in Go. Set up a single Go module requiring Go 1.26 or newer, with no dependencies beyond the standard library. No existing JSON Schema validation library may ever be a dependency. Go packages pick up new files by themselves, so adding a file never requires editing a shared manifest. Provide a library package with a load-once, check-many API: the caller loads a schema once, then checks any number of JSON documents with it. At this stage the API accepts only the boolean schemas true and false and the empty object schema {}. Give the library ONE registration point for keywords: each schema keyword lives in its own file and registers itself with a central keyword registry, so later keywords add files instead of editing a central list or switch. Provide a non-interactive command-line tool whose main.go only wires flags to the library. It takes a schema from a file path and one document from a file path or from standard input. It prints a minimal JSON result saying valid or invalid. Exit codes are 0 for valid, 1 for invalid, and 2 for any usage error or unreadable file. Include tests for the library and for the CLI exit codes. The tests use no network.
    Why: Proves the module, library, CLI and keyword registration point all work before any keyword depends on them.
 
