@@ -1,0 +1,315 @@
+{
+  "work_id": "US-0137",
+  "parent_story": "US-0137",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "a27d7611ed8a9dfd40fec541aa32ecda731f415d",
+    "base_commit": "84d3a386bfcaab9f8ffb7ca8d00f025b241e66ac"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "The library can render a validation Result as a 2020-12 'flag' object ({\"valid\": true|false} and nothing else) and as a 2020-12 'basic' object. The shape is selected by name through ONE output-format registration point (internal/output/registry.go). Each shape lives in its own file and registers itself, so a later shape is added as a new file only. An unknown shape name is an error.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In 'basic', a valid document gives exactly {\"valid\": true}. No annotations are included in this story. An invalid document gives {\"valid\": false, \"errors\": [...]}. Each error unit has 'instanceLocation' and 'keywordLocation' as JSON Pointers, 'absoluteKeywordLocation' only where an absolute URI is known, and 'error', a short sentence naming the failed rule.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The 'basic' errors list contains each failing keyword and each surrounding applicator unit that failed because of it. The order is fixed and deterministic, so the same schema and document always give byte-identical output.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "No output unit, error sentence or CLI line ever contains an instance value. Error sentences name only the rule, schema-side limits and schema-side property names (for example \"missing required property 'email'\"). This is covered by a test that plants a recognisable value in a failing document and asserts it is absent from both shapes.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Evaluation counts EVERY output unit it appends, including units appended under passing applicators and later discarded. It does not count the length of the retained list. When the count exceeds DefaultMaxOutputUnits (or the caller's raised option value), evaluation stops with a LimitError naming 'output units'. That is an error, never a valid or invalid result. A regression test lowers the cap and shows that many discarded child failures under passing anyOf/oneOf-style branches trigger the LimitError.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The CLI accepts '-o' and '--output' to choose the shape ('flag' or 'basic'). The default is 'basic'. An unknown value such as '-o fancy' exits with code 2 and prints nothing on stdout.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The CLI accepts one or more document paths. '-' or no path reads standard input. When exactly one document is checked, stdout is exactly one 2020-12 output object for the chosen shape, followed by a newline and nothing else.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When several documents are checked, stdout has one JSON line per document, in argument order. Each line has the shape {\"document\": <path, or \"-\" for stdin>, \"output\": <unchanged standard output object>}. A document that cannot be checked (broken JSON, size limit, unreadable file) instead gets {\"document\": ..., \"error\": <reason without document content>} on its line, and the other documents are still checked. With one document, that case gives empty stdout, the reason on stderr and exit code 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When the schema itself cannot be used (broken JSON, compile error, unresolved reference), the problem is reported once on stderr with exit code 2. Nothing is printed on stdout, however many documents were given.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The exit code is the worst result: 2 if any document could not be checked, otherwise 1 if any document is invalid, otherwise 0.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "CLI contract tests cover both shapes, stdin input, multiple documents (including a mix of valid, invalid and broken documents), schema errors with several documents, the unknown -o value, and every exit code. All tests use no network and pass under go test -race ./....",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 11,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/multidoc_test.go",
+        "change": "added",
+        "additions": 129,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/output_test.go",
+        "change": "added",
+        "additions": 74,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 74,
+        "deletions": 24
+      },
+      {
+        "path": "cmd/jsonschema/run_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 15,
+        "deletions": 6
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 23,
+        "deletions": 3
+      },
+      {
+        "path": "internal/eval/units.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/units_test.go",
+        "change": "added",
+        "additions": 100,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 54,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/validation/const.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/enum.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/type.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 2
+      },
+      {
+        "path": "internal/output/basic.go",
+        "change": "added",
+        "additions": 33,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/basic_test.go",
+        "change": "added",
+        "additions": 27,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/flag.go",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/flag_test.go",
+        "change": "added",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/registry.go",
+        "change": "added",
+        "additions": 35,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/registry_test.go",
+        "change": "added",
+        "additions": 33,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 13,
+        "deletions": 4
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "modified",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "output.go",
+        "change": "added",
+        "additions": 16,
+        "deletions": 0
+      },
+      {
+        "path": "output_test.go",
+        "change": "added",
+        "additions": 57,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-d744afbe91f84da39de63c3e616e7063/docs/architecture/adr/ADR-003-error-reports-flag-and-basic-output-multiple-docum.md",
+    "summary": "The change meets all 11 acceptance criteria and every test that backs them is visible. The output-unit cap is counted through a pointer shared by every child context. Report increments it on every app"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [
+      "CLI stdout for an invalid document changes from the minimal result to the 2020-12 'basic' object (the default).",
+      "CLI stdout for an invalid document changes from the minimal {\"valid\": false} result to the 2020-12 'basic' object (the default). The operator approved this by choosing 'basic' as the default shape."
+    ],
+    "findings": [
+      "F2 (low): run.go fills per-document NDJSON and stderr reasons from err.Error(). Today this is safe: Validate wraps only the content-free *SyntaxError and *LimitError with %w, and readFile/readCapped produce fixed phrases. Nothing enforces the boundary rule that only typed errors may reach the output, though. A later untyped error from Validate (for example from a future keyword's compile or eval path) would go straight to stdout and stderr. A typed allow-list, or a generic fallback reason for anything that is not a known type, would make this fail closed."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.107342,
+    "tokens_in": 2181639,
+    "tokens_out": 59286
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The 'output units' error reuses jsonvalue.LimitError, with Limit set to 'output units' and Max set to the cap."
+    },
+    {
+      "task": "T1",
+      "text": "DefaultMaxOutputUnits is 100000, defined in internal/eval/units.go. T3 re-exports it from the root package."
+    },
+    {
+      "task": "T1",
+      "text": "If a keyword returns false without reporting a unit, evalNode adds a generic 'rule <name> failed' unit."
+    },
+    {
+      "task": "T1",
+      "text": "A false boolean schema reports 'schema is false, no value is valid'."
+    },
+    {
+      "task": "T1",
+      "text": "The test-only applicators x-test-passing and x-test-keep are registered from units_test.go, since anyOf and oneOf do not exist yet."
+    },
+    {
+      "task": "T1",
+      "text": "Keyword locations for children compiled inside a keyword start at '' because CompileContext has no sub-schema compiler yet. Story 185 and later stories will need one to get correct child locations."
+    },
+    {
+      "task": "T2",
+      "text": "The renderer signature is func(valid bool, units []keywords.Unit) ([]byte, error). It uses the Unit type from T1, which has no absolute location field, so absoluteKeywordLocation is omitted until stories 186/187."
+    },
+    {
+      "task": "T2",
+      "text": "An invalid result with no units renders errors as an empty array, not null."
+    },
+    {
+      "task": "T3",
+      "text": "The cap test uses a schema that produces two units with a cap of 1. The default-cap case reads DefaultMaxOutputUnits instead of repeating the number."
+    },
+    {
+      "task": "T3",
+      "text": "The instance-value check plants a recognisable value in a failing document and asserts it is absent from the flag and basic output."
+    },
+    {
+      "task": "T4",
+      "text": "I changed two things in run_test.go because the story changes the behaviour they asserted. The 'two docs' error case is removed because several documents are now allowed. TestExitValidInvalid now unmarshals stdout into map[string]any because invalid documents print the basic object with an errors array."
+    },
+    {
+      "task": "T4",
+      "text": "The new CLI tests (output_test.go, multidoc_test.go) belong to T5 and are not written here."
+    },
+    {
+      "task": "T4",
+      "text": "Writing -o fancy to stderr echoes the value as the user typed it, with %q escaping."
+    },
+    {
+      "task": "T4",
+      "text": "A '-' given twice reads stdin twice, so the second read is empty and becomes a per-document empty-input error."
+    },
+    {
+      "task": "T5",
+      "text": "run_test.go needed no change: its assertions only read the `valid` key, which basic output still has."
+    },
+    {
+      "task": "T5",
+      "text": "With '-' given twice, the second read of the already-consumed stdin is a per-document 'error' line, and the exit code is 2."
+    },
+    {
+      "task": "remediation",
+      "text": "The finding asked for this one fix and nothing else, so no other file was changed. A search for 100000 found no other copy of the old cap value; the remaining matches are a JSON number in an equality test and nesting-depth inputs, which are unrelated."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

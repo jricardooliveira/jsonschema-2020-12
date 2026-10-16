@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/neoface/jsonschema"
+	"github.com/neoface/jsonschema/internal/output"
 )
 
 // Exit codes: the CLI contract.
@@ -76,11 +77,13 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		})
 		return p
 	}
+	outShort := flags.String("o", "basic", "")
+	outLong := flags.String("output", "", "")
 	digits := intFlag("max-number-digits")
 	exponent := intFlag("max-number-exponent")
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			return fail("usage: jsonschema validate <schema-file> [<document-file>|-]")
+			return fail("usage: jsonschema validate [-o flag|basic] <schema-file> [<document-file>|-]...")
 		}
 		if badValue != "" {
 			return fail("invalid value for flag -" + badValue)
@@ -100,23 +103,18 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if badFlag != "" {
 		return fail("flag -" + badFlag + " must be greater than 0")
 	}
+	shape := *outShort
+	if *outLong != "" {
+		shape = *outLong
+	}
+	if _, err := output.Render(shape, true, nil); err != nil {
+		return fail(err.Error())
+	}
 	rest := flags.Args()
 	if len(rest) == 0 {
 		return fail("missing schema argument")
 	}
-	if len(rest) > 2 {
-		return fail("only one document is supported for now")
-	}
 	schemaData, err := readFile(rest[0])
-	if err != nil {
-		return fail(err.Error())
-	}
-	var docData []byte
-	if len(rest) == 1 || rest[1] == "-" {
-		docData, err = readCapped(stdin, "stdin")
-	} else {
-		docData, err = readFile(rest[1])
-	}
 	if err != nil {
 		return fail(err.Error())
 	}
@@ -124,19 +122,71 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err.Error())
 	}
-	res, err := s.Validate(docData)
-	if err != nil {
-		return fail(err.Error())
+	docs := rest[1:]
+	if len(docs) == 0 {
+		docs = []string{"-"}
 	}
-	out, err := json.Marshal(map[string]bool{"valid": res.Valid()})
-	if err != nil {
-		return fail("cannot write result")
+	// check returns the rendered report and exit code for one document.
+	check := func(path string) ([]byte, int, error) {
+		var data []byte
+		var err error
+		if path == "-" {
+			data, err = readCapped(stdin, "stdin")
+		} else {
+			data, err = readFile(path)
+		}
+		if err != nil {
+			return nil, exitError, err
+		}
+		res, err := s.Validate(data)
+		if err != nil {
+			return nil, exitError, err
+		}
+		out, err := res.Output(shape)
+		if err != nil {
+			return nil, exitError, errors.New("cannot render result")
+		}
+		if res.Valid() {
+			return out, exitValid, nil
+		}
+		return out, exitInvalid, nil
 	}
-	if _, err := stdout.Write(append(out, '\n')); err != nil {
-		return fail("cannot write result")
+	write := func(b []byte) bool {
+		_, err := stdout.Write(append(b, '\n'))
+		return err == nil
 	}
-	if res.Valid() {
-		return exitValid
+	if len(docs) == 1 {
+		out, c, err := check(docs[0])
+		if err != nil {
+			return fail(err.Error())
+		}
+		if !write(out) {
+			return fail("cannot write result")
+		}
+		return c
 	}
-	return exitInvalid
+	code := exitValid
+	for _, d := range docs {
+		out, c, err := check(d)
+		if c > code {
+			code = c
+		}
+		var line []byte
+		var merr error
+		if err != nil {
+			line, merr = json.Marshal(struct {
+				Document string `json:"document"`
+				Error    string `json:"error"`
+			}{d, oneLine(err.Error())})
+		} else {
+			line, merr = json.Marshal(struct {
+				Document string          `json:"document"`
+				Output   json.RawMessage `json:"output"`
+			}{d, out})
+		}
+		if merr != nil || !write(line) {
+			return fail("cannot write result")
+		}
+	}
+	return code
 }

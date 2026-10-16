@@ -12,6 +12,9 @@ func init() {
 // compileConst accepts any JSON value.
 func compileConst(_ *keywords.CompileContext, value any) (any, error) { return value, nil }
 
-func evalConst(_ *keywords.EvalContext, compiled any, instance any) (bool, error) {
-	return jsonvalue.Equal(compiled, instance), nil
+func evalConst(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
+	if jsonvalue.Equal(compiled, instance) {
+		return true, nil
+	}
+	return false, ctx.Report("value must equal the const value")
 }

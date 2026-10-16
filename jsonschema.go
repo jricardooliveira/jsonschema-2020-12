@@ -8,6 +8,7 @@ import (
 	"github.com/neoface/jsonschema/internal/compile"
 	"github.com/neoface/jsonschema/internal/eval"
 	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/neoface/jsonschema/internal/keywords"
 	_ "github.com/neoface/jsonschema/internal/keywords/all"
 )
 
@@ -15,10 +16,14 @@ import (
 type Schema struct {
 	root *compile.Node
 	lim  jsonvalue.NumberLimits
+	max  int // output-unit cap
 }
 
 // Result is the outcome of one Validate call.
-type Result struct{ valid bool }
+type Result struct {
+	valid bool
+	units []keywords.Unit
+}
 
 // Valid reports whether the document satisfied the schema.
 func (r Result) Valid() bool { return r.valid }
@@ -33,6 +38,10 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, err
 	}
+	max, err := opts.maxUnits()
+	if err != nil {
+		return nil, err
+	}
 	v, err := jsonvalue.DecodeLimited(schema, lim)
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
@@ -41,7 +50,7 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	return &Schema{root: n, lim: lim}, nil
+	return &Schema{root: n, lim: lim, max: max}, nil
 }
 
 // Validate checks a JSON document. An error means it could not be checked.
@@ -50,9 +59,9 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("document: %w", err)
 	}
-	ok, err := eval.Evaluate(s.root, v)
+	ok, units, err := eval.EvaluateUnits(s.root, v, s.max)
 	if err != nil {
 		return Result{}, fmt.Errorf("document: %w", err)
 	}
-	return Result{valid: ok}, nil
+	return Result{valid: ok, units: units}, nil
 }

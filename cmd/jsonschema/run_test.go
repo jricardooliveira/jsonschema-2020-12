@@ -51,8 +51,8 @@ func TestExitValidInvalid(t *testing.T) {
 	}
 	for _, c := range cases {
 		code, out, errOut := do(c.args, c.stdin)
-		var got map[string]bool
-		if err := json.Unmarshal([]byte(out), &got); err != nil || got["valid"] != c.valid || strings.Count(out, "\n") != 1 || !strings.HasSuffix(out, "\n") {
+		var got map[string]any
+		if err := json.Unmarshal([]byte(out), &got); err != nil || got["valid"] != any(c.valid) || strings.Count(out, "\n") != 1 || !strings.HasSuffix(out, "\n") {
 			t.Errorf("%v: bad stdout %q", c.args, out)
 		}
 		if code != c.code || errOut != "" {
@@ -76,7 +76,6 @@ func TestExitErrors(t *testing.T) {
 		"missing schema":   {[]string{"validate"}, ""},
 		"unknown flag":     {[]string{"validate", "-bogus", tr}, ""},
 		"help":             {[]string{"validate", "-h"}, ""},
-		"two docs":         {[]string{"validate", tr, doc, doc}, ""},
 		"schema missing":   {[]string{"validate", missing, doc}, ""},
 		"doc missing":      {[]string{"validate", tr, missing}, ""},
 		"schema broken":    {[]string{"validate", broken, doc}, ""},
