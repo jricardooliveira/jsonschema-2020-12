@@ -39,6 +39,10 @@ func Compile(schema []byte) (*Schema, error) { return CompileWithOptions(schema,
 
 // CompileWithOptions is Compile with explicit Options.
 func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
+	return compileWith(schema, opts, Registry{})
+}
+
+func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	lim, err := opts.limits()
 	if err != nil {
 		return nil, err
@@ -63,7 +67,11 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	n, err := compile.CompileDocument(v, base)
+	ext, err := reg.load(lim)
+	if err != nil {
+		return nil, fmt.Errorf("registry: %w", err)
+	}
+	n, err := compile.CompileWithRegistry(v, base, ext)
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
