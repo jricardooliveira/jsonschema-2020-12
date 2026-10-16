@@ -37,6 +37,19 @@ func TestRequiredReportsMissingInSchemaOrder(t *testing.T) {
 	}
 }
 
+func TestAllFailuresInOrderAndDeterministic(t *testing.T) {
+	s, d := `{"properties":{"b":{"type":"string"},"a":{"type":"integer"}},"required":["zed","email"]}`, `{"b":1,"a":"x"}`
+	out := basicOut(t, s, d)
+	a, b := strings.Index(out, `"instanceLocation":"/a"`), strings.Index(out, `"instanceLocation":"/b"`)
+	z, e := strings.Index(out, "missing required property: zed"), strings.Index(out, "missing required property: email")
+	if a < 0 || b < 0 || z < 0 || e < 0 || !(a < b && b < z && z < e) {
+		t.Errorf("want /a, /b, zed, email in order: %s", out)
+	}
+	if out != basicOut(t, s, d) {
+		t.Error("output differs between runs")
+	}
+}
+
 func TestRequiredSchemaErrors(t *testing.T) {
 	for _, s := range []string{`{"required":"a"}`, `{"required":[1]}`, `{"dependentRequired":[]}`, `{"dependentRequired":{"a":"b"}}`, `{"dependentRequired":{"a":[1]}}`, `{"maxProperties":"x"}`, `{"minProperties":null}`} {
 		if _, err := jsonschema.Compile([]byte(s)); err == nil {
