@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #144 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:30:40 UTC
-- **Story spend:** ~$0.98 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:34:27 UTC
+- **Story spend:** ~$2.06 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -16,12 +16,10 @@ The operator decides at gate-2-architect: `factory approve 144` to accept, or `f
 - Waiting for the operator at **gate-2-architect**:
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
   >   • A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this.
-  >   • A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this. The NDJSON wrapper, the failing-report shape and the flag output do not change.
+  >   • Result.Output can now return a 'report bytes' LimitError, but only above 256 MiB under the default.
+  >   • A passing 'basic' report now lists annotation units, so it is longer than before (operator-approved).
+  >   • Result.Output can now return a *LimitError 'report bytes' above the cap (256 MiB by default).
   >   → Approve these breaking changes?
-  >
-  > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • security: The design bounds annotations by count only (10,000,000). It does not bound the size of the report. An annotation value is a schema value that can be large (a big 'default', 'examples' or unknown-keyword value). A hostile schema, which the brief treats as possible, can attach one such value to a subschema applied to every item of a large document. The passing basic report then repeats the value once per instance location. In memory the values are shared by reference, so only the serialized report and CLI stdout grow, up to count times value size. The operator confirmed the count limit but never ruled on this output amplification. A human should confirm that the count limit alone is enough, or choose a bound on the total bytes of annotation values or of the rendered report, using the same LimitError style with exit 2.
-  >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
 
@@ -41,8 +39,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:30:21 | agent | architect-agent | ✅ pass · 42.5s · $0.5745 |
 | 2026-10-16 21:30:21 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-16 21:30:40 | agent | boundary-agent | ✅ warn · 18.5s · $0.2005 |
-| 2026-10-16 21:30:40 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:30:40 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:30:40 | gate | gate-2-architect | ❌ REJECTED: Keep this design and add one bound: a cap on the total bytes of a rendered report, DefaultMaxReportBytes = 256 MiB, in the existing limit style (library option, 0 = default, negative = error; CLI flag left t… |
+| 2026-10-16 21:32:12 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-16 21:34:10 | agent | architect-agent | ✅ pass · 117.7s · $0.8801 |
+| 2026-10-16 21:34:10 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
+| 2026-10-16 21:34:27 | agent | boundary-agent | ✅ pass · 16.4s · $0.2078 |
+| 2026-10-16 21:34:27 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-16 21:34:27 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
