@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "072e1cd285703ec50751c1af883e9a9214c86c38",
+    "commit": "46391e9728ffd817e0d856753926f818e4625df8",
     "base_commit": "5e7f6f211c1d9398c3c6c5286dec973966edcfcf"
   },
   "tests": {
@@ -121,6 +121,12 @@
         "path": "internal/keywords/applicator/anyof_test.go",
         "change": "added",
         "additions": 63,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/concurrent_test.go",
+        "change": "added",
+        "additions": 83,
         "deletions": 0
       },
       {
@@ -246,7 +252,7 @@
       {
         "path": "testdata/applicator/oneOf.json",
         "change": "added",
-        "additions": 30,
+        "additions": 31,
         "deletions": 0
       }
     ],
@@ -258,26 +264,26 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-12fb66cce8fa4a76ba559ec0e9835c3e/docs/architecture/adr/ADR-008-applicator-keywords-allof-anyof-oneof-not-and-if-t.md",
-    "summary": "The change does what story 185 asks. It adds rooted keyword locations through CompileContext.Location, Sub and the new CompileAt, with keyword names escaped as ~0/~1. It also updates story 180's TestU"
+    "summary": "All 10 acceptance criteria are covered by tests I read in full. Locations are now rooted at the schema root, through compile-time Location, Sub and CompileAt, with the ~0/~1 escaping in compile.go. Th"
   },
   "security_boundary": {
     "overall": "pass",
-    "highest_severity": "medium",
+    "highest_severity": "low",
     "breaking_changes": [
       "Keyword locations of nested units change from child-relative to schema-root-relative; story 180's TestUnitOrderAndNoValues assertion is updated accordingly.",
       "Nested output units' keywordLocation changes from child-relative (/const) to schema-root-relative (/allOf/0/const). Story 180 is not yet released, so no released consumer is affected. The units_test.go assertion must be updated in the same change."
     ],
     "findings": [
-      "No insecure defaults found. A child evaluation error (including the output-unit LimitError) is returned from allOf, anyOf, oneOf, not and if. It is never turned into valid or invalid, and tests cover this for allOf, not and if. Messages are built only from keyword names and choice indices. Schema errors fail closed at compile time."
+      "No value leaks. Every applicator message is built only from the keyword name and choice indices. Child evaluation errors propagate in allOf, anyOf, oneOf, not and if, and are never turned into valid or invalid (fail-closed). The output-unit cap counts discarded units: evaluation goes through the shared counter in EvalContext.Report. Compiled nodes are immutable. The 'if' handler changes ctx.KeywordLocation only temporarily, on the per-call context. concurrent_test.go passes under -race."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 5.122967,
-    "tokens_in": 3696273,
-    "tokens_out": 59728
+    "usd": 6.845784,
+    "tokens_in": 4444300,
+    "tokens_out": 72835
   },
   "assumptions": [
     {
@@ -359,6 +365,14 @@
     {
       "task": "remediation",
       "text": "F3: I kept spec_applicator_test.go. Removing it means deleting a file, which this pass may not do. spec_test.go's testdata/*/*.json glob already runs testdata/applicator, so those cases run twice. That is harmless."
+    },
+    {
+      "task": "remediation",
+      "text": "The 8 documents are decoded and checked one after another before the goroutines start, and the goroutines only read them. This tests that the compiled schema and evaluation hold no shared state that changes during a run."
+    },
+    {
+      "task": "remediation",
+      "text": "I put the test in a new file, concurrent_test.go, rather than in an existing keyword test file, following the project rule that a feature's tests get their own file."
     }
   ],
   "blockers": [],
