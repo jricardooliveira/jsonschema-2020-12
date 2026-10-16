@@ -3,17 +3,19 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** failed · **Stage:** tester-agent
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:50:51 UTC
-- **Story spend:** ~$20.35 of $26.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:54:29 UTC
+- **Story spend:** ~$23.30 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
-None — the run stopped (failed). Nothing proceeds until the cause under Blockers is fixed and a new run is started.
+The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
 
 ## Blockers
 
-- tester-agent failed: the model call failed: The usage limit has been reached — nothing is wrong with the story; try again later (`factory retry 135`, or `factory status` if no checkpoint was answered yet)
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: The boundary rules require the docs/ CLI-contract and default-limits pages, but the binding reservation does not list docs/cli-contract.md or docs/limits.md. Please add both paths to the reservation's file resources so the existing documentation is authorized. Not granted automatically: docs/limits.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: docs/limits.md
 
 ## Trail
 
@@ -103,7 +105,16 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:49:22 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass |
 | 2026-10-16 17:49:22 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
 | 2026-10-16 17:50:51 | agent | tester-agent | ❌ error |
-| 2026-10-16 17:50:51 | run | run failed | ❌ tester-agent failed: the model call failed: The usage limit has been reached — nothing is wrong with the story; try again later (`factory retry 135`, or `factory status` if no checkpoint was answered yet) |
+| 2026-10-16 17:52:53 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (3 finding(s)) |
+| 2026-10-16 17:53:17 | agent | coder-agent | ✅ complete · remediation · 23.9s · $1.0759 |
+| 2026-10-16 17:53:17 | gate | gate-build | ✅ [remediation] go_test:pass |
+| 2026-10-16 17:53:18 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 17:54:20 | agent | tester-agent | ❌ fail · 62.3s |
+| 2026-10-16 17:54:20 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: [unspecified]; findings: 1 new, 0 persistent, 0 resolved |
+| 2026-10-16 17:54:20 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 2 finding(s) |
+| 2026-10-16 17:54:29 | agent | coder-agent | ✅ scope-request · remediation · 8.4s · $0.9664 |
+| 2026-10-16 17:54:29 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-16 17:54:29 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
