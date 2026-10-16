@@ -1,7 +1,7 @@
 # PLAN #3: Error reports: flag and basic output, multiple documents
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #137, 2026-10-16 19:02 UTC)
 - Design: see `ADR-003-*.md` under `docs/architecture/adr/`
 
 ## Files that change
