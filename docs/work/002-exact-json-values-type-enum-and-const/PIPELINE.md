@@ -3,26 +3,19 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:45:16 UTC
-- **Story spend:** ~$17.61 of $26.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:47:52 UTC
+- **Story spend:** ~$19.17 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Files changed outside the tasks' declared scope (§6): ['docs/cli-contract.md', 'docs/limits.md']
-  >   ◦ Release-agent note: Two documentation files (docs/cli-contract.md, docs/limits.md) were created outside the declared task scope; while they document the new CLI and limit features correctly, they should be reviewed for consistency with other docs and against the project's documentation standards
-  >   ◦ Release-agent note: The change to TestValidateSchemas is explicitly allowed by the story (acceptance criterion 8 says type is now a keyword), but it changes a test that exists in story 178; verify that story 178's test expectations are updated and no other tests depend on the old entry
-  >   ◦ Release-agent note: CLI flag validation: when an explicit flag value is ≤ 0, the error is 'flag -<name> must be greater than 0' (exit 2, one line); this is correct, but the architecture notes a risk that when flags.Parse fails for other reasons (e.g. unknown flag or bad syntax like '=abc'), the message may mislead by echoing the first '-' argument, which could be a valid flag. The code mitigates this with flags.Lookup, but edge cases (e.g. `--max-number-digits=abc` being parsed as an invalid syntax error) may still produce unclear messages
-  >   ◦ Release-agent note: Instance values are never included in error messages (a security requirement), confirmed by tests that check for a planted secret; this is met
-  >   ◦ Release-agent note: The breaking change to exit codes (broken JSON now exits 2 instead of 1) is intentional and documented, but existing scripts or tools that treat exit code 2 as distinct from 1 will need review
-  >   ◦ Release-agent note: Story 181 (multipleOf, maximum, etc.) depends on the Number model and will need to use modular arithmetic and Cmp instead of Rat() for performance; the architecture notes this, but future reviewers should verify that 181's implementation does not expand the exponent unnecessarily
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: Two parts of F5 and F4 need file changes the guard refused: deleting internal/speccases/ (rm is not allowed) and a one-line docs fix in docs/cli-contract.md (outside the write scope). The code and test changes are done and pass. Please delete internal/speccases/ and grant docs/cli-contract.md. Not granted automatically: docs/cli-contract.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: docs/cli-contract.md
 
 ## Trail
 
@@ -103,8 +96,11 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:44:16 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 2 new, 0 persistent, 3 resolved |
 | 2026-10-16 17:44:16 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 17:45:16 | agent | release-agent | ✅ warn · 59.1s · $0.1240 |
-| 2026-10-16 17:45:16 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 17:45:16 | run | run waiting_human | ⏸️ |
+| 2026-10-16 17:45:16 | gate | gate-release | ❌ REJECTED: Last round, narrow scope, change nothing else: (F4) in cmd/jsonschema/run.go report the flag whose parsing actually failed (validate --max-number-digits=10 --max-number-exponent=abc must name max-number-expo… |
+| 2026-10-16 17:46:06 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 17:47:52 | agent | coder-agent | ✅ scope-request · remediation · 105.1s · $1.5529 |
+| 2026-10-16 17:47:52 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-16 17:47:52 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
