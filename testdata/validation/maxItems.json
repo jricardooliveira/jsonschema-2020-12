@@ -1,0 +1,22 @@
+[
+  {"spec":"validation 6.4.1","description":"maxItems 2","schema":{"maxItems":2},"tests":[
+    {"description":"shorter","data":[1],"valid":true},
+    {"description":"exact","data":[1,2],"valid":true},
+    {"description":"longer","data":[1,2,3],"valid":false},
+    {"description":"empty","data":[],"valid":true},
+    {"description":"non-array string ignored","data":"foobar","valid":true},
+    {"description":"non-array object ignored","data":{"a":1,"b":2,"c":3},"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"number ignored","data":123,"valid":true}]},
+  {"spec":"validation 6.4.1","description":"maxItems 2.0 behaves as 2","schema":{"maxItems":2.0},"tests":[
+    {"description":"exact","data":[1,2],"valid":true},
+    {"description":"longer","data":[1,2,3],"valid":false}]},
+  {"spec":"validation 6.4.1","description":"maxItems 0","schema":{"maxItems":0},"tests":[
+    {"description":"empty","data":[],"valid":true},
+    {"description":"one","data":[1],"valid":false}]},
+  {"spec":"validation 6.4.1","description":"huge maxItems does not overflow","schema":{"maxItems":1e9000},"tests":[
+    {"description":"small array","data":[1,2,3],"valid":true}]},
+  {"spec":"validation 6.4.1","description":"negative maxItems cannot be met","schema":{"maxItems":-1},"tests":[
+    {"description":"empty","data":[],"valid":false}]}
+]

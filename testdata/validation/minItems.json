@@ -1,0 +1,21 @@
+[
+  {"spec":"validation 6.4.2","description":"minItems 1","schema":{"minItems":1},"tests":[
+    {"description":"longer","data":[1,2],"valid":true},
+    {"description":"exact","data":[1],"valid":true},
+    {"description":"empty","data":[],"valid":false},
+    {"description":"non-array string ignored","data":"","valid":true},
+    {"description":"non-array object ignored","data":{},"valid":true},
+    {"description":"number ignored","data":0,"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":false,"valid":true}]},
+  {"spec":"validation 6.4.2","description":"minItems 1.0 behaves as 1","schema":{"minItems":1.0},"tests":[
+    {"description":"exact","data":[1],"valid":true},
+    {"description":"empty","data":[],"valid":false}]},
+  {"spec":"validation 6.4.2","description":"fractional minItems rounds up in effect","schema":{"minItems":1.5},"tests":[
+    {"description":"one fails","data":[1],"valid":false},
+    {"description":"two passes","data":[1,2],"valid":true}]},
+  {"spec":"validation 6.4.2","description":"huge minItems does not overflow","schema":{"minItems":1e9000},"tests":[
+    {"description":"small array","data":[1,2,3],"valid":false}]},
+  {"spec":"validation 6.4.2","description":"negative minItems always met","schema":{"minItems":-1},"tests":[
+    {"description":"empty","data":[],"valid":true}]}
+]

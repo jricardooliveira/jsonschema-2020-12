@@ -17,6 +17,7 @@ func Evaluate(n *compile.Node, instance any) (bool, error) {
 // and applicators accumulate in ctx in evaluation order.
 func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	n := node.(*compile.Node)
+	attachItems(ctx)
 	if n.Bool != nil {
 		if *n.Bool {
 			return true, nil

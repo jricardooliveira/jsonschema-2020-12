@@ -1,0 +1,17 @@
+[
+  {"spec":"core 10.3.1.1","description":"prefixItems positional","schema":{"prefixItems":[{"type":"integer"},{"type":"string"}]},"tests":[
+    {"description":"matching","data":[1,"foo"],"valid":true},
+    {"description":"wrong type at 0","data":["x","foo"],"valid":false},
+    {"description":"wrong type at 1","data":[1,2],"valid":false},
+    {"description":"shorter array is valid","data":[1],"valid":true},
+    {"description":"empty array","data":[],"valid":true},
+    {"description":"extra elements unconstrained","data":[1,"a",null,{}],"valid":true},
+    {"description":"non-array ignored","data":{"0":"x"},"valid":true},
+    {"description":"string ignored","data":"x","valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"number ignored","data":1,"valid":true}]},
+  {"spec":"core 10.3.1.1","description":"prefixItems with boolean schemas","schema":{"prefixItems":[true,false]},"tests":[
+    {"description":"only first","data":["a"],"valid":true},
+    {"description":"second present fails","data":["a","b"],"valid":false}]}
+]
