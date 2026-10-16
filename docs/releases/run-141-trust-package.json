@@ -1,0 +1,339 @@
+{
+  "work_id": "US-0141",
+  "parent_story": "US-0141",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "4b89472ff48ffc2c1b6fd3cb493cac2af0c80154",
+    "base_commit": "a87dd434c54059e44e2b6b421cb428f2ae8bc385"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Each of the nine keywords lives in its own file internal/keywords/<vocabulary>/<keyword>.go with its own <keyword>_test.go, and registers itself from init() through the keyword registry. No central keyword list, switch or internal/keywords/all/all.go is edited. properties, patternProperties, additionalProperties, propertyNames and dependentSchemas are in the applicator vocabulary package. maxProperties, minProperties, required and dependentRequired are in the validation vocabulary package.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every one of the nine keywords has no effect on instances that are not JSON objects (string, number, integer, boolean, null, array): such instances pass these keywords.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'properties' applies each subschema to the instance member with the same name. 'patternProperties' applies each subschema to every member whose name matches the regex, compiled through the existing ECMA-262-to-RE2 translation step. A patternProperties regex that the translation step or RE2 cannot handle is a schema error (exit code 2), never 'invalid'. Boolean subschemas true and false work in both keywords.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'additionalProperties' applies its subschema only to members whose names are neither listed in 'properties' nor matched by any 'patternProperties' regex in the same schema object. Keywords in other schema objects (for example inside allOf or $ref) have no effect on which members count as additional.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'propertyNames' validates every member name as a string instance. 'dependentSchemas' applies the whole subschema to the object when the named property is present, and has no effect when it is absent.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'maxProperties' and 'minProperties' compare the number of members, inclusively. 'required' fails for each listed name that is absent. 'dependentRequired' fails for each listed name that is absent when its trigger property is present. Each missing-field error names the missing field, taken from the schema, for example 'missing required property: email'.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'properties', 'patternProperties' and 'additionalProperties' each record the set of property names they applied a subschema to, as their 2020-12 annotation. The record is kept in the per-evaluation context, never in the compiled Schema, so a later keyword in the same schema object can read it.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every error gives the failing instance location as a JSON Pointer, with ~0/~1 escaping, plus the keyword location. A failing key appears only inside the instance location path, for example /users/alice@example.com. The message text never repeats the key and never quotes any instance value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When one object breaks several of these rules, the basic, detailed and verbose reports list every failure. The flag report may stop at the first failure.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Failures always come out in the same order: first in the order the keys appear in the document, then missing required and dependentRequired fields in the order the schema lists them. Running the same schema and document twice gives byte-identical output.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Each keyword has spec-derived positive and negative test cases in testdata/<vocabulary>/<keyword>.json. The cases run through the shared table-driven runner, cite the 2020-12 core or validation section they derive from, and pass under go test -race with no network.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 11,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "internal/eval/evaluated.go",
+        "change": "added",
+        "additions": 24,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated_items.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/evaluated_test.go",
+        "change": "added",
+        "additions": 50,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/additionalproperties.go",
+        "change": "added",
+        "additions": 78,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/additionalproperties_test.go",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/dependentschemas.go",
+        "change": "added",
+        "additions": 66,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/dependentschemas_test.go",
+        "change": "added",
+        "additions": 35,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties.go",
+        "change": "added",
+        "additions": 85,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties_test.go",
+        "change": "added",
+        "additions": 27,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/properties.go",
+        "change": "added",
+        "additions": 94,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/properties_test.go",
+        "change": "added",
+        "additions": 92,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/propertynames.go",
+        "change": "added",
+        "additions": 47,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/propertynames_test.go",
+        "change": "added",
+        "additions": 53,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/dependentrequired.go",
+        "change": "added",
+        "additions": 59,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/dependentrequired_test.go",
+        "change": "added",
+        "additions": 26,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxproperties.go",
+        "change": "added",
+        "additions": 26,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxproperties_test.go",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minproperties.go",
+        "change": "added",
+        "additions": 26,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minproperties_test.go",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/required.go",
+        "change": "added",
+        "additions": 56,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/required_test.go",
+        "change": "added",
+        "additions": 59,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/additionalproperties.json",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/dependentschemas.json",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/patternproperties.json",
+        "change": "added",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/properties.json",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/propertynames.json",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/dependentrequired.json",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/maxproperties.json",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/minproperties.json",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/required.json",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-076b681b0171495db65114bffa8859a5/docs/architecture/adr/ADR-006-2020-12-object-keywords-properties-patternproperti.md",
+    "summary": "All nine keywords are implemented as self-registering files in the correct vocabulary packages, follow the ADR, and have spec-cited testdata run by the shared runner. The build gate passed, including "
+  },
+  "security_boundary": {
+    "overall": "warn",
+    "highest_severity": "medium",
+    "breaking_changes": [],
+    "findings": [
+      "Boundary rule not met: every member visited and every pattern match attempt was supposed to count toward an evaluation step limit. No such limit exists in the engine (EvalContext has only the output-unit counter), and the code does not add one. Only failures are bounded, by the output-unit cap, which TestPropertiesLimit and TestPropertyNamesLimit check. A hostile schema with many large patternProperties (each up to DefaultMaxPatternSize) against an object with many members that all pass does members\u00d7patterns RE2 matches and never gets a LimitError. RE2 is linear and input size is capped, so this is bounded CPU cost, not a hang (medium)"
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.571877,
+    "tokens_in": 2997734,
+    "tokens_out": 63276
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "eval.go needs no change because attachItems already wires the record."
+    },
+    {
+      "task": "T1",
+      "text": "The ordering rule (sorted keyword names, then sorted member names, then schema order for missing names) is not recorded in this task. It belongs to the properties.go doc comment in T2 and to the ADR, which the factory owns."
+    },
+    {
+      "task": "T1",
+      "text": "I ran only the internal/eval package under -race, not the full suite."
+    },
+    {
+      "task": "T3",
+      "text": "The testdata dependentSchemas cases use `type` subschemas because `properties` and `required` are not implemented yet (other tasks). They can be extended once those exist."
+    },
+    {
+      "task": "T3",
+      "text": "The propertyNames test uses a hostile key (`a~b/c@example.com`) and asserts it appears in neither the instance location nor the message."
+    },
+    {
+      "task": "T3",
+      "text": "The propertyNames limit test uses a cap of 2 units against 3 failures and expects a limit error."
+    },
+    {
+      "task": "T4",
+      "text": "A required or dependentRequired value that is not an array of strings is a schema error. Duplicate names in the array are not rejected."
+    },
+    {
+      "task": "T4",
+      "text": "The test helper basicOut is defined in required_test.go and shared by the other three new test files in the same package."
+    },
+    {
+      "task": "T2",
+      "text": "There is no separate evaluation-step counter in the code. Per-member and per-pattern work is bounded only through the output-unit cap, because every child failure unit is counted. So a hostile object with many members that all pass is not stopped by a limit."
+    },
+    {
+      "task": "T2",
+      "text": "No wrapping unit is added, which matches how items and prefixItems behave today."
+    },
+    {
+      "task": "T2",
+      "text": "patternProperties duplicates the size check, Translate and Compile steps from validation/pattern.go in compileRegex."
+    },
+    {
+      "task": "T5",
+      "text": "Ordering follows the operator's rule: sorted keyword names, then sorted member names, then schema order for missing names. The 'document key order' wording in the story is superseded by that rule. The test uses two wrong fields and two missing fields rather than one."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
