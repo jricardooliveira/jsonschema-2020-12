@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #141 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 20:16:13 UTC · **Stopped:** 2026-10-16 20:37:58 UTC
+- **Run:** #141 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 20:16:13 UTC · **Stopped:** 2026-10-16 20:38:38 UTC
 - **Story spend:** ~$7.03 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 141` to accept, or `factory reject 141 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-141-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Minor test-coverage gaps documented by tester: >20-key determinism test compares units rather than rendered bytes as architecture specified; propertyNames order test incomplete. Neither affects functionality, both flagged as lower priority.
-  >   ◦ Release-agent note: patternProperties and additionalProperties duplicate ~6 lines of regex compilation (size check, ECMA-262 translate, compile) from validation/pattern.go. Documented as follow-up: create a shared CompilePattern helper.
-  >   ◦ Release-agent note: Story 191 (annotation collection) should build on the EvaluatedItems mechanism (evaluated.go, evaluated_items.go) rather than duplicate property recording. The operator noted this risk in the architecture review.
-  >   ◦ Release-agent note: The per-evaluation record now lives in EvaluatedItems, keyed by (instance location, keyword location). A keyword records names whether its subschemas pass or fail; story 191 must filter out failed annotations if the spec requires it. The interface is designed for that, but not yet tested.
-  >   ◦ Security note (low): No insecure defaults found. Compile errors quote only the schema's own pattern. Unit messages are fixed phrases or schema-sourced names. Instance keys appear only in the JSON Pointer instance location, with ~0/~1 escaping. The step limit and the output-unit cap both return a LimitError that is passed on and never swallowed (TestPatternPropertiesStepLimit, TestPropertiesLimit, TestPropertyNamesLimit).; Low: the new 'evaluation steps' limit is only tested at the internal eval level (EvaluateLimited). No test goes through jsonschema.Validate or the CLI to show it gives exit code 2. With the 100M default, a library caller cannot trigger it in practice. Story 193 makes it configurable and should add that end-to-end check.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -75,8 +68,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 20:37:26 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-16 20:37:26 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 20:37:57 | agent | release-agent | ✅ warn · 31.2s · $0.0912 |
-| 2026-10-16 20:37:58 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 20:37:58 | run | run waiting_human | ⏸️ |
+| 2026-10-16 20:37:58 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 20:38:38 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 20:38:38 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
