@@ -1,0 +1,465 @@
+{
+  "work_id": "US-0144",
+  "parent_story": "US-0144",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "5cd814116ee845ef5c6da0afbf372c108e942c83",
+    "base_commit": "3eee84654634123083bf6dfc2a0216a0b86501d6"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "During every evaluation the engine collects each annotation with its instance location (JSON Pointer), keyword location, absolute keyword location where known, keyword name and value. An annotation produced inside a subschema that fails is discarded, together with every annotation nested below it. Examples are a failing anyOf/oneOf branch, the subschema under 'not', and an 'if' that fails. Annotations from passing subschemas are kept. Collection always runs, with one code path.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "title, description, default, deprecated, readOnly, writeOnly and examples each produce an annotation whose value is the keyword's value from the schema, and none of them ever changes the valid/invalid result. They are registered through ONE shared annotate-only helper. The registrations live in internal/keywords/metadata/annotations.go.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'format' (internal/keywords/formatannotation/format.go) is annotation-only by default. It records the format name as its annotation and never fails validation. An unknown format name is never an error.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "contentEncoding, contentMediaType and contentSchema (internal/keywords/content/content.go) are annotation-only through the same helper. Each records its schema value. contentSchema is never applied to the instance, and none of these keywords ever fails validation.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A keyword that is not registered in the keyword registry is ignored for validation and collected as an annotation whose value is the keyword's schema value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "properties, patternProperties and additionalProperties each record the set of property names they evaluated. prefixItems records the largest index it applied to, or true when it applied to every item. items records true when it applied to any item. contains records the indices of the items that matched, or true when all matched. All of these follow the 2020-12 core annotation results.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The library Result has an Annotations() accessor. On a passing result it returns a list of annotations. Each entry has the instance location, keyword location, absolute keyword location where known, keyword and value. On a failing result the list is empty. The list is always ordered by instance location, then by keyword location, so the same input always gives exactly the same list.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "An internal API exposes the per-subschema evaluation tree. For each evaluated subschema it gives the keyword location, instance location, validity, errors and kept annotations, including passing parts inside a failing evaluation. Dropped annotations appear nowhere in this tree.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The number of collected annotations per document has a built-in limit. The default is a named constant of 10,000,000. The caller can raise or lower it through a library Options field and a CLI flag, and it can never be turned off: a non-positive value is a usage error with exit code 2. Exceeding the limit returns a LimitError with a new limit name, which gives exit code 2 and never a valid or invalid result. Tests read the default from the constant.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In a passing 'basic' report from the library and the CLI, each annotation appears as a 2020-12 output unit. The unit carries valid true, instanceLocation, keywordLocation, absoluteKeywordLocation where known, and the annotation value, in the same order as Result.Annotations(). A failing 'basic' report lists only errors. 'flag' never lists annotations. Annotation values come only from the schema, and no instance value ever appears in any report.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Spec-derived tests cover each criterion above. The JSON cases live under testdata/annotations/ and each cites its 2020-12 core or validation section. There are also CLI contract tests for passing and failing basic output, flag output and the annotation-limit flag. go test -race ./... passes with no network access.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 11,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "annotations.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "annotations_test.go",
+        "change": "added",
+        "additions": 153,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/annotations_test.go",
+        "change": "added",
+        "additions": 81,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 8,
+        "deletions": 2
+      },
+      {
+        "path": "dbg_test.go",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotations.go",
+        "change": "added",
+        "additions": 105,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotations_test.go",
+        "change": "added",
+        "additions": 157,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/annotate.go",
+        "change": "added",
+        "additions": 95,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/annotate_test.go",
+        "change": "added",
+        "additions": 43,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/additionalproperties.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/applicator/annotations_test.go",
+        "change": "added",
+        "additions": 60,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/contains.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/items.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/properties.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/content/content.go",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/content/content_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/formatannotation/format.go",
+        "change": "added",
+        "additions": 10,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/formatannotation/format_test.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/metadata/annotations.go",
+        "change": "added",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/metadata/annotations_test.go",
+        "change": "added",
+        "additions": 31,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 22,
+        "deletions": 4
+      },
+      {
+        "path": "internal/output/basic.go",
+        "change": "modified",
+        "additions": 85,
+        "deletions": 14
+      },
+      {
+        "path": "internal/output/registry.go",
+        "change": "modified",
+        "additions": 67,
+        "deletions": 8
+      },
+      {
+        "path": "internal/output/report_test.go",
+        "change": "added",
+        "additions": 71,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 21,
+        "deletions": 8
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "modified",
+        "additions": 25,
+        "deletions": 0
+      },
+      {
+        "path": "output.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 1
+      },
+      {
+        "path": "reportbytes_test.go",
+        "change": "added",
+        "additions": 91,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/annotations/applicators.json",
+        "change": "added",
+        "additions": 8,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/annotations/content.json",
+        "change": "added",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/annotations/format.json",
+        "change": "added",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/annotations/metadata.json",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/annotations/unknown.json",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": [
+      "internal/compile/refs.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/compile/refs.go",
+        "granted_by": "operator",
+        "at": "gate-question #1261"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-5dc5b801815b407b9b8709f0025043a5/docs/architecture/adr/ADR-014-annotation-collection-metadata-format-content-and.md",
+    "summary": "Second pass: six of the seven earlier findings are fixed, and only the low-severity F5 remains. F1 is fixed: numeric annotation values now render as written in basic output (jsonValue), with library a"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [
+      "A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this.",
+      "Result.Output can now return a 'report bytes' LimitError, but only above 256 MiB under the default.",
+      "A passing 'basic' report now lists annotation units, so it is longer than before (operator-approved).",
+      "Result.Output can now return a *LimitError 'report bytes' above the cap (256 MiB by default)."
+    ],
+    "findings": [
+      "No insecure defaults found. Budget and RenderReport treat a cap of 0 or less as DefaultMaxReportBytes, never as unlimited. A negative MaxAnnotations or MaxReportBytes is a compile error. The CLI rejects a -max-annotations value of 0 or less, or one it cannot parse, with exit 2. run.go passes only the *LimitError text through and keeps 'cannot render result' for other render errors. Annotation values are schema values held by reference. Tests check that distinctive string, number and key values from the document never appear in output."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 9.587399,
+    "tokens_in": 9090006,
+    "tokens_out": 133131
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "A tree node's Annotations are the ones recorded directly by that node, and only when it is valid. A passing child under a failing parent keeps its own annotations in the tree. Result.Annotations is empty whenever the root fails."
+    },
+    {
+      "task": "T1",
+      "text": "Annotate-only helpers AnnotateOnly and RegisterAnnotationOnly already exist in internal/keywords/annotate.go because unknown keywords need them. T2 only has to call them and add its tests."
+    },
+    {
+      "task": "T1",
+      "text": "The absolute keyword location is left empty for now."
+    },
+    {
+      "task": "T1",
+      "text": "A $schema keyword that is not registered is now treated as an unknown keyword and annotated. This only adds annotations and never changes validity."
+    },
+    {
+      "task": "T2",
+      "text": "internal/keywords/annotate.go already had the helper from T1, so I left it unchanged."
+    },
+    {
+      "task": "T2",
+      "text": "Each vocabulary file declares its own VocabularyURI. The 2020-12 URIs are meta-data, format-annotation and content."
+    },
+    {
+      "task": "T2",
+      "text": "The tests use odd value types (nil, numbers, arrays, objects) to show nothing fails or errors on a malformed value."
+    },
+    {
+      "task": "T3",
+      "text": "The property-name keywords add no annotation when they applied to no property, which is the same rule prefixItems follows."
+    },
+    {
+      "task": "T3",
+      "text": "A failing keyword annotates nothing, but still records its names for unevaluated* tracking as before."
+    },
+    {
+      "task": "T3",
+      "text": "The existing TestSpecCases runner only checks valid/invalid, so applicators.json holds validity cases that cite spec sections. The annotation values themselves are asserted in internal/keywords/applicator/annotations_test.go."
+    },
+    {
+      "task": "T4",
+      "text": "maxAnnotations() sits in numberlimits.go beside maxUnits(), as the design says, so options.go is untouched."
+    },
+    {
+      "task": "T4",
+      "text": "dbg_test.go is a leftover debug file that I emptied to just `package jsonschema`. The shell guard blocked `rm`, so it needs deleting."
+    },
+    {
+      "task": "T4",
+      "text": "The tests use title and description instead of unknown keywords. Unknown keywords are not collected when the schema goes through the CompileDocument path (see follow_ups)."
+    },
+    {
+      "task": "T5",
+      "text": "A passing result with no annotations still renders as {\"valid\":true}, so the existing tests keep their assertions."
+    },
+    {
+      "task": "T5",
+      "text": "Report.Annotations uses keywords.Annotation (the same type eval.Annotation aliases) so the output package does not import eval."
+    },
+    {
+      "task": "T5",
+      "text": "The report-bytes cap has no CLI flag, as the design says. It has no test yet: neither a library test for the 'report bytes' LimitError nor a test of the cap's lower-bound and default fallback."
+    },
+    {
+      "task": "T5",
+      "text": "No existing test was modified."
+    },
+    {
+      "task": "T6",
+      "text": "applicators.json was modified: the original three cases are kept, with expected annotation lists added."
+    },
+    {
+      "task": "T6",
+      "text": "Passing with refs.go as it is: metadata, format, content, applicators and the 'not' and failing-result cases."
+    },
+    {
+      "task": "T6",
+      "text": "Failing: unknown.json cases 'unknown keyword', 'anyOf branch dropped' and 'if fails'. The latter two fail because they use x-a and x-b keywords."
+    },
+    {
+      "task": "T6",
+      "text": "After the fix, run `go test -race .` to confirm."
+    },
+    {
+      "task": "T6",
+      "text": "The existing TestSpecCases runner ignores the extra 'annotations' field in the case files, so both runners read the same files."
+    },
+    {
+      "task": "T6",
+      "text": "An annotation reached through $ref carries the dynamic keyword location, for example /$ref/x-n."
+    },
+    {
+      "task": "T6",
+      "text": "The runner converts exact-number annotation values to json.Number so they can be compared with the JSON expectations."
+    },
+    {
+      "task": "remediation",
+      "text": "internal/eval/annotations_test.go was updated: its evalFull helper now calls EvaluateTree, because EvaluateFull no longer returns a tree (F7). All existing assertions are kept."
+    },
+    {
+      "task": "remediation",
+      "text": "A failing root clears only its own annotations in the tree. Passing subtrees directly under the root keep theirs, because the operator wants verbose output to show annotations from the passing parts of a failing document. A failing subschema clears its entire subtree."
+    },
+    {
+      "task": "remediation",
+      "text": "The report tests passed as soon as they were written. They add the missing coverage for behaviour that already worked; they did not need new code to pass."
+    },
+    {
+      "task": "remediation",
+      "text": "The CLI pass-through of a render LimitError in run.go is still only covered at the library level. Triggering it from the CLI needs a report over 256 MiB, because the cap has no CLI flag yet."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
