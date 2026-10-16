@@ -49,6 +49,8 @@ func TestPrefixItemsAnnotation(t *testing.T) {
 		{`[1,2,3]`, true, false, 1},
 		{`[]`, false, false, 0},
 		{`"x"`, false, false, 0},
+		{`false`, false, false, 0},
+		{`7`, false, false, 0},
 	}
 	for _, c := range cases {
 		ok, rec, err := eval.EvaluateAnnotated(n, mustDecode(t, c.doc))
@@ -95,6 +97,13 @@ func TestPrefixItemsSchemaErrors(t *testing.T) {
 		if _, err := compile.Compile(v); err == nil || strings.Contains(err.Error(), "string\"") {
 			t.Errorf("%s: err=%v", s, err)
 		}
+	}
+}
+
+func TestPrefixItemsKeepsNestedCompileError(t *testing.T) {
+	_, err := compile.Compile(mustDecode(t, `{"prefixItems":[true,{"minItems":"x"}]}`))
+	if err == nil || !strings.Contains(err.Error(), "minItems: must be a number") {
+		t.Errorf("err=%v", err)
 	}
 }
 

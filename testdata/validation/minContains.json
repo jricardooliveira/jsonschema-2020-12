@@ -3,7 +3,11 @@
     {"description":"two match","data":[1,"a",2],"valid":true},
     {"description":"one matches","data":[1,"a"],"valid":false},
     {"description":"none match","data":[],"valid":false},
-    {"description":"non-array ignored","data":"x","valid":true}]},
+    {"description":"non-array ignored","data":"x","valid":true},
+    {"description":"object ignored","data":{"a":1},"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":false,"valid":true},
+    {"description":"number ignored","data":1,"valid":true}]},
   {"spec":"validation 6.4.5","description":"minContains 0 makes contains always pass","schema":{"contains":{"type":"integer"},"minContains":0},"tests":[
     {"description":"empty","data":[],"valid":true},
     {"description":"no match","data":["a"],"valid":true}]},

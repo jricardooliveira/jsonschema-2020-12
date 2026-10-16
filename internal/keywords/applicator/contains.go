@@ -1,7 +1,7 @@
 package applicator
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/neoface/jsonschema/internal/jsonvalue"
@@ -21,7 +21,7 @@ type compiledContains struct {
 func compileContains(ctx *keywords.CompileContext, value any) (any, error) {
 	n, err := ctx.Sub(value, "")
 	if err != nil {
-		return nil, errors.New("contains: must be a schema")
+		return nil, fmt.Errorf("contains: %w", err)
 	}
 	c := &compiledContains{node: n}
 	if v, ok := ctx.Siblings["minContains"].(*jsonvalue.Number); ok {

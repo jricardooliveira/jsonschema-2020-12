@@ -2,7 +2,12 @@
   {"spec":"validation 6.4.4","description":"maxContains 1","schema":{"contains":{"type":"integer"},"maxContains":1},"tests":[
     {"description":"one match","data":[1,"a"],"valid":true},
     {"description":"two matches","data":[1,2],"valid":false},
-    {"description":"no match still fails contains","data":["a"],"valid":false}]},
+    {"description":"no match still fails contains","data":["a"],"valid":false},
+    {"description":"string ignored","data":"ab","valid":true},
+    {"description":"object ignored","data":{"a":1,"b":2},"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"number ignored","data":2,"valid":true}]},
   {"spec":"validation 6.4.4","description":"maxContains with minContains","schema":{"contains":{"type":"integer"},"minContains":2,"maxContains":3},"tests":[
     {"description":"below","data":[1],"valid":false},
     {"description":"in range","data":[1,2],"valid":true},

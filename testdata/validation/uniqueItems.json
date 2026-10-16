@@ -11,7 +11,10 @@
     {"description":"array order matters","data":[[1,2],[2,1]],"valid":true},
     {"description":"empty array","data":[],"valid":true},
     {"description":"non-array ignored","data":"aa","valid":true},
-    {"description":"object ignored","data":{"a":1,"b":1},"valid":true}]},
+    {"description":"object ignored","data":{"a":1,"b":1},"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"number ignored","data":11,"valid":true}]},
   {"spec":"validation 6.4.3","description":"uniqueItems false","schema":{"uniqueItems":false},"tests":[
     {"description":"duplicates allowed","data":[1,1],"valid":true}]},
   {"spec":"validation 6.4.3","description":"uniqueItems absent","schema":{},"tests":[

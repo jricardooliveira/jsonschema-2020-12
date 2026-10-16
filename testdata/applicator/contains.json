@@ -6,7 +6,9 @@
     {"description":"empty array","data":[],"valid":false},
     {"description":"non-array ignored","data":"x","valid":true},
     {"description":"object ignored","data":{"a":1},"valid":true},
-    {"description":"null ignored","data":null,"valid":true}]},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"number ignored","data":5,"valid":true}]},
   {"spec":"core 10.3.1.3","description":"contains true","schema":{"contains":true},"tests":[
     {"description":"non-empty","data":["a"],"valid":true},
     {"description":"empty fails","data":[],"valid":false}]},

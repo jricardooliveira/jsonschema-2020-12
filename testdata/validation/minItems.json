@@ -5,7 +5,9 @@
     {"description":"empty","data":[],"valid":false},
     {"description":"non-array string ignored","data":"","valid":true},
     {"description":"non-array object ignored","data":{},"valid":true},
-    {"description":"number ignored","data":0,"valid":true}]},
+    {"description":"number ignored","data":0,"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":false,"valid":true}]},
   {"spec":"validation 6.4.2","description":"minItems 1.0 behaves as 1","schema":{"minItems":1.0},"tests":[
     {"description":"exact","data":[1],"valid":true},
     {"description":"empty","data":[],"valid":false}]},

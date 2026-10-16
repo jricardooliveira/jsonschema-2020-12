@@ -4,7 +4,10 @@
     {"description":"one string","data":[1,"a",3],"valid":false},
     {"description":"empty","data":[],"valid":true},
     {"description":"non-array ignored","data":"a","valid":true},
-    {"description":"object ignored","data":{"a":"b"},"valid":true}]},
+    {"description":"object ignored","data":{"a":"b"},"valid":true},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":false,"valid":true},
+    {"description":"number ignored","data":1.5,"valid":true}]},
   {"spec":"core 10.3.1.2","description":"items after prefixItems","schema":{"prefixItems":[{"type":"string"}],"items":{"type":"integer"}},"tests":[
     {"description":"prefix then integers","data":["a",1,2],"valid":true},
     {"description":"prefix element not checked by items","data":["a"],"valid":true},

@@ -1,6 +1,7 @@
 package applicator_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestItemsAnnotation(t *testing.T) {
 	n := mustCompile(t, `{"prefixItems":[true],"items":true}`)
-	for doc, want := range map[string]bool{`[1,2]`: true, `[1]`: false, `[]`: false, `5`: false} {
+	for doc, want := range map[string]bool{`[1,2]`: true, `[1]`: false, `[]`: false, `5`: false, `true`: false, `null`: false} {
 		ok, rec, err := eval.EvaluateAnnotated(n, mustDecode(t, doc))
 		if err != nil || !ok {
 			t.Fatalf("%s: ok=%v err=%v", doc, ok, err)
@@ -53,7 +54,29 @@ func TestItemsFalseUnitLocation(t *testing.T) {
 
 func TestItemsSchemaError(t *testing.T) {
 	v := mustDecode(t, `{"items":"x"}`)
-	if _, err := compile.Compile(v); err == nil {
-		t.Error("want schema error")
+	_, err := compile.Compile(v)
+	if !errors.Is(err, compile.ErrNotSchema) || !strings.HasPrefix(err.Error(), "items: ") {
+		t.Errorf("err=%v", err)
+	}
+	// the nested keyword's own error is kept, not replaced
+	_, err = compile.Compile(mustDecode(t, `{"items":{"minItems":"x"}}`))
+	if err == nil || !strings.Contains(err.Error(), "minItems: must be a number") {
+		t.Errorf("err=%v", err)
+	}
+}
+
+// core 7.7.1: a schema object that fails keeps no annotations, so a passing
+// prefixItems next to a failing items records nothing.
+func TestFailedSchemaDropsSiblingAnnotations(t *testing.T) {
+	n := mustCompile(t, `{"prefixItems":[true],"items":false}`)
+	ok, rec, err := eval.EvaluateAnnotated(n, mustDecode(t, `[1,2]`))
+	if err != nil || ok || len(rec.At("")) != 0 {
+		t.Errorf("ok=%v err=%v rec=%+v", ok, err, rec.At(""))
+	}
+	// the same failure one level down, inside a passing contains
+	n = mustCompile(t, `{"contains":{"items":{"prefixItems":[true],"items":false}}}`)
+	ok, rec, err = eval.EvaluateAnnotated(n, mustDecode(t, `[[[1,2]],[]]`))
+	if err != nil || !ok || len(rec.At("/0/0")) != 0 {
+		t.Errorf("ok=%v err=%v rec=%+v", ok, err, rec.At("/0/0"))
 	}
 }

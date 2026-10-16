@@ -13,22 +13,11 @@ func Evaluate(n *compile.Node, instance any) (bool, error) {
 	return ok, err
 }
 
-// EvaluateAnnotated is Evaluate that also returns the item-annotation record.
-func EvaluateAnnotated(n *compile.Node, instance any) (bool, *EvaluatedItems, error) {
-	ctx := keywords.NewEvalContext(DefaultMaxOutputUnits, evalNode)
-	rec := NewEvaluatedItems()
-	ctx.Items = rec
-	ok, err := evalNode(ctx, n, instance)
-	return ok, rec, err
-}
-
 // evalNode evaluates a compiled schema into ctx. Units of failing keywords
 // and applicators accumulate in ctx in evaluation order.
 func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	n := node.(*compile.Node)
-	if ctx.Items == nil { // the root context creates the per-call record
-		ctx.Items = NewEvaluatedItems()
-	}
+	attachItems(ctx)
 	if n.Bool != nil {
 		if *n.Bool {
 			return true, nil

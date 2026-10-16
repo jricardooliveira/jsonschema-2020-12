@@ -23,6 +23,9 @@ type ItemRecorder interface {
 	RecordPrefixItems(instLoc, kwLoc string, largest int, all bool)
 	RecordItems(instLoc, kwLoc string)
 	RecordContains(instLoc, kwLoc string, indices []int, all bool)
+	// Mark and Rollback drop what a failed subschema recorded.
+	Mark() int
+	Rollback(mark int)
 }
 
 // Unit is one failure record: where it failed and which rule, with a
@@ -75,10 +78,20 @@ func (c *EvalContext) Keep(units []Unit) { c.units = append(c.units, units...) }
 
 // EvalChild evaluates a compiled child schema against instance, located at
 // instLoc. It returns the child's units; the caller calls Keep to retain them
-// or drops them. Every unit is counted when appended, kept or not.
+// or drops them. Every unit is counted when appended, kept or not. When the
+// child fails, the item annotations it recorded are rolled back (core 7.7.1:
+// a failed schema keeps no annotations).
 func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, []Unit, error) {
 	child := &EvalContext{InstanceLocation: instLoc, count: c.count, max: c.max, evalNode: c.evalNode, Items: c.Items}
+	rec, _ := c.Items.(ItemRecorder)
+	mark := 0
+	if rec != nil {
+		mark = rec.Mark()
+	}
 	ok, err := c.evalNode(child, node, instance)
+	if !ok && rec != nil {
+		rec.Rollback(mark)
+	}
 	return ok, child.units, err
 }
 

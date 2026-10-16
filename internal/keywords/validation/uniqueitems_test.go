@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/neoface/jsonschema/internal/compile"
+	"github.com/neoface/jsonschema/internal/eval"
 	"github.com/neoface/jsonschema/internal/jsonvalue"
 )
 
@@ -26,6 +28,37 @@ func TestFindDuplicatesGroups(t *testing.T) {
 	want := [][]int{{0, 2, 6}, {1, 4}, {3, 5}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("groups = %v, want %v", got, want)
+	}
+}
+
+// validation 6.4.3: one unit per group of equal elements, positions only.
+func TestUniqueItemsUnitPerGroupNoValues(t *testing.T) {
+	sv, err := jsonvalue.DecodeLimited([]byte(`{"uniqueItems":true}`), jsonvalue.NumberLimits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := compile.Compile(sv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc := decodeArr(t, `["secret-pw", 7, {"k":"secret-pw"}, "secret-pw", 7.0, "x", {"k":"secret-pw"}, "secret-pw"]`)
+	ok, units, err := eval.EvaluateUnits(n, doc, 100)
+	if err != nil || ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	var got []string
+	for _, u := range units {
+		if strings.Contains(u.Error, "secret") || strings.Contains(u.Error, "k") {
+			t.Errorf("unit leaks a value: %q", u.Error)
+		}
+		if u.InstanceLocation != "" || u.KeywordLocation != "/uniqueItems" {
+			t.Errorf("unit locations: %+v", u)
+		}
+		got = append(got, u.Error)
+	}
+	want := []string{"elements 0, 3 and 7 are equal", "elements 1 and 4 are equal", "elements 2 and 6 are equal"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("units = %q, want %q", got, want)
 	}
 }
 

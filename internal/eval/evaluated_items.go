@@ -1,5 +1,31 @@
 package eval
 
+import (
+	"github.com/neoface/jsonschema/internal/compile"
+	"github.com/neoface/jsonschema/internal/keywords"
+)
+
+// attachItems gives a root context its per-call record; child contexts
+// inherit the parent's (keywords.EvalContext.EvalChild).
+func attachItems(ctx *keywords.EvalContext) {
+	if ctx.Items == nil {
+		ctx.Items = NewEvaluatedItems()
+	}
+}
+
+// EvaluateAnnotated is Evaluate that also returns the item-annotation record.
+// A failed root schema keeps no annotations (core 7.7.1).
+func EvaluateAnnotated(n *compile.Node, instance any) (bool, *EvaluatedItems, error) {
+	ctx := keywords.NewEvalContext(DefaultMaxOutputUnits, evalNode)
+	rec := NewEvaluatedItems()
+	ctx.Items = rec
+	ok, err := evalNode(ctx, n, instance)
+	if !ok {
+		rec.Rollback(0)
+	}
+	return ok, rec, err
+}
+
 // ItemAnnotation is what prefixItems, items or contains recorded for one
 // array (2020-12 core 10.3.1).
 type ItemAnnotation struct {

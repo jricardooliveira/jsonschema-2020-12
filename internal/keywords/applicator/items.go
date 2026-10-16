@@ -1,7 +1,7 @@
 package applicator
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/neoface/jsonschema/internal/keywords"
 )
@@ -19,7 +19,7 @@ type compiledItems struct {
 func compileItems(ctx *keywords.CompileContext, value any) (any, error) {
 	n, err := ctx.Sub(value, "")
 	if err != nil {
-		return nil, errors.New("items: must be a schema")
+		return nil, fmt.Errorf("items: %w", err)
 	}
 	prefix := 0
 	if p, ok := ctx.Siblings["prefixItems"].([]any); ok {

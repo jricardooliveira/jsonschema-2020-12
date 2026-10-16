@@ -8,7 +8,9 @@
     {"description":"extra elements unconstrained","data":[1,"a",null,{}],"valid":true},
     {"description":"non-array ignored","data":{"0":"x"},"valid":true},
     {"description":"string ignored","data":"x","valid":true},
-    {"description":"null ignored","data":null,"valid":true}]},
+    {"description":"null ignored","data":null,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"number ignored","data":1,"valid":true}]},
   {"spec":"core 10.3.1.1","description":"prefixItems with boolean schemas","schema":{"prefixItems":[true,false]},"tests":[
     {"description":"only first","data":["a"],"valid":true},
     {"description":"second present fails","data":["a","b"],"valid":false}]}

@@ -1,6 +1,7 @@
 package applicator_test
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -22,6 +23,8 @@ func TestContainsAnnotation(t *testing.T) {
 		{`[1,"a",2]`, true, false, []int{0, 2}},
 		{`[1,2]`, true, true, nil},
 		{`"x"`, false, false, nil},
+		{`true`, false, false, nil},
+		{`{"a":1}`, false, false, nil},
 	}
 	for _, c := range cases {
 		ok, rec, err := eval.EvaluateAnnotated(n, mustDecode(t, c.doc))
@@ -63,6 +66,32 @@ func TestContainsFailedRecordsNothingAndCapCounts(t *testing.T) {
 	_, _, err = eval.EvaluateUnits(n, mustDecode(t, `[1,2,3]`), 2)
 	if err == nil {
 		t.Error("want LimitError")
+	}
+}
+
+// core 10.3.1 / 7.7.1: annotations from a non-matching element are dropped.
+func TestContainsDropsNonMatchingAnnotations(t *testing.T) {
+	n := mustCompile(t, `{"contains":{"prefixItems":[true],"items":false}}`)
+	ok, rec, err := eval.EvaluateAnnotated(n, mustDecode(t, `[[1,2],[3]]`))
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if got := rec.At("/0"); len(got) != 0 {
+		t.Errorf("failed element leaked annotations: %+v", got)
+	}
+	if _, ok := rec.At("/1")["/contains/prefixItems"]; !ok {
+		t.Errorf("matching element lost its annotation: %+v", rec.At("/1"))
+	}
+}
+
+func TestContainsKeepsNestedCompileError(t *testing.T) {
+	_, err := compile.Compile(mustDecode(t, `{"contains":{"minItems":"x"}}`))
+	if err == nil || !strings.Contains(err.Error(), "minItems: must be a number") {
+		t.Errorf("err=%v", err)
+	}
+	_, err = compile.Compile(mustDecode(t, `{"contains":"x"}`))
+	if !errors.Is(err, compile.ErrNotSchema) || !strings.HasPrefix(err.Error(), "contains: ") {
+		t.Errorf("err=%v", err)
 	}
 }
 

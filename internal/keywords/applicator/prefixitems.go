@@ -2,6 +2,7 @@ package applicator
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/neoface/jsonschema/internal/keywords"
@@ -23,7 +24,7 @@ func compilePrefixItems(ctx *keywords.CompileContext, value any) (any, error) {
 	for i, v := range list {
 		n, err := ctx.Sub(v, "/"+strconv.Itoa(i))
 		if err != nil {
-			return nil, errors.New("prefixItems: every member must be a schema")
+			return nil, fmt.Errorf("prefixItems: %w", err)
 		}
 		nodes[i] = n
 	}
