@@ -61,16 +61,34 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	flags := flag.NewFlagSet("validate", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
+	digits := flags.Int("max-number-digits", 0, "")
+	exponent := flags.Int("max-number-exponent", 0, "")
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return fail("usage: jsonschema validate <schema-file> [<document-file>|-]")
 		}
 		for _, a := range args[1:] {
+			if a == "--" {
+				break
+			}
 			if strings.HasPrefix(a, "-") && a != "-" {
-				return fail("unknown flag " + a)
+				name, _, _ := strings.Cut(strings.TrimLeft(a, "-"), "=")
+				if flags.Lookup(name) == nil {
+					return fail("unknown flag " + a)
+				}
+				return fail("invalid value for flag -" + name)
 			}
 		}
 		return fail("invalid arguments")
+	}
+	badFlag := ""
+	flags.Visit(func(f *flag.Flag) {
+		if (f.Name == "max-number-digits" && *digits <= 0) || (f.Name == "max-number-exponent" && *exponent <= 0) {
+			badFlag = f.Name
+		}
+	})
+	if badFlag != "" {
+		return fail("flag -" + badFlag + " must be greater than 0")
 	}
 	rest := flags.Args()
 	if len(rest) == 0 {
@@ -92,7 +110,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err.Error())
 	}
-	s, err := jsonschema.Compile(schemaData)
+	s, err := jsonschema.CompileWithOptions(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent})
 	if err != nil {
 		return fail(err.Error())
 	}
