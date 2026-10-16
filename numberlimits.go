@@ -17,6 +17,19 @@ const (
 type Options struct {
 	MaxNumberDigits   int
 	MaxNumberExponent int
+	// MaxOutputUnits caps the failure units one Validate may append; 0 means
+	// DefaultMaxOutputUnits.
+	MaxOutputUnits int
+}
+
+func (o Options) maxUnits() (int, error) {
+	if o.MaxOutputUnits < 0 {
+		return 0, errors.New("options: MaxOutputUnits must not be negative")
+	}
+	if o.MaxOutputUnits == 0 {
+		return DefaultMaxOutputUnits, nil
+	}
+	return o.MaxOutputUnits, nil
 }
 
 func (o Options) limits() (jsonvalue.NumberLimits, error) {
