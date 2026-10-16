@@ -12,3 +12,7 @@ func (n *Number) Canonical() string {
 	}
 	return s + n.mant.Text(10) + "e" + strconv.FormatInt(n.exp, 10)
 }
+
+// String returns the number as written in the source. It is used for schema
+// values only in messages (never for instance values).
+func (n *Number) String() string { return n.text }

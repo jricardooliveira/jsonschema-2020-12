@@ -1,0 +1,17 @@
+[
+  {"spec":"validation 6.4.4","description":"maxContains 1","schema":{"contains":{"type":"integer"},"maxContains":1},"tests":[
+    {"description":"one match","data":[1,"a"],"valid":true},
+    {"description":"two matches","data":[1,2],"valid":false},
+    {"description":"no match still fails contains","data":["a"],"valid":false}]},
+  {"spec":"validation 6.4.4","description":"maxContains with minContains","schema":{"contains":{"type":"integer"},"minContains":2,"maxContains":3},"tests":[
+    {"description":"below","data":[1],"valid":false},
+    {"description":"in range","data":[1,2],"valid":true},
+    {"description":"above","data":[1,2,3,4],"valid":false}]},
+  {"spec":"validation 6.4.4","description":"maxContains 0 with minContains 0","schema":{"contains":{"type":"integer"},"minContains":0,"maxContains":0},"tests":[
+    {"description":"no match","data":["a"],"valid":true},
+    {"description":"a match","data":[1],"valid":false}]},
+  {"spec":"validation 6.4.4","description":"maxContains without contains has no effect","schema":{"maxContains":0},"tests":[
+    {"description":"array","data":[1,2],"valid":true}]},
+  {"spec":"validation 6.4.4","description":"maxContains 1.0 behaves as 1","schema":{"contains":true,"maxContains":1.0},"tests":[
+    {"description":"two","data":[1,2],"valid":false}]}
+]

@@ -1,0 +1,17 @@
+[
+  {"spec":"validation 6.4.5","description":"minContains 2","schema":{"contains":{"type":"integer"},"minContains":2},"tests":[
+    {"description":"two match","data":[1,"a",2],"valid":true},
+    {"description":"one matches","data":[1,"a"],"valid":false},
+    {"description":"none match","data":[],"valid":false},
+    {"description":"non-array ignored","data":"x","valid":true}]},
+  {"spec":"validation 6.4.5","description":"minContains 0 makes contains always pass","schema":{"contains":{"type":"integer"},"minContains":0},"tests":[
+    {"description":"empty","data":[],"valid":true},
+    {"description":"no match","data":["a"],"valid":true}]},
+  {"spec":"validation 6.4.5","description":"minContains 2.0 behaves as 2","schema":{"contains":{"type":"integer"},"minContains":2.0},"tests":[
+    {"description":"one","data":[1],"valid":false},
+    {"description":"two","data":[1,2],"valid":true}]},
+  {"spec":"validation 6.4.5","description":"minContains without contains has no effect","schema":{"minContains":2},"tests":[
+    {"description":"empty","data":[],"valid":true}]},
+  {"spec":"validation 6.4.5","description":"huge minContains cannot be met","schema":{"contains":true,"minContains":1e9000},"tests":[
+    {"description":"array","data":[1,2],"valid":false}]}
+]
