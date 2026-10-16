@@ -11,7 +11,7 @@
 | 7 | Array rules | released | [007-array-rules/](007-array-rules/) | 140 |
 | 8 | Combining schemas | released | [008-combining-schemas/](008-combining-schemas/) | 142 |
 | 9 | Base URIs, anchors and local references | released | [009-base-uris-anchors-and-local-references/](009-base-uris-anchors-and-local-references/) | 143 |
-| 10 | Schema registry for external references | to do |  |  |
+| 10 | Schema registry for external references | released | [010-schema-registry-for-external-references/](010-schema-registry-for-external-references/) | 145 |
 | 11 | Dynamic references | to do |  |  |
 | 12 | Embedded meta-schemas and schema validation | to do |  |  |
 | 13 | $vocabulary handling | to do |  |  |
@@ -59,7 +59,7 @@
    Add 2020-12 core identification and referencing within one schema document. '$id' sets the base URI using RFC 3986 resolution, including for embedded schema resources with their own $id. '$anchor' defines plain-name fragments. '$defs' holds reusable subschemas. '$ref' resolves local JSON Pointer fragments, which includes ~0/~1 escaping and percent-decoding. It also resolves anchor fragments and relative references against the current base URI. '$ref' works alongside sibling keywords. '$comment' is accepted and has no effect on validation. A reference that cannot be resolved is an error with exit code 2, never 'invalid'. The validator never fetches anything from the network or from disk on its own. Write spec-derived positive and negative tests.
    Why: Referencing inside one document is the base that the registry, dynamic references and meta-schemas all build on.
 
-10. **Schema registry for external references** — to do
+10. **Schema registry for external references** — released
    Add a controlled schema registry. Through a library option and CLI flags, the caller supplies extra schemas as individual files or as whole directories, each mapped to a base URI. '$ref' to another resource is found by that resource's $id or by its mapped URI, after RFC 3986 resolution. The validator never accesses the network and never reads any file or folder the caller did not list, including file:// addresses. Anything not found in the registry is an unresolved-reference error with exit code 2. The registry is fixed when the schema is loaded. Add library tests and CLI contract tests for file mapping, directory mapping and unresolved references.
    Why: Delivers offline external references as soon as local referencing exists, and is independent of the keyword stories.
 
