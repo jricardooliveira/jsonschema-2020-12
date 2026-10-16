@@ -50,6 +50,7 @@ type callState struct {
 	*EvaluatedItems
 	active map[frame]struct{}
 	path   []*pathFrame
+	scope  DynamicScope
 }
 
 // enterNode marks (n, instance location) active, pushes n on the evaluation
@@ -87,7 +88,9 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 	}
 	st.active[f] = struct{}{}
 	st.path = append(st.path, pf)
+	popScope := st.scope.push(n)
 	return pf, func() {
+		popScope()
 		delete(st.active, f)
 		st.path = st.path[:len(st.path)-1]
 	}, nil
