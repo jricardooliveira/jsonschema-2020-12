@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #8
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #142, 2026-10-16 20:40 UTC)
 
 ## Decision
 Keywords live in internal/keywords/applicator, one file per keyword, each registering from init(). The applicator package is already blank-imported by internal/keywords/all/all.go, so that file is only read. The crowded hubs (internal/keywords/registry.go, internal/compile/compile.go, internal/eval/eval.go) are touched once, in T1, and only to add the location-aware child compile/evaluate seam that every later applicator reuses. No keyword-specific code goes there. A shared helper, applicator/subschemas.go, compiles schema arrays at /<kw>/<i>. 'if' reads its sibling then/else through the compile context; then.go and else.go register so they are known keywords but contribute no evaluation on their own. anyOf/oneOf never short-circuit, per the operator's decision, so story 192 gets complete information.

@@ -1,7 +1,7 @@
 # PLAN #8: Applicator keywords allOf, anyOf, oneOf, not and if/then/else, with keyword locations rooted at the schema root
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #142, 2026-10-16 20:40 UTC)
 - Design: see `ADR-008-*.md` under `docs/architecture/adr/`
 
 ## Files that change
