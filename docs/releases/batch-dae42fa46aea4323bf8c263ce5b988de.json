@@ -1,0 +1,21 @@
+{
+  "batch": "dae42fa46aea4323bf8c263ce5b988de",
+  "baseline": "3ea83effc0e5ac6fc00c3f5105222c33a2ac81b3",
+  "members": [
+    {
+      "run_id": 138,
+      "head": "1ae948752dd11f82382afacfe99d82c58e357a77",
+      "candidate": "5929d5eae982e21e2d826e436cb572f64296639b"
+    },
+    {
+      "run_id": 139,
+      "head": "6a791b286619b5b38745ce9c3e072c79618007c9",
+      "candidate": "aee226c98794b0b4dd46738edf6df1f0c329ae3d"
+    },
+    {
+      "run_id": 140,
+      "head": "4838fe56c2c5159b76330d8f0e0a5cd3d1d467b4",
+      "candidate": "abe0ca186afa2cc3be4bd3b9166960644e1a9d2c"
+    }
+  ]
+}
