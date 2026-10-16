@@ -1,0 +1,10 @@
+[
+  {"spec":"validation 6.2.4","description":"minimum 1.1","schema":{"minimum":1.1},"tests":[
+    {"description":"above","data":2,"valid":true},
+    {"description":"boundary","data":1.1,"valid":true},
+    {"description":"below","data":0.6,"valid":false},
+    {"description":"object ignored","data":{},"valid":true}]},
+  {"spec":"validation 6.2.4","description":"big minimum","schema":{"minimum":12345678901234567890},"tests":[
+    {"description":"equal","data":12345678901234567890,"valid":true},
+    {"description":"one less","data":12345678901234567889,"valid":false}]}
+]

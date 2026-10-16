@@ -1,0 +1,11 @@
+[
+  {"spec":"validation 6.2.2","description":"maximum 3","schema":{"maximum":3},"tests":[
+    {"description":"below","data":2.6,"valid":true},
+    {"description":"boundary","data":3,"valid":true},
+    {"description":"1.0 style boundary","data":3.0,"valid":true},
+    {"description":"above","data":3.5,"valid":false},
+    {"description":"string ignored","data":"5","valid":true}]},
+  {"spec":"validation 6.2.2","description":"big maximum","schema":{"maximum":12345678901234567890},"tests":[
+    {"description":"equal","data":12345678901234567890,"valid":true},
+    {"description":"one more","data":12345678901234567891,"valid":false}]}
+]
