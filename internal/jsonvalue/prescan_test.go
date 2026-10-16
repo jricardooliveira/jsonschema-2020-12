@@ -18,7 +18,10 @@ var scanSeeds = []string{
 	esc(`"@D800\@DC00"`), `"\\"`, `"\\\\"`, `"\\\""`, "\"\xff\"", "\xff", "\"\xed\xa0\x80\"",
 	esc(`"@D83D`), esc(`"@D83D@`), `"` + rawFFFD + `"`, esc(`"@FFFD"`), esc(`"@fffd@FFFD"`),
 	`["a","b` + "\xc3\xa9" + `"]`, `{"k":"v"}`, esc(`"@12`),
+	esc(`{"@FFFD":["x` + rawFFFD + `",{"y":"@fffd@D83D@DE00"}],"z":"z"}`), `[["a"],["a"],{"a":"a"}]`,
 }
+
+// Strings: RFC 8259 §7 (escapes, surrogate pairs) and §8.1 / §8.2 (UTF-8).
 
 func TestScanTextTable(t *testing.T) {
 	bad := map[string]string{
@@ -74,8 +77,58 @@ func FuzzScanTextAgreesWithEncodingJSON(f *testing.F) {
 		}
 		if v, err := Decode(data); err == nil {
 			checkStrings(t, v)
+			checkFFFDProvenance(t, data, v)
 		}
 	})
+}
+
+// checkFFFDProvenance: when Decode succeeds, every string and member name in
+// its tree is the decoding of exactly one span scanText reported, and its
+// U+FFFD count equals that span's fffd. So no replacement character appears
+// that the input did not write, at any depth.
+func checkFFFDProvenance(t *testing.T, data []byte, v any) {
+	t.Helper()
+	want := map[string]int{} // decoded span text -> remaining uses
+	if _, reason := scanText(data, func(s, e, n int) {
+		var str string
+		if err := json.Unmarshal(data[s:e], &str); err != nil {
+			t.Fatalf("span %d-%d does not decode: %v", s, e, err)
+		}
+		if strings.Count(str, "�") != n {
+			t.Fatalf("span %d-%d: %d U+FFFD, scan said %d", s, e, strings.Count(str, "�"), n)
+		}
+		want[str]++
+	}); reason != "" {
+		t.Fatalf("Decode accepted what scanText rejected: %s", reason)
+	}
+	var walk func(any)
+	use := func(s string) {
+		if want[s] == 0 {
+			t.Fatalf("decoded string %q has no matching span", s)
+		}
+		want[s]--
+	}
+	walk = func(v any) {
+		switch x := v.(type) {
+		case string:
+			use(x)
+		case []any:
+			for _, e := range x {
+				walk(e)
+			}
+		case map[string]any:
+			for k, e := range x {
+				use(k)
+				walk(e)
+			}
+		}
+	}
+	walk(v)
+	for s, n := range want {
+		if n != 0 {
+			t.Fatalf("span %q not in decoded tree", s)
+		}
+	}
 }
 
 // checkStrings: every decoded string and member name is valid UTF-8.
@@ -99,20 +152,19 @@ func checkStrings(t *testing.T, v any) {
 
 // The U+FFFD count of a decoded string equals what scanText reported, so a
 // replacement character never appears that the input did not write.
+// RFC 8259 §7, §8.2: checked for every string in the tree, not just the top.
 func TestDecodedFFFDInvariant(t *testing.T) {
+	decoded := 0
 	for _, s := range scanSeeds {
-		var want []int
-		if off, reason := scanText([]byte(s), func(_, _, n int) { want = append(want, n) }); reason != "" {
-			_ = off
-			continue
-		}
 		v, err := Decode([]byte(s))
 		if err != nil {
 			continue
 		}
-		if str, ok := v.(string); ok && (len(want) != 1 || strings.Count(str, "�") != want[0]) {
-			t.Errorf("%q: %d FFFD, scan said %v", s, strings.Count(str, "�"), want)
-		}
+		decoded++
+		checkFFFDProvenance(t, []byte(s), v)
+	}
+	if decoded < 10 {
+		t.Fatalf("only %d seeds decoded", decoded)
 	}
 	if v, _ := Decode([]byte(esc(`"@FFFD` + rawFFFD + `"`))); strings.Count(v.(string), "�") != 2 {
 		t.Error("expected two U+FFFD")

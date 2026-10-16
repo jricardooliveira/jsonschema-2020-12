@@ -8,34 +8,48 @@ import (
 
 func TestStrictRejections(t *testing.T) {
 	bom := "\xEF\xBB\xBF"
+	// off is the byte offset of the offending text in the original input.
 	cases := map[string]struct {
+		spec   string
 		in     string
 		reason string
 		off    int64
 	}{
-		"invalid utf8":   {"[\"a\xffb\"]", reasonUTF8, 3},
-		"utf8 surrogate": {"\"\xed\xa0\x80\"", reasonUTF8, 1},
-		"lone high":      {esc(`"@D800"`), reasonSurrogate, 1},
-		"lone low":       {esc(`["@DC00"]`), reasonSurrogate, 2},
-		"dup deep":       {`{"a":[{"b":1,"c":2,"b":3}]}`, "duplicate member name", 0},
-		"dup escaped":    {esc(`{"a":1,"@0061":2}`), "duplicate member name", 0},
-		"trailing value": {`{} []`, "trailing data after value", 0},
-		"two boms":       {bom + bom + `{}`, "syntax error", 0},
-		"bom offset":     {bom + "[\xff]", reasonUTF8, 4},
+		"invalid utf8":   {"RFC 8259 §8.1", "[\"a\xffb\"]", reasonUTF8, 3},
+		"utf8 surrogate": {"RFC 8259 §8.1", "\"\xed\xa0\x80\"", reasonUTF8, 1},
+		"lone high":      {"RFC 8259 §7, §8.2", esc(`"@D800"`), reasonSurrogate, 1},
+		"lone low":       {"RFC 8259 §7, §8.2", esc(`["@DC00"]`), reasonSurrogate, 2},
+		"dup top":        {"RFC 8259 §4", `{"age":5,"age":9}`, "duplicate member name", 9},
+		"dup deep":       {"RFC 8259 §4", `{"a":[{"b":1,"c":2,"b":3}]}`, "duplicate member name", 19},
+		"dup spaced":     {"RFC 8259 §4", "{\"a\":1 ,\n \"a\":2}", "duplicate member name", 10},
+		"dup escaped":    {"RFC 8259 §4, §7", esc(`{"a":1,"@0061":2}`), "duplicate member name", 7},
+		"dup after bom":  {"RFC 8259 §4, §8.1", bom + `{"a":1,"a":2}`, "duplicate member name", 10},
+		"trailing value": {"RFC 8259 §2", `{} []`, "trailing data after value", 3},
+		"two boms":       {"RFC 8259 §8.1", bom + bom + `{}`, "syntax error", 3},
+		"bom offset":     {"RFC 8259 §8.1", bom + "[\xff]", reasonUTF8, 4},
 	}
 	for name, c := range cases {
 		_, err := Decode([]byte(c.in))
 		var se *SyntaxError
 		if !errors.As(err, &se) {
-			t.Errorf("%s: want SyntaxError, got %v", name, err)
+			t.Errorf("%s (%s): want SyntaxError, got %v", name, c.spec, err)
 			continue
 		}
 		if se.Reason != c.reason {
-			t.Errorf("%s: reason %q want %q", name, se.Reason, c.reason)
+			t.Errorf("%s (%s): reason %q want %q", name, c.spec, se.Reason, c.reason)
 		}
-		if c.off != 0 && se.Offset != c.off {
-			t.Errorf("%s: offset %d want %d", name, se.Offset, c.off)
+		if se.Offset != c.off {
+			t.Errorf("%s (%s): offset %d want %d", name, c.spec, se.Offset, c.off)
 		}
+	}
+}
+
+// The duplicate error names the line and column of the repeated name.
+func TestDuplicateLineColumn(t *testing.T) { // RFC 8259 §4
+	_, err := Decode([]byte("{\n  \"age\": 5,\n  \"age\": 9\n}"))
+	var se *SyntaxError
+	if !errors.As(err, &se) || se.Line != 3 || se.Column != 3 {
+		t.Fatalf("got %+v", se)
 	}
 }
 

@@ -94,7 +94,15 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 		}
 	}
 
+	// tokenStart is where the token read from offset prev begins: past the
+	// whitespace and separators the decoder consumes lazily.
+	tokenStart := func(prev int64) int64 {
+		rest := data[min(prev, int64(len(data))):]
+		return prev + int64(len(rest)-len(bytes.TrimLeft(rest, " \t\r\n,:")))
+	}
+
 	for !done {
+		prev := dec.InputOffset()
 		tok, err := dec.Token()
 		if err != nil {
 			if err == io.EOF || err == io.ErrUnexpectedEOF {
@@ -122,7 +130,7 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 					return nil, syntaxErr(data, dec.InputOffset(), "syntax error")
 				}
 				if _, dup := f.obj[k]; dup {
-					return nil, syntaxErr(data, dec.InputOffset(), "duplicate member name")
+					return nil, syntaxErr(data, tokenStart(prev), "duplicate member name")
 				}
 				f.key, f.keys = k, false
 				f.obj[k] = nil // reserve the name
@@ -172,8 +180,9 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 			return nil, syntaxErr(data, dec.InputOffset(), "syntax error")
 		}
 	}
-	if _, err := dec.Token(); err != io.EOF {
-		return nil, syntaxErr(data, dec.InputOffset(), "trailing data after value")
+	// Only whitespace may follow the value (RFC 8259 §2).
+	if trail := bytes.TrimLeft(data[min(dec.InputOffset(), int64(len(data))):], " \t\r\n"); len(trail) > 0 {
+		return nil, syntaxErr(data, int64(len(data)-len(trail)), "trailing data after value")
 	}
 	return result, nil
 }

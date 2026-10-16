@@ -2,6 +2,7 @@ package jsonvalue
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"runtime"
 	"strings"
@@ -17,6 +18,8 @@ func num(t *testing.T, s string) *Number {
 	return v.(*Number)
 }
 
+// Number value and order: RFC 8259 §6; integer by value: validation §6.1.1
+// ("integer" matches any number with a zero fractional part).
 func TestNumberCmpAndIntegers(t *testing.T) {
 	nines := strings.Repeat("9", DefaultMaxNumberDigits)
 	e := fmt.Sprint(DefaultMaxNumberExponent)
@@ -101,6 +104,7 @@ func TestNumberRatMatchesSetString(t *testing.T) {
 	}
 }
 
+// Range and precision caps: RFC 8259 §6 and §9 (implementations may limit them).
 func TestNumberCap(t *testing.T) {
 	d, e := DefaultMaxNumberDigits, DefaultMaxNumberExponent
 	ok := []string{
@@ -146,20 +150,63 @@ func TestNumberCap(t *testing.T) {
 	}
 }
 
+// With absurdly raised caps, int64 overflow in the normalised exponent or in
+// the adjusted exponent (ndig + exp) is a "number exponent" limit error,
+// never a wrapped value. RFC 8259 §6, §9 (implementation limits).
+func TestNumberExponentOverflow(t *testing.T) {
+	huge := NumberLimits{MaxExponent: math.MaxInt64}
+	maxE, minE := fmt.Sprint(int64(math.MaxInt64)), fmt.Sprint(int64(-math.MaxInt64))
+	over := []string{
+		"1e" + maxE,                   // adj = 1 + MaxInt64
+		"10e" + maxE,                  // stripped zero pushes exp past MaxInt64
+		"12e" + maxE,                  // adj = 2 + MaxInt64
+		"0.001e" + minE,               // exp = -MaxInt64 - 3 wraps
+		"1.25e" + minE,                // exp = -MaxInt64 - 2 wraps
+		"1e-" + "9223372036854775808", // |exp| > MaxInt64
+	}
+	for _, s := range over {
+		_, err := DecodeLimited([]byte(s), huge)
+		le, ok := err.(*LimitError)
+		if !ok || le.Limit != "number exponent" {
+			t.Errorf("%s: want number exponent LimitError, got %v", s, err)
+		}
+	}
+	// The extremes that fit still decode to the right value.
+	n := num2(t, "1e"+fmt.Sprint(int64(math.MaxInt64-1)), huge)
+	if n.exp != math.MaxInt64-1 || !n.IsInteger() || Cmp(n, num(t, "1")) != 1 {
+		t.Errorf("max fit: exp %d", n.exp)
+	}
+	m := num2(t, "1.5e"+minE, huge)
+	if m.exp != math.MinInt64 || m.IsInteger() || Cmp(m, num(t, "0")) != 1 {
+		t.Errorf("min fit: exp %d", m.exp)
+	}
+}
+
+func num2(t *testing.T, s string, lim NumberLimits) *Number {
+	t.Helper()
+	v, err := DecodeLimited([]byte(s), lim)
+	if err != nil {
+		t.Fatalf("%s: %v", s, err)
+	}
+	return v.(*Number)
+}
+
+// RFC 8259 §9: limits must keep hostile number-heavy input linear.
 func TestNumberManyTokensStayLinear(t *testing.T) {
 	if testing.Short() {
 		t.Skip("allocation test")
 	}
-	const bytesPerInputByte = 100 // generous allocation bound per input byte
+	const bytesPerInputByte = 100          // generous allocation bound per input byte
+	tokens := 900 * DefaultMaxNumberDigits // about 9 million cap-scale tokens
 	tok := fmt.Sprintf("1e%d,1e-%d,", DefaultMaxNumberExponent, DefaultMaxNumberExponent)
-	input := "[" + strings.Repeat(tok, 100*DefaultMaxNumberDigits/2) + "0]"
+	input := "[" + strings.Repeat(tok, tokens/2) + "0]"
 	before := ratBuilds.Load()
 	var m0, m1 runtime.MemStats
 	runtime.GC()
 	runtime.ReadMemStats(&m0)
 	v, err := DecodeLimited([]byte(input), NumberLimits{})
 	runtime.ReadMemStats(&m1)
-	if err != nil || len(v.([]any)) != 100*DefaultMaxNumberDigits+1 {
+	if err != nil || len(v.([]any)) != tokens+1 {
 		t.Fatalf("decode failed: %v", err)
 	}
 	if ratBuilds.Load() != before {

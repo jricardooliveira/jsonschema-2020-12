@@ -32,9 +32,13 @@ func newNumber(text string, writtenExp int64, off int64) (*Number, error) {
 	}
 	trimmed := strings.TrimRight(digits, "0")
 	zeros := int64(len(digits) - len(trimmed))
+	// int64 overflow is only possible with absurdly raised caps. Check
+	// before subtracting, and keep adj = ndig + exp representable.
+	if writtenExp < math.MinInt64+int64(len(fr)) {
+		return nil, &LimitError{Limit: "number exponent", Max: math.MaxInt64, Offset: off}
+	}
 	exp := writtenExp - int64(len(fr))
-	// int64 overflow is only possible with absurdly raised caps.
-	if exp > math.MaxInt64-zeros-int64(len(trimmed)) || exp < math.MinInt64+int64(len(fr)) {
+	if exp > math.MaxInt64-zeros-int64(len(trimmed)) {
 		return nil, &LimitError{Limit: "number exponent", Max: math.MaxInt64, Offset: off}
 	}
 	n.exp = exp + zeros
