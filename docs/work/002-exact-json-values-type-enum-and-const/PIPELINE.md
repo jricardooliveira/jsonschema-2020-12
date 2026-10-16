@@ -3,24 +3,19 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:06:38 UTC
-- **Story spend:** ~$2.84 of $26.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:27:10 UTC
+- **Story spend:** ~$8.15 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-2-architect: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-2-architect**:
-  > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
-  >   • The `type` keyword is now enforced, which changes 178's TestValidateSchemas expectation for {"type":"string"}; that entry becomes an unknown keyword.
-  >   • Input that 178 accepted is now rejected as broken JSON (exit 2): invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap. A leading BOM is now accepted (178 rejected it).
-  >   • The `type` keyword is now enforced. The `{"type":"string"}` entry in 178's TestValidateSchemas becomes `{"x-unknown":"string"}`. The operator accepted this change.
-  >   • Input that 178 accepted is now exit 2: invalid UTF-8, an unpaired \u surrogate, and numbers over the digit or exponent cap. A leading BOM is now accepted. The operator accepted these changes.
-  >   • The keyword evaluate signature keeps the `any` instance type, so nothing changes for later keyword stories.
-  >   → Approve these breaking changes?
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: F6 needs documentation files the reservation does not list: docs/cli-contract.md (CLI flags and exit-2 behaviour) and docs/limits.md (default number limits and the input changes). Please grant these paths. Not granted automatically: docs/cli-contract.md (not in the approved design and not a test); docs/limits.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: docs/cli-contract.md, docs/limits.md
 
 ## Trail
 
@@ -50,8 +45,32 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:06:07 | agent | architect-agent | ✅ pass · 76.0s · $0.5268 |
 | 2026-10-16 17:06:07 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-16 17:06:38 | agent | boundary-agent | ✅ pass · 30.7s · $0.2087 |
-| 2026-10-16 17:06:38 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-16 17:06:38 | run | run waiting_human | ⏸️ |
+| 2026-10-16 17:06:38 | gate | gate-2-architect | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 17:13:14 | boss | authorize coder-agent:T1 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 17:17:49 | agent | coder-agent | ✅ complete · T1 · 274.9s · $0.7828 |
+| 2026-10-16 17:17:50 | gate | gate-build | ✅ [T1] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:17:50 | boss | authorize coder-agent:T2 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 17:18:19 | agent | coder-agent | ✅ complete · T2 · 28.4s · $0.2926 |
+| 2026-10-16 17:18:21 | gate | gate-build | ✅ [T2] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:18:22 | boss | authorize coder-agent:T3 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 17:19:28 | agent | coder-agent | ✅ complete · T3 · 66.2s · $0.4327 |
+| 2026-10-16 17:19:29 | gate | gate-build | ✅ [T3] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:19:29 | boss | authorize coder-agent:T4 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 17:20:18 | agent | coder-agent | ✅ complete · T4 · 48.5s · $0.4029 |
+| 2026-10-16 17:20:19 | gate | gate-build | ✅ [T4] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:20:19 | boss | authorize coder-agent:T5 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 17:21:08 | agent | coder-agent | ✅ complete · T5 · 48.8s · $0.4107 |
+| 2026-10-16 17:21:09 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:21:09 | boss | authorize coder-agent:T6 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 17:21:45 | agent | coder-agent | ✅ complete · T6 · 35.5s · $0.3635 |
+| 2026-10-16 17:21:46 | gate | gate-build | ✅ [T6] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:21:46 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 17:22:52 | agent | tester-agent | ❌ fail · 65.9s |
+| 2026-10-16 17:22:52 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ['AC6 / overflow boundary rule: internal/jsonvalue/number_test.go has no tests for int64 overflow during normalization or adjusted-exponent computation wi… |
+| 2026-10-16 17:22:52 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 10 finding(s) |
+| 2026-10-16 17:27:10 | agent | coder-agent | ✅ scope-request · remediation · 257.1s · $1.9359 |
+| 2026-10-16 17:27:10 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-16 17:27:10 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
