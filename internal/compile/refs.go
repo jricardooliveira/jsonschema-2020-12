@@ -57,16 +57,45 @@ func RootBaseURI(override, filePath string) (string, error) {
 // that are objects or booleans are followed even under unknown keywords
 // (core 9.4.2 leaves this undefined); any other value is an error.
 func CompileDocument(doc any, baseURI string) (*Node, error) {
-	_, root, err := compileDocument(doc, baseURI)
+	return CompileWithRegistry(doc, baseURI, nil)
+}
+
+// CompileWithRegistry is CompileDocument that also looks a reference up in
+// ext (the supplied schemas) when the document itself has no such resource.
+// Every supplied resource reached from the document is compiled and its own
+// references resolved here, so nothing is left to resolve at Validate time.
+// ext is only read. A nil ext means no supplied schemas.
+func CompileWithRegistry(doc any, baseURI string, ext *registry.Index) (*Node, error) {
+	_, root, err := compileDocument(doc, baseURI, ext)
 	return root, err
 }
 
-func compileDocument(doc any, baseURI string) (*resolver, *Node, error) {
+// shared is the state common to the main document and the supplied ones.
+type shared struct {
+	main, ext *registry.Index
+	byOwner   map[*registry.Owner]*resolver
+	all       []*resolver
+	pending   []pendingRef
+}
+
+type pendingRef struct {
+	r   *resolver
+	ref *core.Ref
+}
+
+func (sh *shared) add(doc any, bases map[string]string) *resolver {
+	r := &resolver{sh: sh, doc: doc, bases: bases, memo: map[string]*Node{}}
+	sh.all = append(sh.all, r)
+	return r
+}
+
+func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *Node, error) {
 	idx, err := registry.Build(doc, baseURI)
 	if err != nil {
 		return nil, nil, err
 	}
-	r := &resolver{doc: doc, idx: idx, memo: map[string]*Node{}}
+	sh := &shared{main: idx, ext: ext, byOwner: map[*registry.Owner]*resolver{}}
+	r := sh.add(doc, idx.Bases)
 	root, err := r.compile(doc, "")
 	if err != nil {
 		return nil, nil, err
@@ -81,7 +110,7 @@ func compileDocument(doc any, baseURI string) (*resolver, *Node, error) {
 		v, ok := navigate(doc, splitPtr(p))
 		if m, isMap := v.(map[string]any); ok && isMap {
 			if _, has := m["$ref"]; has {
-				if _, err := r.target(p, v); err != nil {
+				if _, err := r.compile(v, p); err != nil {
 					return nil, nil, err
 				}
 			}
@@ -89,36 +118,37 @@ func compileDocument(doc any, baseURI string) (*resolver, *Node, error) {
 	}
 	// Compiling a target appends the $refs it holds; every node is memoized,
 	// so the order targets are reached never causes a recompile.
-	for i := 0; i < len(r.refs); i++ {
-		l, err := r.locate(r.refs[i])
+	for i := 0; i < len(sh.pending); i++ {
+		p := sh.pending[i]
+		l, err := p.r.locate(p.ref)
 		if err != nil {
 			return nil, nil, err
 		}
-		n, err := r.target(l.ptr, l.v)
+		n, err := l.in.compile(l.v, l.ptr)
 		if err != nil {
 			return nil, nil, fmt.Errorf("schema location #%s: $ref %q: %v", l.ref.Location, l.ref.Ref, err)
 		}
 		l.ref.Target = n
 	}
-	return r, root, r.checkPureCycles()
+	return r, root, sh.checkPureCycles()
 }
 
-// located is a $ref with the schema pointer and value of its target.
+// located is a $ref with the document, schema pointer and value of its target.
 type located struct {
 	ref *core.Ref
+	in  *resolver
 	ptr string
 	v   any
 }
 
 type resolver struct {
+	sh    *shared
 	doc   any
-	idx   *registry.Index
-	memo  map[string]*Node // schema pointer -> compiled node
+	bases map[string]string // schema pointer -> base URI in effect there
+	memo  map[string]*Node  // schema pointer -> compiled node
 	nodes []*Node
 	refs  []*core.Ref
 }
-
-func (r *resolver) target(ptr string, v any) (*Node, error) { return r.compile(v, ptr) }
 
 // compile is compileAt with the memo consulted at every node it visits, so
 // each schema location is compiled once, whatever order root and $ref
@@ -174,6 +204,7 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 		n.Items = append(n.Items, Item{kw, data, kwLoc})
 		if ref, ok := data.(*core.Ref); ok {
 			r.refs = append(r.refs, ref)
+			r.sh.pending = append(r.sh.pending, pendingRef{r, ref})
 		}
 	}
 	r.memo[loc] = n
@@ -183,12 +214,12 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 
 func (r *resolver) baseAt(ptr string) string {
 	for {
-		if b, ok := r.idx.Bases[ptr]; ok {
+		if b, ok := r.bases[ptr]; ok {
 			return b
 		}
 		i := strings.LastIndexByte(ptr, '/')
 		if i < 0 {
-			return r.idx.Bases[""]
+			return r.bases[""]
 		}
 		ptr = ptr[:i]
 	}
@@ -209,9 +240,21 @@ func (r *resolver) locate(ref *core.Ref) (located, error) {
 	if err != nil {
 		return fail("%v", err)
 	}
-	res := r.idx.Resources[key]
+	in := r
+	res := r.sh.main.Resources[key]
+	if res == nil && r.sh.ext != nil {
+		if res = r.sh.ext.Resources[key]; res != nil {
+			if res.Owner == nil {
+				return fail("unresolved reference, %q has no document", key)
+			}
+			if in = r.sh.byOwner[res.Owner]; in == nil {
+				in = r.sh.add(res.Owner.Doc, res.Owner.Bases)
+				r.sh.byOwner[res.Owner] = in
+			}
+		}
+	}
 	if res == nil {
-		return fail("unresolved reference, %q is not a resource of the loaded schema", key)
+		return fail("unresolved reference, %q is not a resource of the loaded schema or the supplied schemas", key)
 	}
 	toks := splitPtr(res.Pointer)
 	switch {
@@ -233,7 +276,7 @@ func (r *resolver) locate(ref *core.Ref) (located, error) {
 		}
 		toks = splitPtr(p)
 	}
-	v, ok := navigate(r.doc, toks)
+	v, ok := navigate(in.doc, toks)
 	if !ok {
 		return fail("unresolved reference, target does not exist")
 	}
@@ -246,7 +289,7 @@ func (r *resolver) locate(ref *core.Ref) (located, error) {
 	for _, t := range toks {
 		b.WriteString("/" + registry.Escape(t))
 	}
-	return located{ref: ref, ptr: b.String(), v: v}, nil
+	return located{ref: ref, in: in, ptr: b.String(), v: v}, nil
 }
 
 // pureRef returns n's $ref when n holds nothing else that can affect a result.
@@ -265,9 +308,13 @@ func pureRef(n *Node) *core.Ref {
 }
 
 // checkPureCycles rejects chains of schemas holding only $ref that loop.
-func (r *resolver) checkPureCycles() error {
+func (sh *shared) checkPureCycles() error {
 	clean := map[*Node]bool{}
-	for _, start := range r.nodes {
+	var nodes []*Node
+	for _, r := range sh.all {
+		nodes = append(nodes, r.nodes...)
+	}
+	for _, start := range nodes {
 		var path []*Node
 		seen := map[*Node]bool{}
 		for n := start; n != nil && !clean[n]; {

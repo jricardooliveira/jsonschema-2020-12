@@ -30,6 +30,14 @@ type Resource struct {
 	Anchors map[string]string // anchor name -> JSON Pointer of the schema
 	Doc     any               // the document holding the resource
 	Source  string            // where Doc came from; empty for the main schema
+	Owner   *Owner            // set on supplied resources: the document they live in
+}
+
+// Owner is one supplied document and the base URI of each of its schemas,
+// shared by every resource found in that document.
+type Owner struct {
+	Doc   any
+	Bases map[string]string // schema JSON Pointer -> base URI in effect there
 }
 
 // value returns the schema the resource points at.
@@ -258,9 +266,11 @@ func (idx *Index) AddExternal(doc any, address, source string) error {
 		return fmt.Errorf("%s: %v", source, err)
 	}
 	var root *Resource
+	owner := &Owner{Doc: doc, Bases: sub.Bases}
 	keys := make([]string, 0, len(sub.Resources)+1)
 	for k, r := range sub.Resources {
 		r.Source = source
+		r.Owner = owner
 		keys = append(keys, k)
 		if r.Pointer == "" {
 			root = r
