@@ -58,6 +58,53 @@ func TestBrokenRefs(t *testing.T) {
 	}
 }
 
+// Load time stays linear on a hostile schema with a $ref at every level:
+// each schema object is compiled once, never once per $ref above it.
+func TestDeepRefChainCompilesEachNodeOnce(t *testing.T) {
+	n := jsonvalue.MaxDepth - 1
+	src := strings.Repeat(`{"$ref":"#","not":`, n) + `{"$ref":"#"}` + strings.Repeat(`}`, n)
+	v, err := jsonvalue.DecodeLimited([]byte(src), jsonvalue.NumberLimits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, _, err := compileDocument(v, "file:///s.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(r.nodes) != n+1 || len(r.refs) != n+1 {
+		t.Errorf("nodes=%d refs=%d, want %d each", len(r.nodes), len(r.refs), n+1)
+	}
+}
+
+// Targets under unknown keywords, referenced deepest first, are compiled once.
+func TestDeepUnknownKeywordTargetsCompileOnce(t *testing.T) {
+	const n = 200
+	var refs []string
+	for d := n; d >= 1; d-- {
+		refs = append(refs, `{"$ref":"#/definitions/x`+strings.Repeat("/not", d)+`"}`)
+	}
+	src := `{"allOf":[` + strings.Join(refs, ",") + `],"definitions":{"x":` +
+		strings.Repeat(`{"not":`, n) + `true` + strings.Repeat(`}`, n) + `}}`
+	v, err := jsonvalue.DecodeLimited([]byte(src), jsonvalue.NumberLimits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, _, err := compileDocument(v, "file:///s.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := 1 + n + n; len(r.nodes) != want { // root, allOf items, x's chain below /not
+		t.Errorf("nodes=%d want %d", len(r.nodes), want)
+	}
+}
+
+// core 8.2.2 with RFC 3986: a percent-encoded plain-name fragment is decoded.
+func TestPercentEncodedAnchor(t *testing.T) {
+	if _, err := load(t, `{"$defs":{"a":{"$anchor":"A"}},"$ref":"#%41"}`); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestNotACycle(t *testing.T) {
 	for _, src := range []string{
 		`{"$defs":{"a":{"$ref":"#/$defs/b"},"b":{"type":"string"}},"$ref":"#/$defs/a"}`,

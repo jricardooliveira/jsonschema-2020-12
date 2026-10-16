@@ -57,13 +57,18 @@ func RootBaseURI(override, filePath string) (string, error) {
 // that are objects or booleans are followed even under unknown keywords
 // (core 9.4.2 leaves this undefined); any other value is an error.
 func CompileDocument(doc any, baseURI string) (*Node, error) {
+	_, root, err := compileDocument(doc, baseURI)
+	return root, err
+}
+
+func compileDocument(doc any, baseURI string) (*resolver, *Node, error) {
 	idx, err := registry.Build(doc, baseURI)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	root, err := compileAt(doc, "")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	r := &resolver{doc: doc, idx: idx, memo: map[string]*Node{"": root}}
 	r.add(root)
@@ -78,17 +83,43 @@ func CompileDocument(doc any, baseURI string) (*Node, error) {
 		if m, isMap := v.(map[string]any); ok && isMap {
 			if _, has := m["$ref"]; has {
 				if _, err := r.target(p, v); err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 			}
 		}
 	}
-	for i := 0; i < len(r.refs); i++ {
-		if err := r.resolve(r.refs[i]); err != nil {
-			return nil, err
+	// Resolve in batches; each batch compiles its targets in pointer order so
+	// an ancestor is compiled (and memoizes its subtree) before a descendant.
+	// ponytail: a later batch can still recompile below an earlier target
+	// under an unknown keyword; add a node budget if that ever matters.
+	for start := 0; start < len(r.refs); {
+		end := len(r.refs)
+		batch := make([]located, 0, end-start)
+		for _, ref := range r.refs[start:end] {
+			l, err := r.locate(ref)
+			if err != nil {
+				return nil, nil, err
+			}
+			batch = append(batch, l)
 		}
+		sort.SliceStable(batch, func(i, j int) bool { return batch[i].ptr < batch[j].ptr })
+		for _, l := range batch {
+			n, err := r.target(l.ptr, l.v)
+			if err != nil {
+				return nil, nil, fmt.Errorf("schema location #%s: $ref %q: %v", l.ref.Location, l.ref.Ref, err)
+			}
+			l.ref.Target = n
+		}
+		start = end
 	}
-	return root, r.checkPureCycles()
+	return r, root, r.checkPureCycles()
+}
+
+// located is a $ref with the schema pointer and value of its target.
+type located struct {
+	ref *core.Ref
+	ptr string
+	v   any
 }
 
 type resolver struct {
@@ -100,8 +131,12 @@ type resolver struct {
 }
 
 // add records n and every node reachable from it, and their $ref keywords.
+// Each node is memoized by location, so no later target compiles it again.
 func (r *resolver) add(n *Node) {
 	for _, m := range collectNodes(n) {
+		if _, ok := r.memo[m.Location]; !ok {
+			r.memo[m.Location] = m
+		}
 		r.nodes = append(r.nodes, m)
 		for _, it := range m.Items {
 			if ref, ok := it.Data.(*core.Ref); ok {
@@ -137,20 +172,24 @@ func (r *resolver) baseAt(ptr string) string {
 	}
 }
 
-func (r *resolver) resolve(ref *core.Ref) error {
+// locate finds the schema pointer and value a $ref points at.
+func (r *resolver) locate(ref *core.Ref) (located, error) {
 	where := fmt.Sprintf("schema location #%s: $ref %q", ref.Location, ref.Ref)
+	fail := func(format string, a ...any) (located, error) {
+		return located{}, fmt.Errorf("%s: "+format, append([]any{where}, a...)...)
+	}
 	full, err := uri.Resolve(r.baseAt(strings.TrimSuffix(ref.Location, "/$ref")), ref.Ref)
 	if err != nil {
-		return fmt.Errorf("%s: %v", where, err)
+		return fail("%v", err)
 	}
 	docPart, frag, _ := strings.Cut(full, "#")
 	key, err := uri.Normalize(docPart)
 	if err != nil {
-		return fmt.Errorf("%s: %v", where, err)
+		return fail("%v", err)
 	}
 	res := r.idx.Resources[key]
 	if res == nil {
-		return fmt.Errorf("%s: unresolved reference, %q is not a resource of the loaded schema", where, key)
+		return fail("unresolved reference, %q is not a resource of the loaded schema", key)
 	}
 	toks := splitPtr(res.Pointer)
 	switch {
@@ -158,35 +197,34 @@ func (r *resolver) resolve(ref *core.Ref) error {
 	case frag[0] == '/':
 		more, err := uri.ParsePointer(frag)
 		if err != nil {
-			return fmt.Errorf("%s: %v", where, err)
+			return fail("%v", err)
 		}
 		toks = append(toks, more...)
 	default:
-		p, ok := res.Anchors[frag]
+		name, err := url.PathUnescape(frag) // validated by uri.Resolve; '+' stays literal
+		if err != nil {
+			return fail("%v", err)
+		}
+		p, ok := res.Anchors[name]
 		if !ok {
-			return fmt.Errorf("%s: unresolved reference, no anchor %q in %q", where, frag, key)
+			return fail("unresolved reference, no anchor %q in %q", name, key)
 		}
 		toks = splitPtr(p)
 	}
 	v, ok := navigate(r.doc, toks)
 	if !ok {
-		return fmt.Errorf("%s: unresolved reference, target does not exist", where)
+		return fail("unresolved reference, target does not exist")
 	}
 	switch v.(type) {
 	case map[string]any, bool:
 	default:
-		return fmt.Errorf("%s: unresolved reference, target is not an object or boolean schema", where)
+		return fail("unresolved reference, target is not an object or boolean schema")
 	}
 	var b strings.Builder
 	for _, t := range toks {
 		b.WriteString("/" + registry.Escape(t))
 	}
-	n, err := r.target(b.String(), v)
-	if err != nil {
-		return fmt.Errorf("%s: %v", where, err)
-	}
-	ref.Target = n
-	return nil
+	return located{ref: ref, ptr: b.String(), v: v}, nil
 }
 
 // pureRef returns n's $ref when n holds nothing else that can affect a result.

@@ -12,6 +12,8 @@ Used when the root has no `$id`:
 - Every `$ref` is resolved once when the schema is loaded, so a broken reference is exit 2 even in a branch no document reaches.
 - A reference to a resource not inside the loaded document is an unresolved-reference error. Nothing is fetched or read from disk.
 - Pointer tokens are percent-decoded first, then `~1` and `~0` are unescaped. Invalid percent-encoding is an error.
+- A plain-name fragment is percent-decoded before the anchor lookup, so `#%41` reaches anchor `A`.
+- Every schema object is compiled once at load time and reused by every `$ref` that reaches it, so load time grows linearly with the schema, not with the number of `$ref` keywords.
 - `$id` with a non-empty fragment, bad `$anchor`/`$dynamicAnchor` names (`^[A-Za-z_][-A-Za-z0-9._]*$`), and a repeated `$id` or anchor in one resource are schema errors (exit 2).
 
 ## Normalization
