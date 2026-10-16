@@ -3,23 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #140 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 19:55:58 UTC · **Stopped:** 2026-10-16 20:14:12 UTC
+- **Run:** #140 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 19:55:58 UTC · **Stopped:** 2026-10-16 20:14:37 UTC
 - **Story spend:** ~$6.08 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 140` to accept, or `factory reject 140 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-140-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: This release adds array validation, a significant new capability. While all keywords are spec-compliant and fully tested (including under -race), the interaction between per-element evaluation, annotation recording, Mark/Rollback on failure, and sibling keyword access (e.g., items reading prefixItems length at compile time) is complex. Verify that rollback correctly drops annotations from failed branches: tests confirm it works, but this is critical for correctness of later stories (191, 192).
-  >   ◦ Release-agent note: The uniqueItems duplicate detection uses a fingerprint-grouped bucket approach to avoid O(n²) comparisons. The fingerprint must normalize exact number values (1, 1.0, 1e0 to the same key) or duplicates fall into different buckets. Tests verify the 100k-element case is near-linear and groups are exact, but the Number.Canonical() string representation is new and complex. Code review should confirm it is deterministic and collision-free.
-  >   ◦ Release-agent note: prefixItems, items and contains evaluate every array element with no short-circuit. On arrays with millions of elements and a failing schema, all elements will be evaluated and their units accumulated until the output cap is hit (which happens later in the pipeline). This is intentional (per acceptance criteria) but means very large arrays may feel slow until story 193 adds evaluation-step limits. The current behavior is correct per the spec.
-  >   ◦ Release-agent note: Sibling keyword access: items reads prefixItems length, contains reads minContains and maxContains values, all from ctx.Siblings map at compile time. If the skeleton's CompileContext does not provide siblings to every keyword, this will fail silently (keywords will not find siblings and will behave as if they are absent). Tests cover the expected cases (items without prefixItems, contains without min/max) but integration tests should verify a schema with all three keywords together works correctly.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -70,8 +64,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 20:13:19 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 12; findings: 0 new, 0 persistent, 8 resolved |
 | 2026-10-16 20:13:19 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 20:14:11 | agent | release-agent | ✅ pass · 52.0s · $0.1018 |
-| 2026-10-16 20:14:12 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 20:14:12 | run | run waiting_human | ⏸️ |
+| 2026-10-16 20:14:12 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 20:14:37 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 20:14:37 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
