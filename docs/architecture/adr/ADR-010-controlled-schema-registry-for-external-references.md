@@ -5,7 +5,9 @@
 - Status: proposed (pending architecture sign-off)
 
 ## Decision
-New code goes into new files: internal/registry/sources.go (reading listed sources), registry_options.go (public options) and cmd/jsonschema/refflags.go (flag parsing). The crowded files (internal/compile/compile.go, jsonschema.go, options.go, cmd/jsonschema/run.go) are touched only to wire the new pieces in. internal/registry/index.go is extended so that it indexes external resources and walks $ref targets under unknown keywords (finding F1 from story 186). internal/compile/refs.go falls back to the registry after the document's own index. The registry is built once per Compile and is read-only afterwards. testdata/registry/ is a new folder holding only the fixture files listed. Symbolic-link cases are created at test time in t.TempDir, not committed.
+New code goes into new files: internal/registry/sources.go (reading the listed sources), registry_options.go (public options) and cmd/jsonschema/refflags.go (flag parsing). The crowded files (internal/compile/compile.go, jsonschema.go, options.go and cmd/jsonschema/run.go) are touched only to wire the new pieces in. internal/registry/index.go is extended in two ways: it indexes external resources, and it walks $ref targets under unknown keywords (finding F1 from story 186). internal/compile/refs.go looks in the registry after the document's own index. The registry is built once per Compile and is read-only afterwards. testdata/registry/ is a new folder that holds only the fixture files listed. Symbolic-link cases are created at test time in t.TempDir and are not committed. --base-uri already exists in run.go (line 83, from story 186) and is reused; it is only given to the new default file:// base logic, not redeclared.
+
+Rule for --ref and --ref-dir values (decided, from the reviewer): refflags.go splits a value at its FIRST '='. The value is a mapping <uri>=<path> only if the text before that '=' parses with url.Parse as an absolute URI, has a scheme of two or more characters and contains no whitespace. Otherwise the whole value is a path: for --ref, a file found by its own $id; for --ref-dir it is a usage error (exit 2), because a directory always needs a base URI. A path that looks like a URI can be prefixed with './'. A URI that contains '=' cannot be mapped with --ref; callers use the library option instead. The flag help text says all of this. Requiring a scheme of two or more characters keeps Windows drive paths such as C:\x.json as paths. refflags.go is one small parse function plus a flag.Value for repeatable values, with a table-driven test in registry_cli_test.go. The test covers './a=b.json' (a path), 'C:\x.json' (a path), 'https://x/a.json=./a.json' (a mapping) and a mapping with an empty path (usage error, exit 2).
 
 ## Affected modules
 - internal/registry/sources.go
@@ -37,7 +39,7 @@ New code goes into new files: internal/registry/sources.go (reading listed sourc
 
 ## Data / API impact
 - DB impact: no
-- API impact: yes: new library options and CLI flags (additive)
+- API impact: yes
 - Migration needed: no
 
 ## Constraints for implementation
@@ -46,10 +48,14 @@ New code goes into new files: internal/registry/sources.go (reading listed sourc
 - Error messages name addresses and file paths, never instance values.
 - Tests ask the code for limit values instead of repeating the numbers.
 - Do not add code to crowded files beyond the wiring calls.
+- Parse --ref and --ref-dir by the first-'=' rule only: mapping if the prefix is an absolute URI (scheme of two or more characters, no whitespace), else the whole value is a path. Document this in the flag help text, including the './' escape and the note that URIs containing '=' need the library option.
+- Reuse the existing --base-uri flag in run.go; do not declare it again.
 
 ## Risks
 - The duplicate-address exception for embedded meta-schemas only becomes testable once story 189 embeds them.
 - Default file:// base on Windows paths needs careful RFC 8089 formatting.
+- URIs containing '=' cannot be mapped through --ref. This is a deliberate limit, documented in the help text; the library option covers it.
+- cmd/jsonschema/refs_cli_test.go asserts --base-uri behaviour. It is read only; if the new default file:// base changes its expected messages, it must be added as a write claim.
 
 ## Breaking changes
 - none
