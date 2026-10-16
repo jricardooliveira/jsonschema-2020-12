@@ -45,6 +45,7 @@ func evalItems(ctx *keywords.EvalContext, compiled any, instance any) (bool, err
 		if rec, ok := ctx.Items.(keywords.ItemRecorder); ok {
 			rec.RecordItems(ctx.InstanceLocation, ctx.KeywordLocation)
 		}
+		return true, ctx.Annotate(true)
 	}
 	return valid, nil
 }

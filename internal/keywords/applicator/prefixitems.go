@@ -68,6 +68,11 @@ func evalPrefixItems(ctx *keywords.EvalContext, compiled any, instance any) (boo
 		if rec, ok := ctx.Items.(keywords.ItemRecorder); ok {
 			rec.RecordPrefixItems(ctx.InstanceLocation, ctx.KeywordLocation, n-1, n == len(arr))
 		}
+		var v any = n - 1
+		if n == len(arr) {
+			v = true
+		}
+		return true, ctx.Annotate(v)
 	}
 	return valid, nil
 }
