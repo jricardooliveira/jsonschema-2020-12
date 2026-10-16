@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "05b0934252867d10da39447a0d506517ad417774",
+    "commit": "166536a166bd7193cb3b0ff3ae2fb515d0bb1437",
     "base_commit": "d6e1a9c2c7d4144dbc18281b8f0a6f4ba76aa15c"
   },
   "tests": {
@@ -105,19 +105,19 @@
       {
         "path": "docs/references.md",
         "change": "added",
-        "additions": 29,
+        "additions": 32,
         "deletions": 0
       },
       {
         "path": "internal/compile/refs.go",
         "change": "added",
-        "additions": 310,
+        "additions": 348,
         "deletions": 0
       },
       {
         "path": "internal/compile/refs_test.go",
         "change": "added",
-        "additions": 102,
+        "additions": 149,
         "deletions": 0
       },
       {
@@ -129,7 +129,7 @@
       {
         "path": "internal/eval/refguard.go",
         "change": "added",
-        "additions": 110,
+        "additions": 116,
         "deletions": 0
       },
       {
@@ -141,7 +141,7 @@
       {
         "path": "internal/eval/refguard_test.go",
         "change": "added",
-        "additions": 107,
+        "additions": 136,
         "deletions": 0
       },
       {
@@ -306,24 +306,23 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-d924bf8a66e847abada484a21fcadf33/docs/architecture/adr/ADR-009-core-identification-and-referencing-within-one-sch.md",
-    "summary": "Second pass: the earlier blocker is fixed. refguard.go now enforces a fixed evaluation-depth limit (MaxEvalDepth = 4 \u00d7 the decoder's nesting limit) in the per-call callState. A hostile schema whose $r"
+    "summary": "Second pass. F1 to F6 are resolved. The resolver memo is now seeded with every node from the root compile, so a $ref chain under known keywords (the reported attack) compiles each node once. New tests"
   },
   "security_boundary": {
-    "overall": "pass",
+    "overall": "warn",
     "highest_severity": "medium",
     "breaking_changes": [],
     "findings": [
-      "Resolved: the evaluation-depth backstop is now in internal/eval/refguard.go enterNode (MaxEvalDepth = 4 \u00d7 jsonvalue.MaxDepth). Past it, evaluation returns a jsonvalue.LimitError (exit 2) instead of overflowing the Go stack. It is tested at the library level (TestEvalDepthLimit) and through the CLI (TestEvaluationDepthExitError), both under -race.",
-      "Resolved: enterNode now fails closed with an internal error when the per-call state is missing (TestEnterNodeFailsClosed)."
+      "F7 (medium): load-time memory can still grow quadratically on a hostile schema, in internal/compile/refs.go compileDocument/resolver.target. resolver.target checks the memo only for the target pointer itself. On a miss, compileAt recompiles the whole subtree, including descendants that an earlier batch already compiled and memoized. A schema can place a chain under an unknown keyword (for example definitions/x/not/not/...): each level holds a $ref to its parent, the root refs only the deepest node, and each level carries a wide sibling payload (for example allOf with many 'true' items). Each batch then recompiles a growing ancestor subtree. That gives about d\u00b2\u00b7w/2 nodes, each with an O(d) location string, and re-adds every copied $ref to r.refs. There is no input-size limit yet (only jsonvalue.MaxDepth), so a crafted schema of a few MB can plausibly exhaust memory rather than return exit 2. This estimate comes from reading the code; I did not run it. The coder acknowledges the gap in a 'ponytail' comment. It is much narrower than F1, because subtrees under known keywords are now memoized from the root compile. Fix: when compileAt runs on a target, reuse memoized descendant nodes instead of rebuilding them, or add a load-time node budget that returns a LimitError (exit 2)."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 6.900911,
-    "tokens_in": 6751188,
-    "tokens_out": 99011
+    "usd": 11.75432,
+    "tokens_in": 10250978,
+    "tokens_out": 139595
   },
   "assumptions": [
     {
@@ -429,6 +428,26 @@
     {
       "task": "remediation",
       "text": "`refguard_test.go` gains new tests; none of its existing assertions changed. `refs_cli_test.go` gains one CLI test (exit code 2 at the depth limit)."
+    },
+    {
+      "task": "remediation",
+      "text": "The step is counted before the depth and loop checks, so every node entry is counted, including the one that hits a limit. Existing tests that lower the step limit still pass."
+    },
+    {
+      "task": "remediation",
+      "text": "Only `enterNode` counts the step; `eval.go` is not changed, because every node evaluation already goes through `enterNode`."
+    },
+    {
+      "task": "remediation",
+      "text": "I did not watch the n\u2248MaxDepth chain test fail on the old code, because it would have run out of memory. The 200-reference test and the anchor test did fail first, as described above."
+    },
+    {
+      "task": "remediation",
+      "text": "Errors from a target's compile are now reported in batch order (sorted by target pointer), not reference order. Each error still names the reference and its schema location, and the existing error-text tests pass unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "The anchor name is decoded with url.PathUnescape. This is safe because uri.Resolve has already rejected invalid percent-escapes, and '+' stays a literal '+'."
     }
   ],
   "blockers": [],
