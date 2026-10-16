@@ -17,7 +17,7 @@ omitted or given as `-`. Only one document is supported for now.
 
 Exit code 2 never means "invalid". Error lines give a location (byte offset,
 line and column) and a fixed reason, never the content of the schema or the
-document. A usage error may echo only the flag name as typed.
+document. A usage error may echo only the flag name, written as `-<name>`, never its value.
 
 ## Flags
 
