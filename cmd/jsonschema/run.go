@@ -84,6 +84,11 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	digits := intFlag("max-number-digits")
 	exponent := intFlag("max-number-exponent")
 	maxAnn := intFlag("max-annotations")
+	var refs, refDirs listFlag
+	flags.Var(&refs, "ref", "file: "+refHelp)
+	flags.Var(&refDirs, "ref-dir", "folder, needs a mapping: "+refHelp)
+	regFile := intFlag("max-ref-file-bytes")
+	regTotal := intFlag("max-ref-total-bytes")
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return fail("usage: jsonschema validate [-o flag|basic] <schema-file> [<document-file>|-]...")
@@ -99,7 +104,8 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	badFlag := ""
 	flags.Visit(func(f *flag.Flag) {
-		if (f.Name == "max-number-digits" && *digits <= 0) || (f.Name == "max-number-exponent" && *exponent <= 0) || (f.Name == "max-annotations" && *maxAnn <= 0) {
+		if (f.Name == "max-number-digits" && *digits <= 0) || (f.Name == "max-number-exponent" && *exponent <= 0) || (f.Name == "max-annotations" && *maxAnn <= 0) ||
+			(f.Name == "max-ref-file-bytes" && *regFile <= 0) || (f.Name == "max-ref-total-bytes" && *regTotal <= 0) {
 			badFlag = f.Name
 		}
 	})
@@ -117,11 +123,26 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(rest) == 0 {
 		return fail("missing schema argument")
 	}
+	reg := jsonschema.Registry{MaxFileBytes: *regFile, MaxTotalBytes: *regTotal}
+	for _, v := range refs {
+		u, p, _, err := parseRef(v)
+		if err != nil {
+			return fail("invalid value for flag -ref: " + err.Error())
+		}
+		reg.Files = append(reg.Files, jsonschema.RegistryFile{URI: u, Path: p})
+	}
+	for _, v := range refDirs {
+		u, p, mapped, err := parseRef(v)
+		if err != nil || !mapped {
+			return fail("invalid value for flag -ref-dir: expected <uri>=<folder>")
+		}
+		reg.Dirs = append(reg.Dirs, jsonschema.RegistryDir{BaseURI: u, Path: p})
+	}
 	schemaData, err := readFile(rest[0])
 	if err != nil {
 		return fail(err.Error())
 	}
-	s, err := jsonschema.CompileWithOptions(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent, MaxAnnotations: *maxAnn, BaseURI: *baseURI, SchemaPath: rest[0]})
+	s, err := jsonschema.CompileWithRegistry(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent, MaxAnnotations: *maxAnn, BaseURI: *baseURI, SchemaPath: rest[0]}, reg)
 	if err != nil {
 		return fail(err.Error())
 	}

@@ -67,7 +67,7 @@ func TestDeepRefChainCompilesEachNodeOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, _, err := compileDocument(v, "file:///s.json")
+	r, _, err := compileDocument(v, "file:///s.json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func TestDeepUnknownKeywordTargetsCompileOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, _, err := compileDocument(v, "file:///s.json")
+	r, _, err := compileDocument(v, "file:///s.json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestAncestorAfterDescendantTargetsCompileOnce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, _, err := compileDocument(v, "file:///s.json")
+	r, _, err := compileDocument(v, "file:///s.json", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

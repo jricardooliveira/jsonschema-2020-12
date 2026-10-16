@@ -1,0 +1,360 @@
+{
+  "work_id": "US-0145",
+  "parent_story": "US-0145",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "51962660218fbcf032693147fd4dbd27ae1a8d8e",
+    "base_commit": "d120471b008a1c3f3a0aa6cddb25d0e8ff2eea2b"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "A library option lets the caller supply extra schemas as individual files (mapped to a base URI, or with no URI and found by their own $id) and as directories mapped to a base URI. The registry is fixed when Compile returns and cannot change afterwards.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "For a directory mapped to a base URI, every .json file in it and its subfolders is loaded. Each file's address is the base URI plus the file's relative path (for example, base https://example.com/schemas/ makes common/address.json reachable as https://example.com/schemas/common/address.json). Files of other types are ignored.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$ref' to another resource is resolved after RFC 3986 resolution by that resource's $id, its embedded $ids, or its mapped URI. A mapped file whose own $id differs from its mapped URI can be reached by both addresses. Relative references inside it resolve against its own $id.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A main schema without $id gets the file:// URI of its file location as its base by default. A library option and the CLI switch --base-uri set a different base. A file:// reference to a file the caller did not list is unresolved.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The validator never accesses the network and never reads a file or folder the caller did not list. A symbolic link inside a listed folder that leads outside it is not followed and is reported as an error with exit code 2. A symbolic link that stays inside the folder works.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A reference that cannot be found in the document or the registry is an unresolved-reference error with exit code 2, never 'invalid'.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When two supplied schemas claim the same address, loading fails with exit code 2 and the error names the address and both sources. The exception is two schemas that are deep-JSON-equal: they are accepted once.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every supplied file is read and parsed at load time so its addresses can be indexed, and a file that is not valid JSON is a load error with exit code 2 that names the file. Every supplied resource the main schema reaches through references is resolved at load time, before any document is checked. Supplied schemas that are never reached are not checked beyond parsing.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Each supplied file obeys the existing per-file size limit, and all supplied schemas together obey a total size cap. Going over either is an error with exit code 2 that names the file. Both limits can be raised through the existing limit option and CLI switch.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The CLI accepts the repeatable switches --ref <uri>=<path> and --ref <path> for single files, and --ref-dir <uri>=<dir> for directories.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Building the registry and the resource index also walks $ref targets reached under unknown keywords (for example '#/definitions/x', when the target is an object or boolean). An $id declared inside such a target, or below it, starts an embedded resource with its own base URI, and relative $refs inside it resolve against that base. A test covers this.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Library tests and CLI contract tests cover file mapping, directory mapping and unresolved references, plus the exit codes for each error above. They run offline under go test -race.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/refflags.go",
+        "change": "added",
+        "additions": 38,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/registry_cli_test.go",
+        "change": "added",
+        "additions": 121,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 23,
+        "deletions": 2
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 68,
+        "deletions": 21
+      },
+      {
+        "path": "internal/compile/refs_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/registry_refs_test.go",
+        "change": "added",
+        "additions": 129,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/dbg_tmp_test.go",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/external_index_test.go",
+        "change": "added",
+        "additions": 92,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/index.go",
+        "change": "modified",
+        "additions": 222,
+        "deletions": 59
+      },
+      {
+        "path": "internal/registry/sources.go",
+        "change": "added",
+        "additions": 221,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/sources_fifo_test.go",
+        "change": "added",
+        "additions": 53,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/sources_test.go",
+        "change": "added",
+        "additions": 160,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/unknown_ref_targets_test.go",
+        "change": "added",
+        "additions": 40,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 1
+      },
+      {
+        "path": "registry_option_test.go",
+        "change": "added",
+        "additions": 183,
+        "deletions": 0
+      },
+      {
+        "path": "registry_options.go",
+        "change": "added",
+        "additions": 84,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/broken/bad.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/conflict/a.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/conflict/b.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/dir/main.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/dir/schemas/common/address.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/dir/schemas/notes.txt",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/dir/schemas/root.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/file/main.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/file/person.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/file/self_id.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/registry/unresolved/main.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/compile/compile.go",
+      "options.go"
+    ],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-1f3cfc11e793471083608417aa3229f6/docs/architecture/adr/ADR-010-controlled-schema-registry-for-external-references.md",
+    "summary": "Second pass: F1, F2, F3, F5, F6 and F7 are fixed, and F4 is only half fixed. Opening a .json named pipe no longer blocks: files are opened with O_NONBLOCK and checked on the open handle. Folder entrie"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 6.826929,
+    "tokens_in": 7036967,
+    "tokens_out": 93461
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Symlinks to folders inside a listed folder are not descended; their target is walked under its own path."
+    },
+    {
+      "task": "T1",
+      "text": "Address validation (absolute URI, no fragment) is in sources.go; the trailing '/' on a directory base is added there."
+    },
+    {
+      "task": "T1",
+      "text": "Default caps are exported as registry.DefaultMaxFileBytes and registry.DefaultMaxRegistryBytes; the 0 means default and negative means compile error mapping is for T4 to wire in the options."
+    },
+    {
+      "task": "T2",
+      "text": "A supplied document with no mapped address and no absolute $id gets no address, so nothing can reach it and no error is raised."
+    },
+    {
+      "task": "T2",
+      "text": "Anchor-style fragments under unknown keywords are not followed, only JSON Pointer fragments."
+    },
+    {
+      "task": "T2",
+      "text": "Only same-document $ref targets are followed under unknown keywords."
+    },
+    {
+      "task": "T3",
+      "text": "internal/compile/refs_test.go was edited only to pass the new third argument (nil) to compileDocument; its assertions are unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "Supplied files are not scanned for $refs outside the subtrees that are reached; this matches the rule that unreached supplied schemas are only parsed."
+    },
+    {
+      "task": "T3",
+      "text": "jsonschema.go and options.go are not wired to the registry yet; that belongs to T4."
+    },
+    {
+      "task": "T4",
+      "text": "The Options struct is declared in numberlimits.go, which is outside this task's scope, so the registry settings are not new Options fields. They live in a separate Registry struct passed to CompileWithRegistry. The base URI option already existed as Options.BaseURI and is reused."
+    },
+    {
+      "task": "T4",
+      "text": "options.go is not modified: the single wiring call is in jsonschema.go."
+    },
+    {
+      "task": "T4",
+      "text": "The per-file and total size limits are Registry.MaxFileBytes and Registry.MaxTotalBytes. A value of 0 means the default and a negative value is a compile error."
+    },
+    {
+      "task": "T4",
+      "text": "Number limits for parsing supplied files come from the same Options as the main schema."
+    },
+    {
+      "task": "T5",
+      "text": "The flag help text is passed to flags.Var but never printed, because the flag set discards its output. The first-'=' rule and the './' escape are documented only in the refHelp constant."
+    },
+    {
+      "task": "T5",
+      "text": "The registry limit flag names --max-ref-file-bytes and --max-ref-total-bytes are my choice; the story names no CLI switch for them."
+    },
+    {
+      "task": "T5",
+      "text": "The escaping-symlink test case is skipped when the OS cannot create symlinks."
+    },
+    {
+      "task": "remediation",
+      "text": "The FIFO test is in its own file, sources_fifo_test.go, with a unix build tag, because syscall.Mkfifo does not exist on Windows. The SameFile test stays in sources_test.go and runs everywhere."
+    },
+    {
+      "task": "remediation",
+      "text": "syscall.O_NONBLOCK is used in sources.go and has no effect on regular-file reads. I believe the constant also exists on Windows, but I could not cross-compile for Windows in this session (GOOS overrides were blocked), so that build is unverified."
+    },
+    {
+      "task": "remediation",
+      "text": "A .json entry that is not a regular file inside a listed folder is an error (exit 2), following the boundary rule 'reject FIFOs ... with exit 2'. Names that do not end in .json are still ignored without being opened."
+    },
+    {
+      "task": "remediation",
+      "text": "sources_test.go and registry_option_test.go are existing test files: one test was added to the first, and TestRegistrySchemaConcurrent in the second was rewritten to address F4. No other assertion was removed."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}
