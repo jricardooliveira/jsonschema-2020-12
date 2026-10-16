@@ -65,6 +65,7 @@ Modules the architecture expects to touch:
 - `annotations.go`
 - `jsonschema.go`
 - `options.go`
+- `numberlimits.go`
 - `annotations_test.go`
 - `internal/output/basic.go`
 - `cmd/jsonschema/run.go`
@@ -89,25 +90,30 @@ exactly this order:
 
 ## Risks
 
-- Recording every annotation on large documents costs time and memory. This is accepted by the operator (always collect) and bounded by the limit.
-- eval.go and compile.go are crowded files, so changes there must stay minimal and only wire in the code in annotations.go.
-- The applicator files from stories 183 and 184 may not exist yet, or may be named differently, when this story starts.
+- numberlimits.go is outside the reservation. The Options struct, and its MaxOutputUnits field, are defined there, so the MaxAnnotations field must be added there too (one line plus a comment). options.go keeps the maxAnnotations() method.
+- The plan now has 32 files, which is the cap.
+- Recording every annotation on large documents costs time and memory. The operator accepted this ('always collect'), and the limit bounds it.
+- eval.go and compile.go are crowded files. Changes there must stay minimal and only wire in the code in annotations.go.
+- There is no docs/ file in the plan for the 'names, not values' rule, to stay within the cap. The rule is recorded in the Annotation godoc and in the ADR.
 
 Implementation constraints the coder must honor:
 
 - Only the standard library; go.mod stays without require lines.
-- Annotation values only ever come from the schema. Instance values never appear in an annotation, a report or an error.
+- Annotation values come only from the schema. Evaluated property names may appear, because they are already in instanceLocation. Instance VALUES never appear in an annotation, a report or an error.
 - Annotations from failing subschemas are discarded and appear nowhere, not even in the internal tree.
 - The compiled Schema and everything reachable from it are immutable. Annotation state lives in the per-call evaluation context, and tests run under -race.
+- MaxAnnotations copies MaxOutputUnits exactly. Unset or 0 means DefaultMaxAnnotations, a negative value is a compile error, and an explicit CLI value of 0 or less is a usage error. There is never a 'collection off' mode.
+- The counter increments on every recorded annotation, including ones later dropped. Going over the limit gives LimitError{Limit: "annotations"}.
+- The sort is stable. It compares instance location, then keyword location, both as decoded JSON Pointer tokens (byte order, prefix first), then absolute keyword location, then keyword name, then evaluation sequence. Tests include ties from different dynamic paths and a ~1-escaped token.
+- The NDJSON wrapper and the failing-report shape are unchanged.
 - Tests read DefaultMaxAnnotations instead of repeating 10000000.
 - main.go is not edited, and no central keyword list or switch is edited: keywords register from init().
-- The ordering is deterministic and covered by a test.
 
-- DB impact: no · API impact: yes: adds Result.Annotations(), the Annotation type, Options.MaxAnnotations and a CLI limit flag; passing basic reports gain annotation units · Migration needed: no
+- DB impact: no · API impact: yes · Migration needed: no
 
 Breaking changes:
 
-- A passing 'basic' report now lists annotation units, so it is longer than before (operator-approved).
+- A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this.
 
 ## Proof
 
