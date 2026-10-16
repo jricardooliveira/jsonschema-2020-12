@@ -1,0 +1,22 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.2: $dynamicAnchor defines a plain-name fragment, so $ref #name targets it",
+    "description": "$ref to a $dynamicAnchor behaves like $ref to an $anchor",
+    "schema": {"$ref": "#node", "$defs": {"n": {"$dynamicAnchor": "node", "type": "string"}}},
+    "tests": [
+      {"description": "string matches", "data": "a", "valid": true},
+      {"description": "number does not", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.1: the plain-name namespace is per schema resource",
+    "description": "same $dynamicAnchor name in an embedded resource is allowed and separate",
+    "schema": {"$id": "http://x/a", "$dynamicAnchor": "n", "type": "object",
+      "properties": {"e": {"$ref": "http://x/e#n"}},
+      "$defs": {"e": {"$id": "http://x/e", "$dynamicAnchor": "n", "type": "string"}}},
+    "tests": [
+      {"description": "string e", "data": {"e": "s"}, "valid": true},
+      {"description": "number e", "data": {"e": 1}, "valid": false}
+    ]
+  }
+]
