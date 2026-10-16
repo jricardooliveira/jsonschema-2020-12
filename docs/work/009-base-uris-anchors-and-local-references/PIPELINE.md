@@ -3,23 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #143 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 20:56:33 UTC · **Stopped:** 2026-10-16 21:26:40 UTC
+- **Run:** #143 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 20:56:33 UTC · **Stopped:** 2026-10-16 21:27:02 UTC
 - **Story spend:** ~$14.27 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 143` to accept, or `factory reject 143 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-143-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Low: Error messages name schema locations but use format strings with substring assertions in tests (e.g. 'want %q in err.Error()'). A future refactor to error message wording could pass all tests without catching location format drift. Recommendation before shipping story 187 (external registry): tighten error assertions to exact format or dedicated error types.
-  >   ◦ Release-agent note: Low: An empty --base-uri flag (--base-uri '') is treated as unset and falls back to stdin placeholder, rather than rejected as an error. The documentation says 'must be absolute', which is correct, but the CLI silently ignores empty input. Recommendation: test and document this edge case explicitly, or reject --base-uri '' with a 'must not be empty' error.
-  >   ◦ Release-agent note: Low: '$id' appearing inside unknown keywords (e.g. inside 'enum' or 'const') is correctly not indexed, since those are data values not schemas. However, this design choice and its rationale are not explicitly documented in a way a reader of docs/references.md would discover without reading the spec. Recommendation: add a note under 'Non-schema targets' stating that unknown keywords are traversed only to find schema substructures, and that $id/anchor inside data keywords have no effect.
-  >   ◦ Security note (low): No network or disk access in resolution: locate() only looks up idx.Resources and navigates the in-memory document. A file:///etc/passwd ref is unresolved (tested). RootBaseURI only calls filepath.Abs, which reads the working directory, not the path. The base URI override is validated: it must be absolute, have no non-empty fragment and have valid percent-encoding, and it fails closed. The loop guard state is per call (callState in ctx.Items) and its frames are removed on exit. Error messages contain only schema locations, ref strings, $id and anchor values; LoopError gives the instance location as a pointer only.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -91,8 +85,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:25:53 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-16 21:25:53 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 21:26:39 | agent | release-agent | ✅ warn · 46.1s · $0.1061 |
-| 2026-10-16 21:26:40 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:26:40 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:26:40 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 21:27:02 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 21:27:02 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
