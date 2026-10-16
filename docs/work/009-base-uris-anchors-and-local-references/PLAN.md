@@ -1,7 +1,7 @@
 # PLAN #9: Core identification and referencing within one schema document: $id, $anchor, $defs, $ref, $comment
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #143, 2026-10-16 20:56 UTC)
 - Design: see `ADR-009-*.md` under `docs/architecture/adr/`
 
 ## Files that change

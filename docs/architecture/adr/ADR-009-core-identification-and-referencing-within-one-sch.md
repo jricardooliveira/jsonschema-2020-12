@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #9
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #143, 2026-10-16 20:56 UTC)
 
 ## Decision
 Resized to 30 files from the previous 36 without dropping any criterion. URI normalization is merged into internal/uri/resolve.go (it is part of comparing resolved URIs). Anchor and $id syntax checks are merged into internal/registry/index.go (they run during the same walk). Root base URI selection is merged into internal/compile/refs.go (it is the first step of load-time resolution). The loop cases are folded into testdata/core/ref.json. Flow: the compiler builds the resource index (internal/registry/index.go) from the parsed document, giving each subschema a base URI and indexing normalized $id values and per-resource anchors. internal/compile/refs.go then resolves every $ref once against that index, so broken references fail at load time regardless of the document. The $ref keyword (internal/keywords/core/ref.go) holds a pointer to its compiled target and evaluates it with its siblings. The evaluation loop guard lives in internal/eval/refguard.go, with per-call state only; eval.go, a crowded file, gets one wiring call. cmd/jsonschema/main.go, also crowded, gets only one flag and passes the schema path; the file-to-URI conversion lives in the library, not in main.go. $id, $anchor, $defs and $comment keep one file each, per the keyword convention. Their tests share core_keywords_test.go plus testdata JSON cases.
