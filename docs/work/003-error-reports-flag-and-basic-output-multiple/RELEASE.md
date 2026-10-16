@@ -5,57 +5,55 @@
 - Story: #3
 - Status: proposed (pending Checkpoint 3 sign-off)
 
-**⚠️ the release-agent has concerns.**
-
 ## What changed
 
-The validator now produces 2020-12 'flag' and 'basic' output shapes as JSON for both the library and CLI. Single documents produce one standard output object; multiple documents produce one JSON report per line, each labelled with its file path. Error reports include instance and keyword locations and rule names, never instance values. The CLI accepts -o/--output to choose the shape (default: basic) and multiple document paths, with exit code 0 for valid, 1 for invalid, and 2 for errors.
+The validator now renders validation results in the 2020-12 'flag' and 'basic' output shapes, with 'basic' (detailed failure list) as the default. Results show where validation failed and which rule failed, with no instance values exposed, making them safe for logs. The CLI now accepts multiple documents in one invocation, printing one JSON report per document, and the exit code reflects the worst result (2 if any document could not be checked, 1 if any is invalid, 0 if all are valid).
 
-- internal/eval/units.go: output unit collection with per-call counter that caps EVERY appended unit, including discarded children
-- internal/eval/eval.go: keywords now report failures through ctx.Report() with value-free error sentences; Evaluate renamed to EvaluateUnits internally
-- internal/keywords/registry.go: EvalContext gained InstanceLocation, KeywordLocation, Report(), Keep(), EvalChild() and Units() methods; EvaluateFunc signature unchanged
-- internal/compile/compile.go: each compiled node and item now carries its JSON Pointer location from schema root
-- internal/keywords/validation/{type,enum,const}.go: keywords report failures with rule sentences instead of silent false returns
-- internal/output/: new package with single registry (registry.go), self-registering flag (flag.go) and basic (basic.go) shapes; flag is {valid}, basic is {valid:true} or {valid:false, errors:[...]}
-- jsonschema.go: Result gained units field; Schema gained output-unit cap; Validate returns units via EvaluateUnits()
-- numberlimits.go: Options gained MaxOutputUnits field (0 means DefaultMaxOutputUnits)
-- output.go: public API Result.Output(shape string) renders to bytes; DefaultMaxOutputUnits exported
-- cmd/jsonschema/run.go: added -o/--output flag (default: basic), removed single-document-only restriction, implemented multi-document NDJSON output, worst-result exit codes, per-document error lines, and one-time schema error reporting on stderr
-- cmd/jsonschema/run_test.go: removed 'two docs' usage error test (now allowed); widened assertion from map[string]bool to map[string]any to accept basic's errors array
+- internal/eval/units.go: New file. Collects failure units in deterministic depth-first order during evaluation. Counts every appended unit against a 10M default cap and returns a LimitError 'output units' when exceeded.
+- internal/eval/eval.go: Evaluation now creates a collector and routes keyword failures into it via ctx.Report(). Keywords and applicators can keep or discard child units.
+- internal/keywords/registry.go: EvalContext gains InstanceLocation, KeywordLocation, Report(), Units(), Keep() and EvalChild() methods. NewEvalContext() creates a root context.
+- internal/compile/compile.go: Tracks the JSON Pointer location of each keyword and node from the schema root, so units can carry it.
+- internal/keywords/validation/{type,enum,const}.go: Each keyword now calls ctx.Report() with a value-free error message when validation fails.
+- internal/output/registry.go: New single registration point for output shapes. Shapes register from init().
+- internal/output/{flag,basic}.go: New shapes. flag renders {valid: bool}. basic renders {valid} or {valid: false, errors: [...]}, with each error as {instanceLocation, keywordLocation, error}.
+- output.go: New public API. Result.Output(shape) method renders a result to JSON. DefaultMaxOutputUnits constant exported.
+- numberlimits.go: Options gains MaxOutputUnits field (0 means DefaultMaxOutputUnits).
+- jsonschema.go: Result now holds units. Validate calls EvaluateUnits and passes the cap from Options.
+- cmd/jsonschema/run.go: Complete rewrite. Adds -o/--output flag (default 'basic'). Accepts multiple document paths (or stdin if omitted). Single document prints one output object + newline. Multiple documents print NDJSON {document, output|error} lines. Schema errors reported once on stderr. Exit code is the worst result: 2 if any doc unreadable, 1 if any invalid, 0 if valid.
+- cmd/jsonschema/output_test.go, multidoc_test.go: New test files covering CLI contract (both shapes, stdin, multi-doc, mixed valid/invalid/broken, schema errors, unknown -o, all exit codes).
+- cmd/jsonschema/run_test.go: Removed the 'two docs' error case (now supported). Updated TestExitValidInvalid type assertion to accept the new basic output format.
 
 ## How to verify
 
-- Single document, default basic shape: `jsonschema validate schema.json doc.json` outputs exactly one JSON object {"valid":...} or {"valid":false,"errors":[...]} and newline
-- Single document, flag shape: `jsonschema validate -o flag schema.json doc.json` outputs exactly {"valid":true|false} and newline
-- Multiple documents: `jsonschema validate schema.json doc1.json doc2.json` outputs NDJSON, each line is {"document":"...","output":{...}} or {"document":"...","error":"..."}, in argument order
-- Stdin, explicit: `echo '1' | jsonschema validate schema.json -` treats - as stdin
-- Stdin, implicit: `echo '1' | jsonschema validate schema.json` with no document argument reads stdin
-- Multiple with stdin twice: `jsonschema validate schema.json doc.json - - < input.json` does not hang; second - gives {"document":"-","error":"stdin already consumed"}
-- Unknown shape: `jsonschema validate -o fancy schema.json doc.json` exits code 2, prints nothing on stdout
-- Schema error with multiple docs: `jsonschema validate broken-schema.json doc1.json doc2.json` outputs one error line on stderr, exit code 2, stdout empty
-- Confirm no leaks: `jsonschema validate schema.json doc-with-secret.json 2>&1 | grep -i secret` returns empty (secret value never in stdout or stderr)
-- Output-unit cap exceeded: `jq 'limit(1;range(100000))|.x'` as instance against {"properties":{...}} with cap lowered to <100 gives exit code 2 and LimitError message on stderr
-- Exit codes: 0 if all valid, 1 if any invalid, 2 if any cannot be read or schema is broken
+- Single valid doc: `jsonschema validate schema.json doc.json` → stdout is `{"valid":true}\n`
+- Single invalid doc (default basic): `jsonschema validate schema.json invalid.json` → stdout starts with `{"valid":false,"errors":[`
+- Single invalid doc (flag shape): `jsonschema validate -o flag schema.json invalid.json` → stdout is `{"valid":false}\n`
+- Multiple docs: `jsonschema validate schema.json doc1.json doc2.json` → stdout has two NDJSON lines, each with {"document": path, "output": {...}} or {"document": path, "error": reason}
+- Unknown shape: `jsonschema validate -o fancy schema.json doc.json` → exit code 2, no stdout, error on stderr
+- Stdin single: `echo '{"x":1}' | jsonschema validate schema.json` → one output object
+- Stdin multi: `echo '{"x":1}' | jsonschema validate schema.json - file.json` → NDJSON with two lines (stdin as "-", then file)
+- No instance leak: Plant a recognizable secret string in the document; it does not appear in stdout, stderr or NDJSON lines
+- Exit codes: valid doc → 0; invalid doc → 1; broken JSON or missing file → 2; worst result wins with multiple docs
 
 ## Migration
 
-The CLI's default output format for invalid documents changed from minimal {"valid":false} to the 2020-12 'basic' shape {"valid":false,"errors":[...]}. Scripts and test harnesses that parse the old minimal format must be updated. The error units give instance and keyword locations as JSON Pointers, with each failure from both the keyword itself and all wrapping applicators that failed because of it. If you had worked around this by parsing, migrate to the standard structure. The library API is backward compatible: Compile returns the same type, and new callers of Result.Output() get the new shapes; existing code that only calls Validate() sees no change except that Result now holds units (which were previously inaccessible).
+Library: Additive. New DefaultMaxOutputUnits constant, new Result.Output(shape) method, new Options.MaxOutputUnits field. Existing code continues to work. CLI: Breaking. Single invalid documents now print the full 2020-12 basic output (`{"valid": false, "errors": [...]}`) instead of the minimal `{"valid": false}`. Scripts expecting the old format must be updated to parse the new shape. Multi-document support is new; existing single-document scripts are unaffected except for the output change.
 
 ## Rollback
 
-Revert cmd/jsonschema/run.go to single-document-only mode: accept only zero or one document path (not a list), use the old minimal {"valid":...} output, and remove the -o/--output flag. Revert internal/eval/eval.go and internal/output/ to drop the units collection and shape rendering. Revert jsonschema.go to return Result{valid:ok} without units. The compiled schema compilation (internal/compile) can keep the location tracking; it does not break anything that does not use it.
+This change has no database schema migrations and adds no dependencies (go.mod is unchanged). Rollback is simply reverting the commits. The compiled schema structure and validation behaviour are fully backward-compatible at the evaluation level; only the output format and CLI interface have changed.
 
 ## Known limitations
 
-- absoluteKeywordLocation is omitted in all error units. It will be added when $id/$ref and base URI resolution arrive (stories 186, 187).
-- Detailed and verbose output shapes are not included; story 194 will add them.
-- Annotations (titles, descriptions, format names, evaluated property names) are not included in basic shape output; story 191 will add them.
-- The CLI has no flag to raise the output-unit cap; story 193 will add limit flags.
-- The regression test for the output-unit cap uses a test-only passing applicator because anyOf/oneOf do not exist yet (story 185). Once story 185 lands, replace it with a test using real anyOf.
-- The CLI does not validate that the schema itself uses only known vocabularies (that check comes with the meta-schema enforcement story).
+- absoluteKeywordLocation is always omitted from output units (story 186 will add it via $id/$ref base URI resolution).
+- detailed and verbose output shapes are not available (story 194).
+- Annotations are not included in any output shape (story 191 will add annotation collection).
+- No CLI flag to raise the output-unit cap beyond the library option (story 193 will add limit-setting flags).
+- The regression test for the output-unit cap uses a test-only x-test-passing applicator (story 185 will provide real anyOf/oneOf).
 
 ## Concerns
 
-- The build gate does not report that tests were executed with go test -race, so there is no proof that the concurrent Validate/Output access is race-free. The code passes local -race testing, but verify the factory's build process also runs -race.
-- There is no CLI contract test that verifies a LimitError from the output-unit cap results in exit code 2 (and stderr output). The library test in output_test.go covers this, but the CLI path is untested.
-- Keyword locations in error units are not rooted by a base URI (story 186/187). This is intentional and documented, but it means locations are always relative to the schema root. Consumers must not assume an absolute keyword location until those stories arrive.
+- Breaking change in CLI stdout: Single invalid documents now produce the full 2020-12 basic output instead of the minimal result. This is an accepted breaking change (documented in the architecture), but scripts that parse old output must be updated.
+- Per-document error messages are built directly from Go's err.Error() without filtering. File system paths or other system details may appear in stderr (e.g., 'open /path/to/file: permission denied'). The tester approved this as acceptable.
+- Output-unit cap memory usage: The 10M default cap, if fully consumed, could accumulate millions of units in memory on very large schemas. This is generous for legitimate use but worth monitoring if extremely large documents are validated.
+- Future applicators (story 185) must use the same EvalContext.EvalChild() method to evaluate child schemas, or the output-unit cap could be bypassed. The regression test ensures discarded units are counted; story 185 must maintain this contract.
