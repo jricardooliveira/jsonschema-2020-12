@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #135 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 16:51:03 UTC
-- **Story spend:** ~$0.16 of $26.00 (estimated at API list prices)
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 16:56:37 UTC
+- **Story spend:** ~$1.25 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,18 +15,19 @@ The operator decides at gate-2-architect: `factory approve 135` to accept, or `f
 
 - Waiting for the operator at **gate-2-architect**:
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
-  >   • If the skeleton's keyword evaluate signature used a different instance type, it changes to jsonvalue.Value.
-  >   • Keyword evaluate signature may change to take jsonvalue.Value. This is an internal-only API (internal/keywords) and changes no public library or CLI contract. It must land before stories 181-185.
+  >   • The `type` keyword is now enforced. Schemas that used it were previously accepted as unknown-keyword no-ops, which changes 178's TestValidateSchemas expectation for {"type":"string"}.
+  >   • Input that 178 accepted is now rejected as broken JSON (exit 2): invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap. A leading BOM is now accepted (178 rejected it).
+  >   • `type` is now enforced. Schemas that used it were previously ignored as an unknown keyword.
+  >   • Input that story 178 accepted is now rejected with exit 2: invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap.
+  >   • A leading UTF-8 BOM, which 178 rejected, is now accepted.
   >   → Approve these breaking changes?
   >
   > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • api_contract: The number-cap option is only loosely specified ("an Options field or option function"). Story 178 and the project spec fix limits at Compile time. The design does not say whether the cap is stored in the immutable Schema and applied to both the schema and every Validate document.
-  >   • api_contract: The design lists two limits (MaxNumberDigits, MaxNumberExponent) but a single CLI flag. A human should settle whether one flag raises both or each gets its own flag. Story 193 must reuse the same naming pattern and not duplicate it.
-  >   • api_contract: The design names ParseError, but ADR #1 already defines SyntaxError and LimitError in internal/jsonvalue. Two parallel error families would break the typed errors.As mapping to exit code 2.
-  >   • security: ParseError is designed to carry a JSON Pointer to the error location. Pointer segments are document member names, which is content. ADR #1, approved at Checkpoint 2, deliberately reports offset plus line:column only for this reason. The design contradicts that decision, so a human should confirm that parse and limit error text stays free of member names.
-  >   • security: The caller-supplied cap is a hostile-input control. The design does not say what a zero, negative or absent cap value means. An unvalidated value could turn the cap off (fail-open) or reject everything.
-  >   • security: The cap is only safe if the exponent text itself is parsed without overflow or allocation. An exponent with thousands of digits must be rejected by its text length, not converted with Atoi into a wrapped value. The cap must also cover negative exponents (1e-999999999), which expand into huge denominators.
-  >   • security: The new strict decoder replaces ADR #1's decode.go. The depth limit (checked before descending), the location-only error text, and the input-size cap in run.go must not regress when the decoder is rewritten.
+  >   • api_contract: Checkpoint 2 decision 5 says every story 178 test keeps passing unchanged. The design edits one of them: the {"type":"string"} entry in jsonschema_test.go TestValidateSchemas, which expects an unknown-keyword no-op. Implementing `type` makes that expectation wrong, so the conflict is unavoidable. The code must not override an operator decision, so the operator should confirm the one-entry change (replace it with an unknown keyword such as x-unknown) or choose another route.
+  >   • api_contract: The operator decision names new Reason values for the number-size case. The design uses the existing *LimitError with new Limit names ("number digits", "number exponent"). This keeps the typed errors.As mapping and adds no ParseError family, so it honours the intent. The operator should know the wording differs.
+  >   • api_contract: In the library a zero Options field means the default and a negative value is an error. The operator wording is 'zero or negative = usage error'. Only the CLI can tell an explicit 0 from an absent flag, and there an explicit 0 is a usage error. A zero library field is never 'no limit', so this is safe, but it is an interpretation.
+  >   • security: CPU amplification on hostile input. Numbers are re-parsed into big.Rat on every Equal call, and each number may carry up to the default cap of digits and exponent. A large document of cap-sized numbers compared against many enum or const values (or nested arrays) multiplies the number of expensive parses. Input size is capped, but evaluation steps are not capped until story 193. The design defers caching to 'if profiling shows a need', which leaves the hostile-input requirement open. A human should confirm that cheap fast paths are required in this story and that story 193 counts Equal work against the evaluation-step limit.
+  >   • security: Parser differential risk. The hand-written pre-scan (UTF-8, escapes, surrogates) and encoding/json's tokenizer must agree on where strings begin and end. Any disagreement could hide a lone surrogate or invalid byte from the check. The design describes backslash handling but names no test that cross-checks the two.
   >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
@@ -42,8 +43,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 16:50:30 | agent | architect-agent | ✅ pass |
 | 2026-10-16 16:50:30 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-16 16:51:03 | agent | boundary-agent | ✅ warn · 33.1s · $0.1646 |
-| 2026-10-16 16:51:03 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-16 16:51:03 | run | run waiting_human | ⏸️ |
+| 2026-10-16 16:51:03 | gate | gate-2-architect | ❌ REJECTED: Keep the design (the internal evaluate-signature change to jsonvalue.Value is accepted: internal only) and settle every boundary point: (1) Errors: reuse ADR-001's typed *SyntaxError and *LimitError in inter… |
+| 2026-10-16 16:53:14 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-16 16:55:55 | agent | architect-agent | ✅ pass · 160.3s · $0.8831 |
+| 2026-10-16 16:55:55 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
+| 2026-10-16 16:56:37 | agent | boundary-agent | ✅ warn · 41.5s · $0.2033 |
+| 2026-10-16 16:56:37 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-16 16:56:37 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
