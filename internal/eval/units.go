@@ -7,7 +7,7 @@ import (
 
 // DefaultMaxOutputUnits caps how many units one evaluation may append,
 // counting units that are later discarded.
-const DefaultMaxOutputUnits = 100000
+const DefaultMaxOutputUnits = 10_000_000
 
 // EvaluateUnits is Evaluate that also returns the failure units in
 // deterministic depth-first order. Exceeding max appended units is a
