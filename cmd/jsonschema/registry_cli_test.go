@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -26,6 +27,46 @@ func TestParseRef(t *testing.T) {
 		if (err != nil) != c.bad || u != c.uri || p != c.path || m != c.mapped {
 			t.Errorf("%q: got %q %q %v %v", c.in, u, p, m, err)
 		}
+	}
+}
+
+// --max-ref-file-bytes and --max-ref-total-bytes reach the library: over the
+// limit is exit 2 naming the file, a raised limit passes, and 0 or less is a
+// usage error.
+func TestRegistryLimitFlags(t *testing.T) {
+	doc := write(t, "d.json", `{"name":"a"}`)
+	main := regFixtures + "file/main.json"
+	personPath := regFixtures + "file/person.json"
+	person := "https://example.com/person.json=" + personPath
+	info, err := os.Stat(personPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	size := strconv.Itoa(int(info.Size()))
+	under := strconv.Itoa(int(info.Size()) - 1)
+	run := func(extra ...string) (int, string, string) {
+		args := append([]string{"validate", "--ref", person, "--ref", regFixtures + "file/self_id.json"}, extra...)
+		return do(append(args, main, doc), "")
+	}
+	for _, c := range []struct {
+		name  string
+		flags []string
+		want  string // text the one-line error must hold
+	}{
+		{"per-file over", []string{"--max-ref-file-bytes", under}, "person.json"},
+		{"total over", []string{"--max-ref-total-bytes", size}, "self_id.json"},
+		{"per-file zero", []string{"--max-ref-file-bytes", "0"}, "max-ref-file-bytes"},
+		{"total negative", []string{"--max-ref-total-bytes", "-1"}, "max-ref-total-bytes"},
+	} {
+		code, out, errOut := run(c.flags...)
+		wantErr(t, c.name, code, out, errOut)
+		if !strings.Contains(errOut, c.want) {
+			t.Errorf("%s: error %q does not name %q", c.name, errOut, c.want)
+		}
+	}
+	code, out, errOut := run("--max-ref-file-bytes", size, "--max-ref-total-bytes", strconv.Itoa(1<<20))
+	if code != exitValid || strings.Count(out, "\n") != 1 || errOut != "" {
+		t.Errorf("raised limits: code=%d out=%q err=%q", code, out, errOut)
 	}
 }
 

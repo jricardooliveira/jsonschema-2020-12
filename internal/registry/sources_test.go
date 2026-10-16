@@ -94,6 +94,24 @@ func TestDanglingSymlinkFails(t *testing.T) {
 	}
 }
 
+// The walked entry and the opened handle must be the same file.
+func TestOpenChecksHandleIsWalkedFile(t *testing.T) {
+	dir := t.TempDir()
+	a, b := filepath.Join(dir, "a.json"), filepath.Join(dir, "b.json")
+	write(t, a, `{}`)
+	write(t, b, `{}`)
+	want, err := os.Lstat(a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := (&Loader{}).open(b, "", want); err == nil || !strings.Contains(err.Error(), b) {
+		t.Fatalf("swapped file accepted: %v", err)
+	}
+	if _, err := (&Loader{}).open(a, "", want); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestPerFileLimit(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "big.json")
 	write(t, p, `{"k":"0123456789"}`)

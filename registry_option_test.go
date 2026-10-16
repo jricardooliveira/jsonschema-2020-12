@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -133,21 +134,48 @@ func TestRegistryLimitsRaisable(t *testing.T) {
 	}
 }
 
-// The registry is copied at compile time and the Schema is shared across goroutines.
+// The registry is fixed at compile time: rewriting the supplied files on disk
+// and changing the caller's Files and Dirs afterwards leave the verdicts of a
+// Schema shared across goroutines unchanged.
 func TestRegistrySchemaConcurrent(t *testing.T) {
-	files := []RegistryFile{{URI: "https://example.com/person.json", Path: regDir + "file/person.json"}}
-	s, err := compileFixture(t, "file/main.json", Registry{Files: files})
+	tmp := t.TempDir()
+	person := filepath.Join(tmp, "person.json")
+	addrDir := filepath.Join(tmp, "schemas")
+	address := filepath.Join(addrDir, "common", "address.json")
+	for _, c := range [][2]string{{regDir + "file/person.json", person}, {regDir + "dir/schemas/common/address.json", address}} {
+		data, err := os.ReadFile(c[0])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Dir(c[1]), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(c[1], data, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	files := []RegistryFile{{URI: "https://example.com/person.json", Path: person}}
+	dirs := []RegistryDir{{BaseURI: "https://example.com/schemas/", Path: addrDir}}
+	main := `{"properties":{"p":{"$ref":"https://example.com/person.json"},"a":{"$ref":"https://example.com/schemas/common/address.json"}}}`
+	s, err := CompileWithRegistry([]byte(main), Options{}, Registry{Files: files, Dirs: dirs})
 	if err != nil {
 		t.Fatal(err)
 	}
-	files[0].Path = "changed"
+	for _, p := range []string{person, address} {
+		if err := os.WriteFile(p, []byte(`true`), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	files[0] = RegistryFile{URI: "https://example.com/other.json", Path: address}
+	dirs[0] = RegistryDir{BaseURI: "https://changed.example/", Path: tmp}
 	var wg sync.WaitGroup
 	for i := 0; i < 8; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if !mustValidate(t, s, `{"name":"a"}`) || mustValidate(t, s, `{}`) {
-				t.Error("wrong verdicts")
+			if !mustValidate(t, s, `{"p":{"name":"a"},"a":{"street":"x"}}`) ||
+				mustValidate(t, s, `{"p":{}}`) || mustValidate(t, s, `{"a":{}}`) {
+				t.Error("verdicts changed after the registry sources changed")
 			}
 		}()
 	}
