@@ -41,6 +41,23 @@ func TestPropertiesRecordsAppliedNames(t *testing.T) {
 	}
 }
 
+// A failing subschema evaluated through EvalChild drops the property names
+// it recorded; a passing sibling keeps them. contains passes overall, so the
+// root does not roll everything back.
+func TestPropertiesRolledBackWhenSubschemaFails(t *testing.T) {
+	n := mustCompile(t, `{"contains":{"properties":{"a":true},"required":["z"]}}`)
+	ok, rec, err := eval.EvaluateAnnotated(n, mustDecode(t, `[{"a":1},{"a":1,"z":1}]`))
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if got := rec.PropertiesAt("/0"); len(got) != 0 {
+		t.Errorf("failed element kept property annotations: %v", got)
+	}
+	if got := rec.PropertiesAt("/1")["/contains/properties"]; !reflect.DeepEqual(got, []string{"a"}) {
+		t.Errorf("passing element: got %v", rec.PropertiesAt("/1"))
+	}
+}
+
 func TestObjectOutputDeterministicAndOrdered(t *testing.T) {
 	n := mustCompile(t, `{"properties":{"b":false,"a":false},"additionalProperties":false}`)
 	var doc strings.Builder

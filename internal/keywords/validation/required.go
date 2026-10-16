@@ -31,13 +31,26 @@ func compileRequired(_ *keywords.CompileContext, value any) (any, error) {
 	return compileNames("required", value)
 }
 
+// CountStep counts one evaluation step (a member visited, a pattern match
+// attempt or a reported failure) in the per-call counter held by ctx.Items.
+// A *LimitError past the cap must be returned as is, never swallowed.
+func CountStep(ctx *keywords.EvalContext) error {
+	if s, ok := ctx.Items.(interface{ Step() error }); ok {
+		return s.Step()
+	}
+	return nil
+}
+
 // reportMissing reports each name absent from obj, in schema order. The
-// messages hold only names from the schema.
+// messages hold only names from the schema. Each failure counts one step.
 func reportMissing(ctx *keywords.EvalContext, names []string, obj map[string]any) (bool, error) {
 	valid := true
 	for _, n := range names {
 		if _, ok := obj[n]; !ok {
 			valid = false
+			if err := CountStep(ctx); err != nil {
+				return false, err
+			}
 			if err := ctx.Report("missing required property: " + n); err != nil {
 				return false, err
 			}

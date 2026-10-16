@@ -34,6 +34,9 @@ func evalPropertyNames(ctx *keywords.EvalContext, compiled any, instance any) (b
 	sort.Strings(names)
 	valid := true
 	for _, k := range names {
+		if err := step(ctx); err != nil {
+			return false, err
+		}
 		ok, units, err := ctx.EvalChild(compiled, k, ctx.InstanceLocation)
 		if err != nil {
 			return false, err
@@ -41,6 +44,9 @@ func evalPropertyNames(ctx *keywords.EvalContext, compiled any, instance any) (b
 		if !ok {
 			valid = false
 			ctx.Keep(units)
+			if err := step(ctx); err != nil {
+				return false, err
+			}
 		}
 	}
 	return valid, nil

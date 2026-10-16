@@ -13,6 +13,7 @@ import (
 	"sort"
 
 	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/neoface/jsonschema/internal/keywords/validation"
 )
 
 func init() {
@@ -29,6 +30,9 @@ func recordProps(ctx *keywords.EvalContext, names []string) {
 		rec.RecordProperties(ctx.InstanceLocation, ctx.KeywordLocation, names)
 	}
 }
+
+// step counts one evaluation step (see validation.CountStep).
+var step = validation.CountStep
 
 // sortedKeys returns a sorted copy of the object's member names.
 func sortedKeys(obj map[string]any) []string {
@@ -49,6 +53,9 @@ func evalMember(ctx *keywords.EvalContext, node any, obj map[string]any, key str
 	}
 	if !ok {
 		ctx.Keep(units)
+		if err := step(ctx); err != nil {
+			return false, err
+		}
 	}
 	return ok, nil
 }
@@ -78,6 +85,9 @@ func evalProperties(ctx *keywords.EvalContext, compiled any, instance any) (bool
 	valid := true
 	var applied []string
 	for _, k := range sortedKeys(obj) {
+		if err := step(ctx); err != nil {
+			return false, err
+		}
 		n, has := nodes[k]
 		if !has {
 			continue

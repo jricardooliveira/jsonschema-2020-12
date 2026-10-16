@@ -1,9 +1,12 @@
 package eval
 
 import (
+	"errors"
 	"reflect"
 	"sync"
 	"testing"
+
+	"github.com/neoface/jsonschema/internal/jsonvalue"
 )
 
 func TestRecordPropertiesReadBack(t *testing.T) {
@@ -30,6 +33,20 @@ func TestRecordPropertiesRollback(t *testing.T) {
 	got := r.PropertiesAt("")
 	if len(got) != 1 || got["/properties"] == nil {
 		t.Fatalf("got %v", got)
+	}
+}
+
+func TestStepLimit(t *testing.T) {
+	r := newEvaluatedItems(2)
+	if r.Step() != nil || r.Step() != nil {
+		t.Fatal("steps within the limit must pass")
+	}
+	var le *jsonvalue.LimitError
+	if err := r.Step(); !errors.As(err, &le) || le.Limit != "evaluation steps" || le.Max != 2 {
+		t.Fatalf("want evaluation steps LimitError, got %v", err)
+	}
+	if NewEvaluatedItems().maxSteps != DefaultMaxEvalSteps {
+		t.Error("default record must use DefaultMaxEvalSteps")
 	}
 }
 

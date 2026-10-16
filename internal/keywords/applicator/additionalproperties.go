@@ -42,16 +42,20 @@ func compileAdditionalProperties(ctx *keywords.CompileContext, value any) (any, 
 	return c, nil
 }
 
-func (c *compiledAdditional) covers(name string) bool {
+// covers counts one step per pattern match attempt.
+func (c *compiledAdditional) covers(ctx *keywords.EvalContext, name string) (bool, error) {
 	if c.declared[name] {
-		return true
+		return true, nil
 	}
 	for _, re := range c.patterns {
+		if err := step(ctx); err != nil {
+			return false, err
+		}
 		if re.MatchString(name) {
-			return true
+			return true, nil
 		}
 	}
-	return false
+	return false, nil
 }
 
 func evalAdditionalProperties(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
@@ -63,7 +67,14 @@ func evalAdditionalProperties(ctx *keywords.EvalContext, compiled any, instance 
 	valid := true
 	var applied []string
 	for _, k := range sortedKeys(obj) {
-		if c.covers(k) {
+		if err := step(ctx); err != nil {
+			return false, err
+		}
+		covered, err := c.covers(ctx, k)
+		if err != nil {
+			return false, err
+		}
+		if covered {
 			continue
 		}
 		applied = append(applied, k)

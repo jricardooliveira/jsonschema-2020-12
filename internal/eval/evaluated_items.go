@@ -47,6 +47,9 @@ type itemKey struct{ instance, keyword string }
 // with Mark and Rollback.
 type EvaluatedItems struct {
 	entries []itemEntry
+	// steps counts evaluation steps for this call (see Step); Rollback never
+	// resets it.
+	steps, maxSteps int
 }
 
 type itemEntry struct {
@@ -58,7 +61,9 @@ type itemEntry struct {
 }
 
 // NewEvaluatedItems returns an empty record.
-func NewEvaluatedItems() *EvaluatedItems { return &EvaluatedItems{} }
+func NewEvaluatedItems() *EvaluatedItems { return newEvaluatedItems(DefaultMaxEvalSteps) }
+
+func newEvaluatedItems(maxSteps int) *EvaluatedItems { return &EvaluatedItems{maxSteps: maxSteps} }
 
 // Mark returns a position to pass to Rollback.
 func (r *EvaluatedItems) Mark() int { return len(r.entries) }

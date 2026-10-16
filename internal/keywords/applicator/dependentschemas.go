@@ -50,6 +50,9 @@ func evalDependentSchemas(ctx *keywords.EvalContext, compiled any, instance any)
 	}
 	valid := true
 	for _, d := range compiled.([]depSchema) {
+		if err := step(ctx); err != nil {
+			return false, err
+		}
 		if _, present := obj[d.trigger]; !present {
 			continue
 		}
@@ -60,6 +63,9 @@ func evalDependentSchemas(ctx *keywords.EvalContext, compiled any, instance any)
 		if !ok {
 			valid = false
 			ctx.Keep(units)
+			if err := step(ctx); err != nil {
+				return false, err
+			}
 		}
 	}
 	return valid, nil
