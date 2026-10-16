@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #137 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 19:00:55 UTC · **Stopped:** 2026-10-16 19:49:34 UTC
-- **Story spend:** ~$2.69 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-16 19:00:55 UTC · **Stopped:** 2026-10-16 19:53:16 UTC
+- **Story spend:** ~$4.11 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,10 +15,11 @@ The operator decides at gate-release: `factory approve 137` to accept, or `facto
 
 - Waiting for the operator at **gate-release**:
   > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: The build gate does not report that tests were executed with go test -race, so there is no proof that the concurrent Validate/Output access is race-free. The code passes local -race testing, but verify the factory's build process also runs -race.
-  >   ◦ Release-agent note: There is no CLI contract test that verifies a LimitError from the output-unit cap results in exit code 2 (and stderr output). The library test in output_test.go covers this, but the CLI path is untested.
-  >   ◦ Release-agent note: Keyword locations in error units are not rooted by a base URI (story 186/187). This is intentional and documented, but it means locations are always relative to the schema root. Consumers must not assume an absolute keyword location until those stories arrive.
-  >   ◦ Security note (low): I found no insecure default. Fallback: Options.MaxOutputUnits of 0 maps to the finite DefaultMaxOutputUnits (100000), and a negative value is a compile error, so the cap cannot be silently turned off (numberlimits.go maxUnits). Fail-closed: an unknown shape is rejected before the schema is read, and a render or stdout write failure gives exit 2 (run.go). Leaking: per-document reasons come only from typed errors. SyntaxError and LimitError carry only location and limit, and readFile/readCapped give 'file not found', 'read failed' or 'input exceeds limit'. Render failure is replaced by the fixed text 'cannot render result'. NDJSON lines are built with encoding/json, with RawMessage for the shape object. absoluteKeywordLocation is never derived from a path.
+  >   ◦ Release-agent note: Breaking change in CLI stdout: Single invalid documents now produce the full 2020-12 basic output instead of the minimal result. This is an accepted breaking change (documented in the architecture), but scripts that parse old output must be updated.
+  >   ◦ Release-agent note: Per-document error messages are built directly from Go's err.Error() without filtering. File system paths or other system details may appear in stderr (e.g., 'open /path/to/file: permission denied'). The tester approved this as acceptable.
+  >   ◦ Release-agent note: Output-unit cap memory usage: The 10M default cap, if fully consumed, could accumulate millions of units in memory on very large schemas. This is generous for legitimate use but worth monitoring if extremely large documents are validated.
+  >   ◦ Release-agent note: Future applicators (story 185) must use the same EvalContext.EvalChild() method to evaluate child schemas, or the output-unit cap could be bypassed. The regression test ensures discarded units are counted; story 185 must maintain this contract.
+  >   ◦ Security note (low): F2 (low): run.go fills per-document NDJSON and stderr reasons from err.Error(). Today this is safe: Validate wraps only the content-free *SyntaxError and *LimitError with %w, and readFile/readCapped produce fixed phrases. Nothing enforces the boundary rule that only typed errors may reach the output, though. A later untyped error from Validate (for example from a future keyword's compile or eval path) would go straight to stdout and stderr. A typed allow-list, or a generic fallback reason for anything that is not a known type, would make this fail closed.
   >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
@@ -57,8 +58,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 19:48:46 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 3 new, 0 persistent, 1 resolved |
 | 2026-10-16 19:48:46 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 19:49:33 | agent | release-agent | ✅ warn · 46.6s · $0.0824 |
-| 2026-10-16 19:49:34 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 19:49:34 | run | run waiting_human | ⏸️ |
+| 2026-10-16 19:49:34 | gate | gate-release | ❌ REJECTED: One fix only, change nothing else: internal/eval/units.go sets DefaultMaxOutputUnits = 100000, but the design this relaunch keeps (run #136) fixed it at 10_000_000 so that large but legitimate invalid docume… |
+| 2026-10-16 19:51:09 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 19:51:29 | agent | coder-agent | ✅ complete · remediation · 19.5s · $0.7340 |
+| 2026-10-16 19:51:32 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 19:51:33 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-16 19:52:18 | agent | tester-agent | ✅ pass · 45.2s · $0.5930 |
+| 2026-10-16 19:52:18 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 11; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-16 19:52:18 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-16 19:53:16 | agent | release-agent | ✅ pass · 57.4s · $0.0894 |
+| 2026-10-16 19:53:16 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-16 19:53:16 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
