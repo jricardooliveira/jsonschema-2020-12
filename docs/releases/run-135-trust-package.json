@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "warn",
   "candidate": {
-    "commit": "297d2c88fd13ec5fb6d86288e93058b83826798b",
+    "commit": "ca1c26546e825d5fc4abc302a40809aa42c9bbb6",
     "base_commit": "534cb31b6831b8981c241fa099aed7fd1320d755"
   },
   "tests": {
@@ -82,14 +82,14 @@
       {
         "path": "cmd/jsonschema/parse_errors_test.go",
         "change": "added",
-        "additions": 88,
+        "additions": 101,
         "deletions": 0
       },
       {
         "path": "cmd/jsonschema/run.go",
         "change": "modified",
-        "additions": 20,
-        "deletions": 2
+        "additions": 33,
+        "deletions": 5
       },
       {
         "path": "docs/cli-contract.md",
@@ -264,7 +264,7 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-e36947e963d34b52ac24b0a276362ba9/docs/architecture/adr/ADR-002-exact-json-value-model-deep-equality-and-the-type.md",
-    "summary": "The implementation covers all eleven acceptance criteria with substantive positive, negative and boundary tests. Exact compact decimals avoid exponent-driven expansion during decoding and keyword eval"
+    "summary": "The implementation substantially satisfies the story: exact compact decimals avoid eager exponent expansion, strict parsing rejects ambiguous or damaged input, and independently registered type/enum/c"
   },
   "security_boundary": {
     "overall": "pass",
@@ -282,9 +282,9 @@
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 14.089918,
-    "tokens_in": 13921741,
-    "tokens_out": 194625
+    "usd": 20.29388,
+    "tokens_in": 18279646,
+    "tokens_out": 222668
   },
   "assumptions": [
     {
@@ -418,6 +418,50 @@
     {
       "task": "remediation",
       "text": "parse_errors_test.go is this story's own test file. I only added a test to it and changed no existing assertion."
+    },
+    {
+      "task": "remediation",
+      "text": "spec_test.go is an existing test file: it gains the citation-rejection and leak checks from internal/speccases, and every assertion it had before is kept."
+    },
+    {
+      "task": "remediation",
+      "text": "The unknown-flag message is now 'unknown flag -<name>', so a '=value' part is never echoed. run_test.go only checks the exit code for -bogus, so it still passes."
+    },
+    {
+      "task": "remediation",
+      "text": "The unknown-flag line used to repeat the argument exactly as typed. It is now `unknown flag -<name>` with no `=value`, so it can never contain a value. The existing run_test.go case only checks the exit code and still passes."
+    },
+    {
+      "task": "remediation",
+      "text": "The flag package's 'flag provided but not defined: -' message format is relied on to get the unknown flag's name. If that text ever changes, the fallback is the generic 'invalid arguments' line, still exit 2, and no value is ever shown."
+    },
+    {
+      "task": "remediation",
+      "text": "Per the operator, F5 is accepted as a recorded divergence: internal/speccases/ is kept unchanged and nothing was deleted."
+    },
+    {
+      "task": "remediation",
+      "text": "As the operator decided, F5 is accepted as a recorded divergence: internal/speccases/ stays as it is and nothing was deleted."
+    },
+    {
+      "task": "remediation",
+      "text": "I ran only the ./cmd/jsonschema tests in this pass, not the full suite. The factory runs the full suite next."
+    },
+    {
+      "task": "remediation",
+      "text": "I left the two documentation files unchanged. The boundary rules require them, and the reviewer said removing them would not resolve F1."
+    },
+    {
+      "task": "remediation",
+      "text": "I made no code edits, because the review found no code defect to fix."
+    },
+    {
+      "task": "remediation",
+      "text": "I read the finding as the scope problem on the two docs files, now settled by the operator's grant. The pipeline log shows the last failing round ended in that scope request, and every test passes without changes."
+    },
+    {
+      "task": "remediation",
+      "text": "In this pass the guard allows writes to docs/limits.md but not to docs/cli-contract.md, so I left docs/cli-contract.md unchanged."
     }
   ],
   "blockers": [
