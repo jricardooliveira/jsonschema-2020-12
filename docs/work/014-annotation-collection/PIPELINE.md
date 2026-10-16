@@ -3,19 +3,24 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #144 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:43:46 UTC
-- **Story spend:** ~$5.26 of $35.00 (estimated at API list prices)
+- **Run:** #144 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:53:00 UTC
+- **Story spend:** ~$9.59 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 144` to accept, or `factory reject 144 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 144` to accept, or `factory reject 144 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: internal/compile/refs.go (resolver.compile, around line 157) does `if !ok { continue }` for unregistered keywords. Replace the `continue` with `n.Items = append(n.Items, Item{keywords.AnnotateOnly(name, ""), s[name], loc + "/" + escape.Replace(name)})` before `continue`, as compile.go already does. Then unknown keywords are collected as annotations. Not granted automatically: internal/compile/refs.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: internal/compile/refs.go
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: dbg_test.go is an empty stray file with only a package declaration; it should be deleted. Tester found this as F5 (low severity, persistent).
+  >   ◦ Release-agent note: Report-bytes error in run.go passes through but cannot be tested from CLI until story 193 adds the -max-report-bytes flag. Feature is covered at library level in reportbytes_test.go.
+  >   ◦ Release-agent note: Breaking change: passing 'basic' reports now include annotation units (longer output). Operator explicitly approved this as matching the 2020-12 standard shape. Scripts comparing before/after output will see a difference.
+  >   ◦ Release-agent note: Tester found no security issues. Build and go test -race pass. Every acceptance criterion (1-11) is covered by spec-derived tests.
+  >   ◦ Security note (low): No insecure defaults found. Budget and RenderReport treat a cap of 0 or less as DefaultMaxReportBytes, never as unlimited. A negative MaxAnnotations or MaxReportBytes is a compile error. The CLI rejects a -max-annotations value of 0 or less, or one it cannot parse, with exit 2. run.go passes only the *LimitError text through and keeps 'cannot render result' for other render errors. Annotation values are schema values held by reference. Tests check that distinctive string, number and key values from the document never appear in output.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -58,8 +63,23 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:42:16 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
 | 2026-10-16 21:42:16 | boss | authorize coder-agent:T6 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
 | 2026-10-16 21:43:46 | agent | coder-agent | ✅ scope-request · T6 · 89.7s · $0.6040 |
-| 2026-10-16 21:43:46 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:43:46 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:43:46 | gate | gate-question | ❌ REJECTED: yes, grant internal/compile/refs.go for this run (unknown keywords in $ref-compiled subtrees must be collected as annotations like in compile.go). |
+| 2026-10-16 21:44:26 | boss | authorize coder-agent:T6 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-16 21:45:59 | agent | coder-agent | ✅ complete · T6 · 92.0s · $0.5811 |
+| 2026-10-16 21:46:02 | gate | gate-build | ✅ [T6] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 21:46:02 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 21:47:33 | agent | tester-agent | ❌ fail · 90.1s · $0.9698 |
+| 2026-10-16 21:47:33 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ['AC10: annotation values are not rendered correctly. Schema numbers are *jsonvalue.Number, which has only unexported fields and no MarshalJSON. So intern… |
+| 2026-10-16 21:47:33 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 11 finding(s) |
+| 2026-10-16 21:51:10 | agent | coder-agent | ✅ complete · remediation · 217.0s · $1.8115 |
+| 2026-10-16 21:51:12 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 21:51:12 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 21:51:48 | agent | tester-agent | ✅ warn · 35.8s · $0.8371 |
+| 2026-10-16 21:51:48 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 0 new, 1 persistent, 6 resolved |
+| 2026-10-16 21:51:48 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-16 21:52:59 | agent | release-agent | ✅ warn · 70.4s · $0.1285 |
+| 2026-10-16 21:53:00 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-16 21:53:00 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
