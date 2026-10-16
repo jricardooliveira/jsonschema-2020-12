@@ -10,7 +10,7 @@
 | 6 | Object rules | released | [006-object-rules/](006-object-rules/) | 141 |
 | 7 | Array rules | released | [007-array-rules/](007-array-rules/) | 140 |
 | 8 | Combining schemas | released | [008-combining-schemas/](008-combining-schemas/) | 142 |
-| 9 | Base URIs, anchors and local references | to do |  |  |
+| 9 | Base URIs, anchors and local references | released | [009-base-uris-anchors-and-local-references/](009-base-uris-anchors-and-local-references/) | 143 |
 | 10 | Schema registry for external references | to do |  |  |
 | 11 | Dynamic references | to do |  |  |
 | 12 | Embedded meta-schemas and schema validation | to do |  |  |
@@ -55,7 +55,7 @@
    Add the 2020-12 applicator keywords allOf, anyOf, oneOf, not, and if/then/else. Each keyword lives in its own file and registers through the keyword registry. 'then' and 'else' have no effect without 'if', and a failure inside 'if' alone never makes the document invalid. Boolean schemas true and false work as subschemas everywhere. Write spec-derived positive and negative tests, including nested combinations and oneOf with more than one match.
    Why: Completes the in-place applicators, which annotation and unevaluated handling later rely on.
 
-9. **Base URIs, anchors and local references** — to do
+9. **Base URIs, anchors and local references** — released
    Add 2020-12 core identification and referencing within one schema document. '$id' sets the base URI using RFC 3986 resolution, including for embedded schema resources with their own $id. '$anchor' defines plain-name fragments. '$defs' holds reusable subschemas. '$ref' resolves local JSON Pointer fragments, which includes ~0/~1 escaping and percent-decoding. It also resolves anchor fragments and relative references against the current base URI. '$ref' works alongside sibling keywords. '$comment' is accepted and has no effect on validation. A reference that cannot be resolved is an error with exit code 2, never 'invalid'. The validator never fetches anything from the network or from disk on its own. Write spec-derived positive and negative tests.
    Why: Referencing inside one document is the base that the registry, dynamic references and meta-schemas all build on.
 
