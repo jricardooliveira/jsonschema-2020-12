@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
+	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/uri"
 )
 
@@ -26,6 +28,21 @@ type Resource struct {
 	URI     string            // normalized absolute URI, no fragment
 	Pointer string            // JSON Pointer of the resource root in the document
 	Anchors map[string]string // anchor name -> JSON Pointer of the schema
+	Doc     any               // the document holding the resource
+	Source  string            // where Doc came from; empty for the main schema
+}
+
+// value returns the schema the resource points at.
+func (r *Resource) value() any {
+	v, _ := navigate(r.Doc, r.Pointer)
+	return v
+}
+
+func (r *Resource) from() string {
+	if r.Source == "" {
+		return "the main schema"
+	}
+	return r.Source
 }
 
 // Index is the result of Build. It is read-only once built.
@@ -38,6 +55,8 @@ type Index struct {
 func Escape(tok string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(tok, "~", "~0"), "/", "~1")
 }
+
+type pendingRef struct{ base, ref string }
 
 type item struct {
 	node     any
@@ -56,88 +75,222 @@ func Build(doc any, rootBase string) (*Index, error) {
 	}
 	stack := []item{{node: doc, ptr: "", base: base}}
 	first := true
-	for len(stack) > 0 {
-		it := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-		m, ok := it.node.(map[string]any)
-		if !ok { // boolean schemas (or non-schemas) carry no keywords
-			if it.resource == nil && first {
-				first = false
-				if err := idx.add(&Resource{URI: it.base, Pointer: it.ptr}, it.ptr); err != nil {
+	var refs []pendingRef
+	resAt := map[string]*Resource{}
+	queued := map[string]bool{}
+	done := 0
+	for {
+		for len(stack) > 0 {
+			it := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			m, ok := it.node.(map[string]any)
+			if !ok { // boolean schemas (or non-schemas) carry no keywords
+				if it.resource == nil && first {
+					first = false
+					if err := idx.add(&Resource{URI: it.base, Pointer: it.ptr, Doc: doc}, it.ptr); err != nil {
+						return nil, err
+					}
+				}
+				idx.Bases[it.ptr] = it.base
+				continue
+			}
+			res := it.resource
+			base := it.base
+			if id, ok := m["$id"].(string); ok {
+				full, err := uri.Resolve(it.base, id)
+				if err != nil {
+					return nil, fmt.Errorf("%s: $id %q: %v", loc(it.ptr), id, err)
+				}
+				if i := strings.IndexByte(full, '#'); i >= 0 && i < len(full)-1 {
+					return nil, fmt.Errorf("%s: $id %q must not have a non-empty fragment", loc(it.ptr), id)
+				}
+				if base, err = stripFrag(full); err != nil {
+					return nil, fmt.Errorf("%s: $id %q: %v", loc(it.ptr), id, err)
+				}
+				res = nil
+			}
+			if res == nil {
+				res = &Resource{URI: base, Pointer: it.ptr, Doc: doc}
+				if err := idx.add(res, it.ptr); err != nil {
 					return nil, err
 				}
 			}
-			idx.Bases[it.ptr] = it.base
-			continue
+			first = false
+			idx.Bases[it.ptr] = base
+			resAt[it.ptr] = res
+			if r, ok := m["$ref"].(string); ok {
+				refs = append(refs, pendingRef{base, r})
+			}
+			for _, kw := range []string{"$anchor", "$dynamicAnchor"} {
+				name, ok := m[kw].(string)
+				if !ok {
+					continue
+				}
+				if !anchorRe.MatchString(name) {
+					return nil, fmt.Errorf("%s: %s %q is not a valid anchor name", loc(it.ptr), kw, name)
+				}
+				if prev, dup := res.Anchors[name]; dup && prev != it.ptr {
+					return nil, fmt.Errorf("%s: duplicate anchor %q in resource %q", loc(it.ptr), name, res.URI)
+				}
+				if res.Anchors == nil {
+					res.Anchors = map[string]string{}
+				}
+				res.Anchors[name] = it.ptr
+			}
+			push := func(child any, p string) {
+				stack = append(stack, item{node: child, ptr: p, base: base, resource: res})
+			}
+			for _, kw := range singleKw {
+				if c, ok := m[kw]; ok {
+					push(c, it.ptr+"/"+kw)
+				}
+			}
+			for _, kw := range arrayKw {
+				if a, ok := m[kw].([]any); ok {
+					for i, c := range a {
+						push(c, fmt.Sprintf("%s/%s/%d", it.ptr, kw, i))
+					}
+				}
+			}
+			for _, kw := range mapKw {
+				if sub, ok := m[kw].(map[string]any); ok {
+					keys := make([]string, 0, len(sub))
+					for k := range sub {
+						keys = append(keys, k)
+					}
+					sort.Strings(keys)
+					for _, k := range keys {
+						push(sub[k], it.ptr+"/"+kw+"/"+Escape(k))
+					}
+				}
+			}
 		}
-		res := it.resource
-		base := it.base
-		if id, ok := m["$id"].(string); ok {
-			full, err := uri.Resolve(it.base, id)
+		// Follow $ref targets the keyword walk did not reach (for example under
+		// unknown keywords), so an $id inside them starts its own resource.
+		for ; done < len(refs); done++ {
+			pr := refs[done]
+			full, err := uri.Resolve(pr.base, pr.ref)
 			if err != nil {
-				return nil, fmt.Errorf("%s: $id %q: %v", loc(it.ptr), id, err)
+				continue // compile reports it
 			}
-			if i := strings.IndexByte(full, '#'); i >= 0 && i < len(full)-1 {
-				return nil, fmt.Errorf("%s: $id %q must not have a non-empty fragment", loc(it.ptr), id)
+			docPart, frag, _ := strings.Cut(full, "#")
+			key, err := uri.Normalize(docPart)
+			res := idx.Resources[key]
+			if err != nil || res == nil || !strings.HasPrefix(frag, "/") {
+				continue
 			}
-			if base, err = stripFrag(full); err != nil {
-				return nil, fmt.Errorf("%s: $id %q: %v", loc(it.ptr), id, err)
+			toks, err := uri.ParsePointer(frag)
+			if err != nil {
+				continue
 			}
-			res = nil
-		}
-		if res == nil {
-			res = &Resource{URI: base, Pointer: it.ptr}
-			if err := idx.add(res, it.ptr); err != nil {
-				return nil, err
+			ptr := res.Pointer
+			for _, t := range toks {
+				ptr += "/" + Escape(t)
 			}
-		}
-		first = false
-		idx.Bases[it.ptr] = base
-		for _, kw := range []string{"$anchor", "$dynamicAnchor"} {
-			name, ok := m[kw].(string)
+			if _, seen := idx.Bases[ptr]; seen || queued[ptr] {
+				continue
+			}
+			v, ok := navigate(doc, ptr)
 			if !ok {
 				continue
 			}
-			if !anchorRe.MatchString(name) {
-				return nil, fmt.Errorf("%s: %s %q is not a valid anchor name", loc(it.ptr), kw, name)
+			switch v.(type) {
+			case map[string]any, bool:
+			default:
+				continue
 			}
-			if prev, dup := res.Anchors[name]; dup && prev != it.ptr {
-				return nil, fmt.Errorf("%s: duplicate anchor %q in resource %q", loc(it.ptr), name, res.URI)
-			}
-			if res.Anchors == nil {
-				res.Anchors = map[string]string{}
-			}
-			res.Anchors[name] = it.ptr
-		}
-		push := func(child any, p string) {
-			stack = append(stack, item{node: child, ptr: p, base: base, resource: res})
-		}
-		for _, kw := range singleKw {
-			if c, ok := m[kw]; ok {
-				push(c, it.ptr+"/"+kw)
-			}
-		}
-		for _, kw := range arrayKw {
-			if a, ok := m[kw].([]any); ok {
-				for i, c := range a {
-					push(c, fmt.Sprintf("%s/%s/%d", it.ptr, kw, i))
+			anc := ptr
+			for resAt[anc] == nil {
+				i := strings.LastIndexByte(anc, '/')
+				if i < 0 {
+					break
 				}
+				anc = anc[:i]
 			}
+			if resAt[anc] == nil {
+				continue
+			}
+			queued[ptr] = true
+			stack = append(stack, item{node: v, ptr: ptr, base: idx.Bases[anc], resource: resAt[anc]})
 		}
-		for _, kw := range mapKw {
-			if sub, ok := m[kw].(map[string]any); ok {
-				keys := make([]string, 0, len(sub))
-				for k := range sub {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-				for _, k := range keys {
-					push(sub[k], it.ptr+"/"+kw+"/"+Escape(k))
-				}
-			}
+		if len(stack) == 0 {
+			break
 		}
 	}
 	return idx, nil
+}
+
+// navigate follows an escaped JSON Pointer in v.
+func navigate(v any, ptr string) (any, bool) {
+	if ptr == "" {
+		return v, true
+	}
+	toks, err := uri.ParsePointer(ptr)
+	if err != nil {
+		return nil, false
+	}
+	for _, t := range toks {
+		switch c := v.(type) {
+		case map[string]any:
+			var ok bool
+			if v, ok = c[t]; !ok {
+				return nil, false
+			}
+		case []any:
+			i, err := strconv.Atoi(t)
+			if err != nil || i < 0 || i >= len(c) || strconv.Itoa(i) != t {
+				return nil, false
+			}
+			v = c[i]
+		default:
+			return nil, false
+		}
+	}
+	return v, true
+}
+
+// AddExternal indexes a supplied document under its address (when not empty),
+// its $id and its embedded $ids. source names the file in errors. Two
+// documents claiming one address are accepted only when deep-equal.
+func (idx *Index) AddExternal(doc any, address, source string) error {
+	sub, err := Build(doc, address)
+	if err != nil {
+		return fmt.Errorf("%s: %v", source, err)
+	}
+	var root *Resource
+	keys := make([]string, 0, len(sub.Resources)+1)
+	for k, r := range sub.Resources {
+		r.Source = source
+		keys = append(keys, k)
+		if r.Pointer == "" {
+			root = r
+		}
+	}
+	if address != "" && root != nil {
+		a, err := stripFrag(address)
+		if err != nil {
+			return fmt.Errorf("%s: %v", source, err)
+		}
+		if _, ok := sub.Resources[a]; !ok { // root has its own $id: both addresses reach it
+			sub.Resources[a] = root
+			keys = append(keys, a)
+		}
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if !strings.Contains(k, ":") { // not absolute: nothing can reach it
+			continue
+		}
+		r := sub.Resources[k]
+		if prev, dup := idx.Resources[k]; dup {
+			if !jsonvalue.Equal(prev.value(), r.value()) {
+				return fmt.Errorf("duplicate address %q claimed by %s and %s", k, prev.from(), r.from())
+			}
+			continue
+		}
+		idx.Resources[k] = r
+	}
+	return nil
 }
 
 func (idx *Index) add(r *Resource, ptr string) error {
