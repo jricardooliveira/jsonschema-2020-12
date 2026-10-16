@@ -499,5 +499,5 @@
   "blockers": [
     "Files changed outside the tasks' declared scope (\u00a76): ['docs/cli-contract.md', 'docs/limits.md']"
   ],
-  "next_authorization": "operator-review"
+  "next_authorization": "none"
 }
