@@ -1,0 +1,11 @@
+{
+  "batch": "41dac257eb2e4a538c4c822bbb76c676",
+  "baseline": "a87dd434c54059e44e2b6b421cb428f2ae8bc385",
+  "members": [
+    {
+      "run_id": 141,
+      "head": "d356a7d4e5b77480fac6f2e5a06719747c3dc242",
+      "candidate": "35bbc3a660aecc6858608e5418dca20871c91aa2"
+    }
+  ]
+}
