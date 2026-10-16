@@ -1,0 +1,340 @@
+{
+  "work_id": "US-0142",
+  "parent_story": "US-0142",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "0529446f32b01052b4b3f6ec1eeb7bc32710bc3c",
+    "base_commit": "5e7f6f211c1d9398c3c6c5286dec973966edcfcf"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Subschemas are compiled at their schema location: CompileContext carries the current keyword location and offers a way to compile a child at a location (for example CompileAt). Every output unit's keywordLocation is a JSON Pointer from the schema root, for example /allOf/0/const. Story 180's units_test.go TestUnitOrderAndNoValues asserts the rooted value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "allOf (internal/keywords/applicator/allof.go) is valid only when every subschema is valid. On failure, the basic report has one allOf entry followed by the failures of every failing subschema. Each entry gives the instance location and the keyword location, and never the data.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "anyOf (anyof.go) is valid when at least one subschema is valid. When none match, the basic report has one anyOf entry followed by each choice's own failures, each with its location and rule and never the data.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "oneOf (oneof.go) is valid only when exactly one subschema is valid. When zero choices match, it reports like anyOf. When more than one matches, its single entry names the matching choice indices, for example 'oneOf: choices 0 and 2 both matched', with location and rule but no data.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "anyOf and oneOf always evaluate every choice and never stop at the first match. A test proves that a later choice is still evaluated after an earlier one matched.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "not (not.go) is valid only when its subschema is invalid. On failure it reports exactly one entry with the location and the 'not' rule (for example 'not: document matched a schema it must not match') and no inner details or data.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "if/then/else (if.go, then.go, else.go): 'then' and 'else' have no effect without 'if'. A failure inside 'if' alone never makes the document invalid. When 'if' passes, 'then' applies; when it fails, 'else' applies. A failing branch reports one entry for that branch followed by its own failures, and nothing is listed for 'if'.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Each keyword lives in its own file and registers itself through the keyword registry from init(); no central keyword list or switch is edited. A malformed value is a compile (schema) error, never 'invalid': allOf/anyOf/oneOf that is not a non-empty array of schemas, or not/if/then/else that is not a schema.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The boolean schemas true and false work as subschemas in every one of these keywords.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Spec-derived positive and negative JSON cases, each citing the 2020-12 core section (10.2.1 / 10.2.2), cover every keyword. They include nested combinations (for example allOf inside anyOf inside not) and oneOf with more than one match. Report tests assert that no instance value appears in the output.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 10,
+    "covered": 10,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "internal/compile/compile_location_test.go",
+        "change": "added",
+        "additions": 33,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval_subschema_test.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/units_test.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 5,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/allof.go",
+        "change": "added",
+        "additions": 31,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/allof_test.go",
+        "change": "added",
+        "additions": 69,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/anyof.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/anyof_test.go",
+        "change": "added",
+        "additions": 63,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/else.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/else_test.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/if.go",
+        "change": "added",
+        "additions": 71,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/if_test.go",
+        "change": "added",
+        "additions": 91,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/not.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/not_test.go",
+        "change": "added",
+        "additions": 60,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/oneof.go",
+        "change": "added",
+        "additions": 45,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/oneof_test.go",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/subschemas.go",
+        "change": "added",
+        "additions": 26,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/then.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/then_test.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/units_test.go",
+        "change": "added",
+        "additions": 56,
+        "deletions": 0
+      },
+      {
+        "path": "spec_applicator_test.go",
+        "change": "added",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/allOf.json",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/anyOf.json",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/boolean-subschemas.json",
+        "change": "added",
+        "additions": 58,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/if-then-else.json",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/nested.json",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/not.json",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/oneOf.json",
+        "change": "added",
+        "additions": 30,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/keywords/registry.go",
+      "internal/compile/compile.go",
+      "internal/eval/eval.go"
+    ],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-12fb66cce8fa4a76ba559ec0e9835c3e/docs/architecture/adr/ADR-008-applicator-keywords-allof-anyof-oneof-not-and-if-t.md",
+    "summary": "The implementation meets all ten acceptance criteria, and each one is backed by a test that would fail if the behaviour broke. Keyword locations are rooted at the schema root, and story 180's TestUnit"
+  },
+  "security_boundary": {
+    "overall": "warn",
+    "highest_severity": "medium",
+    "breaking_changes": [
+      "Keyword locations of nested units change from child-relative to schema-root-relative; story 180's TestUnitOrderAndNoValues assertion is updated accordingly.",
+      "Nested output units' keywordLocation changes from child-relative (/const) to schema-root-relative (/allOf/0/const). Story 180 is not yet released, so no released consumer is affected. The units_test.go assertion must be updated in the same change."
+    ],
+    "findings": [
+      "F1 (medium, hostile-input DoS): compileBranch in internal/keywords/applicator/if.go compiles the sibling 'if' subschema again inside both then.go and else.go, and evalBranch evaluates it again for each branch. A schema that nests if/then/else inside 'if' therefore doubles the compile and evaluation work at every level. A few KB of nesting (depth around 30) means about 2^30 compiled nodes, so a hostile schema can hang Compile. Compile is not covered by the future evaluation-step limit, and the nesting-depth limit from story 193 does not stop this at generous defaults. Safe default: compile 'if' once and have the branches use that single compiled node, so the work grows linearly."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 3.231587,
+    "tokens_in": 2508600,
+    "tokens_out": 41619
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "TestUnitOrderAndNoValues lives in internal/eval/units_test.go, not internal/output/units_test.go as the plan assumed. I edited it where it is, because it asserts the behaviour this story changes (child-relative to rooted locations). I kept the unit-count, ordering and no-value assertions."
+    },
+    {
+      "task": "T1",
+      "text": "The existing Sub seam in registry.go and compile.go already meets T1, so those files and eval.go are unchanged."
+    },
+    {
+      "task": "T1",
+      "text": "Story 180's TestUnitOrderAndNoValues is in internal/eval/units_test.go, not internal/output. I updated it there to expect rooted locations (/x-test-keep/0/const, /x-test-keep/0/type) and kept every other assertion. I listed it in files_modified because the story deliberately changes this behaviour."
+    },
+    {
+      "task": "T1",
+      "text": "The task's scope names internal/output/units_test.go, so I wrote it as a new test that checks the same behaviour at the report level: the basic report shows rooted child locations and no instance value."
+    },
+    {
+      "task": "T1",
+      "text": "Instead of a separate CompileAt, the child compile is CompileContext.Sub(value, rel), and rel is already a JSON Pointer suffix. Escaping ~0/~1 inside segments is left to the callers that build rel from names (the shared subschemas helper in T2). Keyword names are escaped in compile.go."
+    },
+    {
+      "task": "T2",
+      "text": "Child units come before the wrapping allOf unit, following ADR-003 and the existing units_test, so the order is /allOf/0/type, /allOf/2/const, /allOf."
+    },
+    {
+      "task": "T2",
+      "text": "The cap error test for not uses a cap of 0, so even the first discarded child unit raises a LimitError. That checks the error propagates and is never turned into a pass."
+    },
+    {
+      "task": "T2",
+      "text": "No existing tests were modified."
+    },
+    {
+      "task": "T3",
+      "text": "With three or more oneOf matches the message reads 'choices 0, 1 and 2 all matched'."
+    },
+    {
+      "task": "T3",
+      "text": "The every-choice-evaluated tests use an output-unit cap of 0, so a later failing choice causes a LimitError only if it actually ran."
+    },
+    {
+      "task": "T4",
+      "text": "The keyword evaluator signature lets keywords see only their own compiled data, not the results of sibling keywords. So `then` and `else` each re-evaluate `if`, and `if` itself evaluates nothing. Both are equivalent for validity and reporting."
+    },
+    {
+      "task": "T4",
+      "text": "`if` is evaluated twice when both `then` and `else` are present. This costs extra evaluation and counts against the output-unit cap."
+    },
+    {
+      "task": "T4",
+      "text": "The sibling `if` is compiled under the `/then` or `/else` location. This is harmless because its units are discarded."
+    },
+    {
+      "task": "T5",
+      "text": "spec_test.go's glob testdata/*/*.json already covers testdata/applicator, so these cases run twice: once there and once in the new runner test. That is harmless."
+    },
+    {
+      "task": "T5",
+      "text": "Compile-error and value-leak checks stay in the keyword unit tests; the JSON case format only has valid and invalid outcomes."
+    },
+    {
+      "task": "T5",
+      "text": "The oneOf case with data \"x\" is valid because minimum ignores non-numbers, so exactly one choice matches."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
