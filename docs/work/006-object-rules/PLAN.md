@@ -1,7 +1,7 @@
 # PLAN #6: 2020-12 object keywords: properties, patternProperties, additionalProperties, propertyNames, dependentSchemas, maxProperties, minProperties, required, dependentRequired
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #141, 2026-10-16 20:20 UTC)
 - Design: see `ADR-006-*.md` under `docs/architecture/adr/`
 
 ## Files that change

@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #6
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #141, 2026-10-16 20:20 UTC)
 
 ## Decision
 There are nine new keyword files, split by 2020-12 vocabulary. The applicator package gets properties, patternProperties, additionalProperties, propertyNames and dependentSchemas. The validation package gets maxProperties, minProperties, required and dependentRequired. Each file registers itself from init() through keywords.Register, with VocabularyURI, the same way items.go and pattern.go do. all.go and registry.go are not edited.
