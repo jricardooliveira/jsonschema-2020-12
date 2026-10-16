@@ -2,6 +2,7 @@ package eval_test
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -92,6 +93,34 @@ func TestRefKeywordLocationIsEvaluationPath(t *testing.T) {
 	_, units, err = eval.EvaluateUnits(n, d, eval.DefaultMaxOutputUnits)
 	if err != nil || len(units) == 0 || units[0].KeywordLocation != "/then/$ref/minLength" {
 		t.Fatalf("%+v %v", units, err)
+	}
+}
+
+// Every schema-node entry, including through $ref, counts one evaluation
+// step: $ref branches that double at each level (2^64 entries) end with the
+// "evaluation steps" LimitError instead of running forever.
+func TestExponentialRefBranchingHitsStepLimit(t *testing.T) {
+	const levels = 64
+	var b strings.Builder
+	b.WriteString(`{"$ref":"#/$defs/d0","$defs":{`)
+	for i := 0; i < levels; i++ {
+		fmt.Fprintf(&b, `"d%d":{"allOf":[{"$ref":"#/$defs/d%d"},{"$ref":"#/$defs/d%d"}]},`, i, i+1, i+1)
+	}
+	fmt.Fprintf(&b, `"d%d":{"type":"integer"}}}`, levels)
+	s, err := jsonvalue.DecodeLimited([]byte(b.String()), jsonvalue.NumberLimits{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := compile.CompileDocument(s, "file:///s.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, _ := jsonvalue.DecodeLimited([]byte(`1`), jsonvalue.NumberLimits{})
+	const max = 1000
+	ok, _, err := eval.EvaluateLimited(n, d, eval.DefaultMaxOutputUnits, max)
+	var le *jsonvalue.LimitError
+	if ok || !errors.As(err, &le) || le.Limit != "evaluation steps" || le.Max != max {
+		t.Errorf("%v %v", ok, err)
 	}
 }
 

@@ -54,8 +54,9 @@ type callState struct {
 
 // enterNode marks (n, instance location) active, pushes n on the evaluation
 // path and returns the frame plus the function that undoes both when the
-// node exits. Re-entry is a *LoopError; a path deeper than MaxEvalDepth is a
-// *jsonvalue.LimitError.
+// node exits. Each entry counts one evaluation step. Re-entry is a
+// *LoopError; a path deeper than MaxEvalDepth or more steps than the call's
+// cap is a *jsonvalue.LimitError.
 func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), error) {
 	st, ok := ctx.Items.(*callState)
 	if !ok {
@@ -67,6 +68,11 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 		// that kept it still see every annotation).
 		st = &callState{EvaluatedItems: rec, active: map[frame]struct{}{}}
 		ctx.Items = st
+	}
+	// Every node entry, including through $ref, is one evaluation step, so
+	// exponential branching ends with the "evaluation steps" LimitError.
+	if err := st.Step(); err != nil {
+		return nil, nil, err
 	}
 	if len(st.path) >= MaxEvalDepth {
 		return nil, nil, &jsonvalue.LimitError{Limit: "evaluation depth", Max: MaxEvalDepth}
