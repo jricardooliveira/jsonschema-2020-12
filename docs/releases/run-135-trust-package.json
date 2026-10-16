@@ -1,0 +1,399 @@
+{
+  "work_id": "US-0135",
+  "parent_story": "US-0135",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "warn",
+  "candidate": {
+    "commit": "1aa1d0e4ec6003ab78f5f9167aceb16874ba5939",
+    "base_commit": "534cb31b6831b8981c241fa099aed7fd1320d755"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Schemas and documents are parsed into an exact JSON value model built only on the standard library. Numbers keep their written value exactly through math/big: 12345678901234567890 and 0.1 lose no precision, and 1.0, 1e2 and -0 are integers by mathematical value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Broken JSON in a schema or a document is an error, never 'invalid'. The library returns a parse error that names the location, and the CLI exits with code 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "An object that repeats the same member name (for example {\"age\": 5, \"age\": 9}), in a schema or a document, at any depth, is broken JSON (exit code 2). The error names the location of the repeat.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Text that is not valid UTF-8, and a \\u escape that leaves a surrogate without its partner (for example \"\\uD800\"), is broken JSON (exit code 2). The error names the location of the bad text. Valid surrogate pairs decode to one code point.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A single leading UTF-8 byte order mark is accepted. Whitespace around the value is accepted. Any non-whitespace content after the single top-level JSON value, including a second value, is broken JSON (exit code 2).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Numbers have a default cap on digit count and exponent size, set far above real-world values and exposed as named defaults. A number over the cap is a limit error (exit code 2), never valid or invalid. The caller can raise the cap through a library option and a CLI flag. Exceeding the cap never triggers an unbounded big-number computation.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Deep JSON equality is provided. Numbers compare by mathematical value (1 equals 1.0 and 1e0). Objects compare regardless of member order. Arrays compare element by element, in order. Values of different JSON types are never equal.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The 'type' keyword, in its own file registered through the keyword registry, accepts a string or an array of unique type names. It supports null, boolean, object, array, number, string and integer. 'integer' matches any number with a zero fractional part, and 'number' matches every integer.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The 'enum' keyword, in its own file registered through the keyword registry, passes only when the instance is deep-equal to at least one listed value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The 'const' keyword, in its own file registered through the keyword registry, passes only when the instance is deep-equal to its value. This includes null, objects in any member order, and numbers such as 1 against 1.0.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Positive and negative tests are stored as spec-derived JSON cases in testdata/validation/type.json, enum.json and const.json, plus parser and equality tests. Each case cites the 2020-12 validation or RFC 8259 section it derives from. Failure messages from type, enum and const never include instance values. All tests pass with go test ./... and use no network.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 11,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/parse_errors_test.go",
+        "change": "added",
+        "additions": 77,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 20,
+        "deletions": 2
+      },
+      {
+        "path": "docs/cli-contract.md",
+        "change": "added",
+        "additions": 52,
+        "deletions": 0
+      },
+      {
+        "path": "docs/limits.md",
+        "change": "added",
+        "additions": 38,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/decode.go",
+        "change": "modified",
+        "additions": 48,
+        "deletions": 8
+      },
+      {
+        "path": "internal/jsonvalue/decode_strict_test.go",
+        "change": "added",
+        "additions": 88,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/equal.go",
+        "change": "added",
+        "additions": 44,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/equal_test.go",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/limits.go",
+        "change": "added",
+        "additions": 81,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/number.go",
+        "change": "added",
+        "additions": 123,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/number_test.go",
+        "change": "added",
+        "additions": 218,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/prescan.go",
+        "change": "added",
+        "additions": 107,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/prescan_test.go",
+        "change": "added",
+        "additions": 172,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/const.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/const_test.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/enum.go",
+        "change": "added",
+        "additions": 30,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/enum_test.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/type.go",
+        "change": "added",
+        "additions": 88,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/type_test.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "internal/speccases/runner.go",
+        "change": "added",
+        "additions": 93,
+        "deletions": 0
+      },
+      {
+        "path": "internal/speccases/runner_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 15,
+        "deletions": 5
+      },
+      {
+        "path": "jsonschema_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "numberlimits_test.go",
+        "change": "added",
+        "additions": 57,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/const.json",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/enum.json",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/type.json",
+        "change": "added",
+        "additions": 35,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [
+      "docs/cli-contract.md",
+      "docs/limits.md"
+    ],
+    "design_untouched": [
+      "internal/jsonvalue/decode_test.go"
+    ],
+    "design_unplanned": [
+      "docs/cli-contract.md",
+      "docs/limits.md",
+      "internal/speccases/runner.go"
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-e36947e963d34b52ac24b0a276362ba9/docs/architecture/adr/ADR-002-exact-json-value-model-deep-equality-and-the-type.md",
+    "summary": "The implementation covers all eleven story acceptance criteria and resolves the substantive previous coverage failures. Strict parsing, exact equality, independently registered keywords and default nu"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "medium",
+    "breaking_changes": [
+      "The `type` keyword is now enforced, which changes 178's TestValidateSchemas expectation for {\"type\":\"string\"}; that entry becomes an unknown keyword.",
+      "Input that 178 accepted is now rejected as broken JSON (exit 2): invalid UTF-8, unpaired \\u surrogates, and numbers over the digit or exponent cap. A leading BOM is now accepted (178 rejected it).",
+      "The `type` keyword is now enforced. The `{\"type\":\"string\"}` entry in 178's TestValidateSchemas becomes `{\"x-unknown\":\"string\"}`. The operator accepted this change.",
+      "Input that 178 accepted is now exit 2: invalid UTF-8, an unpaired \\u surrogate, and numbers over the digit or exponent cap. A leading BOM is now accepted. The operator accepted these changes.",
+      "The keyword evaluate signature keeps the `any` instance type, so nothing changes for later keyword stories."
+    ],
+    "findings": [],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 9.81458,
+    "tokens_in": 9567693,
+    "tokens_out": 168107
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The 9M-token allocation test is scaled to 1M tokens (about 8 MB of input, count derived from DefaultMaxNumberDigits) to keep memory and runtime sane. It still checks that ratBuilds stays 0 and that allocation stays below 100 bytes per input byte. It skips under -short."
+    },
+    {
+      "task": "T1",
+      "text": "value.go and equal.go are not created. Values are plain any (nil, bool, string, *Number, []any, map[string]any); Equal belongs to T2. numEqual in number.go is the allocation-free *Number equality that T2's Equal will call."
+    },
+    {
+      "task": "T1",
+      "text": "A zero or negative NumberLimits field falls back to the default, never to unlimited. Options validation (negative is an error) is T3."
+    },
+    {
+      "task": "T1",
+      "text": "The cap allows values up to and including the limit: 1e10000 is accepted and 1e10001 is not."
+    },
+    {
+      "task": "T1",
+      "text": "Test text uses an esc() helper with '@' standing for backslash-u, because the write tooling rewrote literal escape sequences in file content."
+    },
+    {
+      "task": "T1",
+      "text": "Exact JSON number semantics rely on Number.Rat(), which is lazy and only used by tests here."
+    },
+    {
+      "task": "T2",
+      "text": "Equal returns false for nil *Number or for unknown Go types, since neither is a model value."
+    },
+    {
+      "task": "T3",
+      "text": "The root compile entry is jsonschema.go, so compiler.go was not created."
+    },
+    {
+      "task": "T3",
+      "text": "Instance type stays `any`, so registry.go, eval.go and main.go are unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "A flag parse failure on a known flag with a bad value now says 'invalid value for flag', not 'unknown flag'."
+    },
+    {
+      "task": "T3",
+      "text": "Tests don't cover the flag-default exit-2 messages beyond one line."
+    },
+    {
+      "task": "T4",
+      "text": "jsonschema_test.go TestValidateSchemas: the entry {\"type\":\"string\"} became {\"x-unknown\":\"string\"}, because `type` is now enforced. The design approved this change."
+    },
+    {
+      "task": "T4",
+      "text": "`type` never evaluates to an error and never puts the instance in a message. The only message text is a schema-error message that names the offending type name from the schema."
+    },
+    {
+      "task": "T4",
+      "text": "type_test.go does not run type.json itself. The existing root spec_test.go glob runs it, so `go test ./internal/keywords/validation -run Type` alone covers only the schema-error and array-form tests."
+    },
+    {
+      "task": "T5",
+      "text": "Compiled values are the decoded schema tree, which uses *Number leaves, so Equal compares numbers by exact value."
+    },
+    {
+      "task": "T5",
+      "text": "An empty enum array is accepted by the schema and matches nothing; validation 6.1.2 only recommends non-empty."
+    },
+    {
+      "task": "T6",
+      "text": "The leak check only runs on validation errors, because the library returns no failure messages for an invalid result yet. It skips instances shorter than 4 bytes, because they would match error text by chance (for example 'line 1')."
+    },
+    {
+      "task": "T6",
+      "text": "The root spec_test.go is outside this task's scope, so it still has its own copy of the runner logic."
+    },
+    {
+      "task": "remediation",
+      "text": "The location of a duplicate member is the byte offset of the repeated name's opening quote. It is found as the first '\"' after the previous token's end, because only whitespace and ',' can lie between them."
+    },
+    {
+      "task": "remediation",
+      "text": "The trailing-data location is the first non-whitespace byte after the top-level value. It is now found by a byte scan instead of a second dec.Token() call. Behaviour is unchanged: any non-whitespace after the value is still an error."
+    },
+    {
+      "task": "remediation",
+      "text": "The LimitError for an int64 exponent overflow reports Max: math.MaxInt (it was math.MaxInt64, which does not compile on 32-bit platforms)."
+    },
+    {
+      "task": "remediation",
+      "text": "Test files changed only to add the required assertions and citations. No existing assertion was removed. The old checkStrings UTF-8 check is folded into checkDecodedFFFD."
+    },
+    {
+      "task": "remediation",
+      "text": "Changing the error offsets only moves them to the start of the repeated name or of the trailing text. The reason phrases and the location-only error text are unchanged, and the existing 178 tests pass unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "The trailing-data check now looks directly at what follows the value: anything other than whitespace is rejected. It used to call Token one more time; which inputs are rejected is unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "Equality cases cite 2020-12 core \u00a74.2.2 (instance equality), the section that validation \u00a76.1.2 and \u00a76.1.3 rely on, together with RFC 8259 \u00a74 and \u00a76."
+    },
+    {
+      "task": "remediation",
+      "text": "The 9-million-token count comes from 900 \u00d7 DefaultMaxNumberDigits so it follows the exported constant. The test still skips under -short."
+    }
+  ],
+  "blockers": [
+    "Files changed outside the tasks' declared scope (\u00a76): ['docs/cli-contract.md', 'docs/limits.md']"
+  ],
+  "next_authorization": "operator-review"
+}
