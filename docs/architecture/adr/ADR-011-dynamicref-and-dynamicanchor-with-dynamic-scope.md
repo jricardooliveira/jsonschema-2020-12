@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #11
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #147, 2026-10-16 23:53 UTC)
 
 ## Decision
 Dynamic scope is per-evaluation state, so it lives in a new file internal/eval/dynamicscope.go. The crowded internal/eval/eval.go is touched only to push and pop the scope where evaluation enters and leaves a schema resource. Static resolution of the initial target, and the 'has matching dynamic anchor' fact, are computed at compile time and stored immutably. The evaluation step only walks the per-call scope stack, outermost first, and looks up the precomputed per-resource dynamic-anchor table. $dynamicAnchor names share the plain-name namespace with $anchor in the registry, which gives one duplicate check. $dynamicRef reuses story 186's $ref resolution and evaluation-time loop check rather than adding its own, and story 193 later adds the configurable limit on top. The keywords are new files registered through init() into internal/keywords/registry.go, and the core vocabulary is already blank-imported in all.go, so no central list is edited.

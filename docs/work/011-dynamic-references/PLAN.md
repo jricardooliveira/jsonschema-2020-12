@@ -1,7 +1,7 @@
 # PLAN #11: $dynamicRef and $dynamicAnchor with dynamic scope
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #147, 2026-10-16 23:53 UTC)
 - Design: see `ADR-011-*.md` under `docs/architecture/adr/`
 
 ## Files that change
