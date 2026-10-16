@@ -1,0 +1,20 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.4 $defs: no effect unless referenced",
+    "description": "unreferenced $defs",
+    "schema": {"$defs": {"never": false}, "type": "string"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "number", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.4 $defs and 8.2.3.1 $ref",
+    "description": "referenced $defs",
+    "schema": {"$defs": {"pos": {"type": "integer", "minimum": 1}}, "items": {"$ref": "#/$defs/pos"}},
+    "tests": [
+      {"description": "all positive", "data": [1, 2], "valid": true},
+      {"description": "zero", "data": [0], "valid": false}
+    ]
+  }
+]

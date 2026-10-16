@@ -1,0 +1,22 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.1 with RFC 3986 6.2.2: host case and unreserved unescaping match",
+    "description": "equivalent addresses match",
+    "schema": {"$defs": {"e": {"$id": "https://Example.com/a%7Eb.json", "type": "string"}},
+      "$ref": "https://example.com/a~b.json"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "number", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.1 with RFC 3986 6.2.2: dot segments are removed",
+    "description": "dot segments",
+    "schema": {"$defs": {"e": {"$id": "http://x/a/c.json", "type": "string"}},
+      "$ref": "http://x/a/b/../c.json"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "number", "data": 1, "valid": false}
+    ]
+  }
+]

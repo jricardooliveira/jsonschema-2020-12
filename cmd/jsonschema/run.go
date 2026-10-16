@@ -79,6 +79,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	outShort := flags.String("o", "basic", "")
 	outLong := flags.String("output", "", "")
+	baseURI := flags.String("base-uri", "", "")
 	digits := intFlag("max-number-digits")
 	exponent := intFlag("max-number-exponent")
 	if err := flags.Parse(args[1:]); err != nil {
@@ -118,7 +119,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err.Error())
 	}
-	s, err := jsonschema.CompileWithOptions(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent})
+	s, err := jsonschema.CompileWithOptions(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent, BaseURI: *baseURI, SchemaPath: rest[0]})
 	if err != nil {
 		return fail(err.Error())
 	}

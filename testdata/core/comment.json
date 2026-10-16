@@ -1,0 +1,11 @@
+[
+  {
+    "spec": "2020-12 core, section 8.3 $comment",
+    "description": "$comment has no effect",
+    "schema": {"$comment": "note", "type": "string"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "number", "data": 1, "valid": false}
+    ]
+  }
+]

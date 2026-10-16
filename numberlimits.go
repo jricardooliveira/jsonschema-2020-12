@@ -20,6 +20,12 @@ type Options struct {
 	// MaxOutputUnits caps the failure units one Validate may append; 0 means
 	// DefaultMaxOutputUnits.
 	MaxOutputUnits int
+	// BaseURI overrides the base URI of a root schema without $id. It must be
+	// absolute with no fragment. See docs/references.md.
+	BaseURI string
+	// SchemaPath is the file the schema came from; it only gives the default
+	// base URI (string work, the path is never opened). Empty means stdin.
+	SchemaPath string
 }
 
 func (o Options) maxUnits() (int, error) {

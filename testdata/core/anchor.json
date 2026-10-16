@@ -1,0 +1,13 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.2 $anchor: same name in distinct resources is allowed",
+    "description": "anchors are per resource",
+    "schema": {"$anchor": "q", "type": "object",
+      "properties": {"a": {"$ref": "http://x/e#q"}},
+      "$defs": {"e": {"$id": "http://x/e", "$anchor": "q", "type": "string"}}},
+    "tests": [
+      {"description": "string a", "data": {"a": "s"}, "valid": true},
+      {"description": "number a", "data": {"a": 1}, "valid": false}
+    ]
+  }
+]

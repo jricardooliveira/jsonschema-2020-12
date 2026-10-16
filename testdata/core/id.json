@@ -1,0 +1,22 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.1 $id and 9.2 embedded resources",
+    "description": "embedded resource resolves refs against its own base",
+    "schema": {"$id": "https://example.com/a/root.json",
+      "$defs": {"e": {"$id": "sub/e.json", "properties": {"p": {"$ref": "other.json"}}},
+                "o": {"$id": "sub/other.json", "type": "string"}},
+      "$ref": "sub/e.json"},
+    "tests": [
+      {"description": "string p", "data": {"p": "s"}, "valid": true},
+      {"description": "number p", "data": {"p": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.1 $id: empty fragment is ignored",
+    "description": "$id ending in #",
+    "schema": {"$id": "http://x/y#", "$defs": {"s": {"type": "string"}}, "$ref": "http://x/y#/$defs/s"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true}
+    ]
+  }
+]
