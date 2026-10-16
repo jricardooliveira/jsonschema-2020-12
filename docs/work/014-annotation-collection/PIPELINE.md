@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #144 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:29:11 UTC
-- **Story spend:** ~$0.20 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:30:40 UTC
+- **Story spend:** ~$0.98 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,15 +15,12 @@ The operator decides at gate-2-architect: `factory approve 144` to accept, or `f
 
 - Waiting for the operator at **gate-2-architect**:
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
-  >   • A passing 'basic' report now lists annotation units, so it is longer than before (operator-approved).
+  >   • A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this.
+  >   • A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this. The NDJSON wrapper, the failing-report shape and the flag output do not change.
   >   → Approve these breaking changes?
   >
   > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • api_contract: Options.MaxAnnotations 'must be positive', but a Go zero value is 0. The design does not say whether an unset field means 'use DefaultMaxAnnotations' or is a usage error. An explicit 0 or a negative value must be rejected, and an unset field must not silently turn collection off or reject every default Options. The existing limit style (stories 178/179, MaxOutputUnits) must be followed and the choice stated.
-  >   • api_contract: The sort key (instance location, then keyword location) can tie, for example when the same subschema is reached through different dynamic paths. The design does not give a tie-break or say whether the comparison is by the pointer string or component by component, so 'exactly the same list' is not yet guaranteed.
-  >   • api_contract: The passing 'basic' report grows annotation units. This is operator-approved. The multi-document NDJSON wrapper and the failing-report shape must not change.
-  >   • security: The design says annotation values come only from the schema and no instance value appears in any report. But the properties, patternProperties and additionalProperties annotations hold the property NAMES that were evaluated, and additionalProperties lists exactly the names the schema did not mention. These come from the document, and keys can be sensitive (user ids, emails). If they are placed in Result.Annotations() and in the passing basic report, the 'schema values only' rule is broken. The operator should settle whether instance property names count as locations (already reported) or as instance data. Indices from prefixItems and contains are not a concern.
-  >   • security: The 10,000,000 limit counts annotations, not bytes. An annotation value is a schema value that may be large (a big 'examples', 'default' or unknown-keyword value). With always-collect, a hostile schema could multiply that value across millions of instance locations, so memory and the size of the basic report are not bounded by the count. A human should confirm that the count limit alone is enough. Otherwise a size bound is needed.
+  >   • security: The design bounds annotations by count only (10,000,000). It does not bound the size of the report. An annotation value is a schema value that can be large (a big 'default', 'examples' or unknown-keyword value). A hostile schema, which the brief treats as possible, can attach one such value to a subschema applied to every item of a large document. The passing basic report then repeats the value once per instance location. In memory the values are shared by reference, so only the serialized report and CLI stdout grow, up to count times value size. The operator confirmed the count limit but never ruled on this output amplification. A human should confirm that the count limit alone is enough, or choose a bound on the total bytes of annotation values or of the rendered report, using the same LimitError style with exit 2.
   >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
@@ -39,8 +36,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:28:37 | agent | architect-agent | ✅ pass |
 | 2026-10-16 21:28:38 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-16 21:29:11 | agent | boundary-agent | ✅ warn · 33.6s · $0.2020 |
-| 2026-10-16 21:29:11 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:29:11 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:29:11 | gate | gate-2-architect | ❌ REJECTED: Keep the design and settle the boundary points: (1) MaxAnnotations follows the existing limit style exactly like MaxOutputUnits: unset/0 in the library = DefaultMaxAnnotations, negative = compile error, expl… |
+| 2026-10-16 21:29:38 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-16 21:30:21 | agent | architect-agent | ✅ pass · 42.5s · $0.5745 |
+| 2026-10-16 21:30:21 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
+| 2026-10-16 21:30:40 | agent | boundary-agent | ✅ warn · 18.5s · $0.2005 |
+| 2026-10-16 21:30:40 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-16 21:30:40 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
