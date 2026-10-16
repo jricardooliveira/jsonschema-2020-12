@@ -1,0 +1,21 @@
+[
+  {"spec":"validation 6.3.1","description":"maxLength counts code points","schema":{"maxLength":2},"tests":[
+    {"description":"shorter","data":"f","valid":true},
+    {"description":"exact","data":"fo","valid":true},
+    {"description":"too long","data":"foo","valid":false},
+    {"description":"two emoji fit","data":"😀😀","valid":true},
+    {"description":"three emoji too long","data":"😀😀😀","valid":false},
+    {"description":"multi-byte","data":"éé","valid":true},
+    {"description":"multi-byte too long","data":"ééé","valid":false},
+    {"description":"number ignored","data":100,"valid":true},
+    {"description":"array ignored","data":[1,2,3],"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"validation 6.3.1","description":"maxLength 2.0 is the integer 2","schema":{"maxLength":2.0},"tests":[
+    {"description":"too long","data":"foo","valid":false},
+    {"description":"exact","data":"fo","valid":true}]},
+  {"spec":"validation 6.3.1","description":"maxLength zero","schema":{"maxLength":0},"tests":[
+    {"description":"empty ok","data":"","valid":true},
+    {"description":"one char fails","data":"a","valid":false}]},
+  {"spec":"validation 6.3.1","description":"huge maxLength never fails","schema":{"maxLength":1e30},"tests":[
+    {"description":"string ok","data":"abc","valid":true}]}
+]

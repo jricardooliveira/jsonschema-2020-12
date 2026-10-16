@@ -1,0 +1,18 @@
+[
+  {"spec":"validation 6.3.2","description":"minLength counts code points","schema":{"minLength":2},"tests":[
+    {"description":"longer","data":"foo","valid":true},
+    {"description":"exact","data":"fo","valid":true},
+    {"description":"too short","data":"f","valid":false},
+    {"description":"one emoji too short","data":"😀","valid":false},
+    {"description":"two emoji ok","data":"😀😀","valid":true},
+    {"description":"one multi-byte too short","data":"é","valid":false},
+    {"description":"number ignored","data":1,"valid":true},
+    {"description":"object ignored","data":{},"valid":true}]},
+  {"spec":"validation 6.3.2","description":"minLength 2.0 is the integer 2","schema":{"minLength":2.0},"tests":[
+    {"description":"too short","data":"f","valid":false},
+    {"description":"exact","data":"fo","valid":true}]},
+  {"spec":"validation 6.3.2","description":"minLength zero","schema":{"minLength":0},"tests":[
+    {"description":"empty ok","data":"","valid":true}]},
+  {"spec":"validation 6.3.2","description":"huge minLength always fails","schema":{"minLength":1e30},"tests":[
+    {"description":"string fails","data":"abc","valid":false}]}
+]
