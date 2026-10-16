@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #135 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 16:56:37 UTC
-- **Story spend:** ~$1.25 of $26.00 (estimated at API list prices)
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 16:59:45 UTC
+- **Story spend:** ~$2.10 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,19 +15,16 @@ The operator decides at gate-2-architect: `factory approve 135` to accept, or `f
 
 - Waiting for the operator at **gate-2-architect**:
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
-  >   • The `type` keyword is now enforced. Schemas that used it were previously accepted as unknown-keyword no-ops, which changes 178's TestValidateSchemas expectation for {"type":"string"}.
+  >   • The `type` keyword is now enforced, which changes 178's TestValidateSchemas expectation for {"type":"string"}; that entry becomes an unknown keyword.
   >   • Input that 178 accepted is now rejected as broken JSON (exit 2): invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap. A leading BOM is now accepted (178 rejected it).
-  >   • `type` is now enforced. Schemas that used it were previously ignored as an unknown keyword.
-  >   • Input that story 178 accepted is now rejected with exit 2: invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap.
-  >   • A leading UTF-8 BOM, which 178 rejected, is now accepted.
+  >   • The `type` keyword is now enforced. The {"type":"string"} entry in 178's TestValidateSchemas becomes {"x-unknown":"string"}. The operator accepted this at Checkpoint 2.
+  >   • Input that 178 accepted is now rejected with exit code 2: invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap. The operator accepted this.
+  >   • A leading BOM is now accepted. 178 rejected it.
   >   → Approve these breaking changes?
   >
   > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • api_contract: Checkpoint 2 decision 5 says every story 178 test keeps passing unchanged. The design edits one of them: the {"type":"string"} entry in jsonschema_test.go TestValidateSchemas, which expects an unknown-keyword no-op. Implementing `type` makes that expectation wrong, so the conflict is unavoidable. The code must not override an operator decision, so the operator should confirm the one-entry change (replace it with an unknown keyword such as x-unknown) or choose another route.
-  >   • api_contract: The operator decision names new Reason values for the number-size case. The design uses the existing *LimitError with new Limit names ("number digits", "number exponent"). This keeps the typed errors.As mapping and adds no ParseError family, so it honours the intent. The operator should know the wording differs.
-  >   • api_contract: In the library a zero Options field means the default and a negative value is an error. The operator wording is 'zero or negative = usage error'. Only the CLI can tell an explicit 0 from an absent flag, and there an explicit 0 is a usage error. A zero library field is never 'no limit', so this is safe, but it is an interpretation.
-  >   • security: CPU amplification on hostile input. Numbers are re-parsed into big.Rat on every Equal call, and each number may carry up to the default cap of digits and exponent. A large document of cap-sized numbers compared against many enum or const values (or nested arrays) multiplies the number of expensive parses. Input size is capped, but evaluation steps are not capped until story 193. The design defers caching to 'if profiling shows a need', which leaves the hostile-input requirement open. A human should confirm that cheap fast paths are required in this story and that story 193 counts Equal work against the evaluation-step limit.
-  >   • security: Parser differential risk. The hand-written pre-scan (UTF-8, escapes, surrogates) and encoding/json's tokenizer must agree on where strings begin and end. Any disagreement could hide a lone surrogate or invalid byte from the check. The design describes backslash handling but names no test that cross-checks the two.
+  >   • security: Memory and CPU amplification from eagerly building a big.Rat for every number at decode time. This follows the operator's Fix 1, but it opens a new hostile-input path. With the default cap, a 7-byte token such as `1e10000` becomes a big.Rat holding 10^10000 (about 4 KB), and SetString has to compute that value. A 64 MiB document of such tokens (roughly 9 million numbers) would need tens of GB of memory and a lot of CPU. It would do so before any keyword runs and even when the schema has no numeric keyword. The risk entry calls this 'linear in input size and bounded', but the amplification factor is about 600x. It is not bounded by the input size cap. Equal, Cmp and IsInteger are cheap once the rats exist, so the decode step is now the cost. A human should confirm one of these: (a) a per-decode budget on the total expanded number size, with a LimitError when it is exceeded; (b) a compact exact form (big.Int mantissa plus an int exponent) that is expanded only when two numbers of very different scale must be compared; or (c) accepting the risk and recording it for story 193. Do not defer it with an unspecified 'later'.
+  >   • security: Not a defect: the Fix 2 differential test (table plus fuzz target with f.Add seeds) now cross-checks the string boundaries between scanText and encoding/json, and checks that no U+FFFD can appear silently. The earlier parser-differential concern is closed. The earlier concern about re-parsing numbers in Equal is also closed, because Equal no longer parses.
   >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
@@ -48,8 +45,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 16:55:55 | agent | architect-agent | ✅ pass · 160.3s · $0.8831 |
 | 2026-10-16 16:55:55 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-16 16:56:37 | agent | boundary-agent | ✅ warn · 41.5s · $0.2033 |
-| 2026-10-16 16:56:37 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-16 16:56:37 | run | run waiting_human | ⏸️ |
+| 2026-10-16 16:56:37 | gate | gate-2-architect | ❌ REJECTED: Approve everything in this revision except two security points, which must be fixed in this story. Explicitly accepted: replacing the {"type":"string"} entry of 178's TestValidateSchemas with an unknown keyw… |
+| 2026-10-16 16:57:24 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-16 16:59:06 | agent | architect-agent | ✅ pass · 102.0s · $0.6455 |
+| 2026-10-16 16:59:06 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
+| 2026-10-16 16:59:45 | agent | boundary-agent | ✅ warn · 38.5s · $0.2054 |
+| 2026-10-16 16:59:45 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-16 16:59:45 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
