@@ -52,6 +52,9 @@ type EvaluatedItems struct {
 type itemEntry struct {
 	key itemKey
 	ann ItemAnnotation
+	// props marks a property-name entry (see RecordProperties); names holds them.
+	props bool
+	names []string
 }
 
 // NewEvaluatedItems returns an empty record.
@@ -70,7 +73,7 @@ func (r *EvaluatedItems) Rollback(mark int) {
 
 func (r *EvaluatedItems) add(inst, kw string, a ItemAnnotation) {
 	a.Keyword = kw
-	r.entries = append(r.entries, itemEntry{itemKey{inst, kw}, a})
+	r.entries = append(r.entries, itemEntry{key: itemKey{inst, kw}, ann: a})
 }
 
 // RecordPrefixItems records prefixItems applied to elements 0..largest; all
@@ -99,7 +102,7 @@ func (r *EvaluatedItems) RecordContains(instLoc, kwLoc string, indices []int, al
 func (r *EvaluatedItems) At(instLoc string) map[string]ItemAnnotation {
 	out := map[string]ItemAnnotation{}
 	for _, e := range r.entries {
-		if e.key.instance == instLoc {
+		if !e.props && e.key.instance == instLoc {
 			out[e.key.keyword] = e.ann
 		}
 	}
