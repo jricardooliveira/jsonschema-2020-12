@@ -1,0 +1,37 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1 (allOf inside anyOf inside not)",
+    "description": "not(anyOf(allOf, string))",
+    "schema": {"not": {"anyOf": [{"allOf": [{"type": "integer"}, {"minimum": 10}]}, {"type": "string"}]}},
+    "tests": [
+      {"description": "small integer matches nothing inside", "data": 3, "valid": true},
+      {"description": "big integer matches allOf", "data": 12, "valid": false},
+      {"description": "string matches anyOf", "data": "s", "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.3 (oneOf with overlapping nested choices)",
+    "description": "oneOf containing allOf choices",
+    "schema": {"oneOf": [{"allOf": [{"type": "integer"}, {"minimum": 0}]}, {"allOf": [{"type": "number"}, {"maximum": 10}]}]},
+    "tests": [
+      {"description": "negative integer matches only second", "data": -1, "valid": true},
+      {"description": "5 matches both", "data": 5, "valid": false},
+      {"description": "20 matches only first", "data": 20, "valid": true},
+      {"description": "string matches neither", "data": "x", "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.2 (if/then/else nested in allOf)",
+    "description": "allOf of conditionals",
+    "schema": {"allOf": [
+      {"if": {"type": "integer"}, "then": {"minimum": 0}},
+      {"if": {"type": "string"}, "else": {"not": {"type": "boolean"}}}
+    ]},
+    "tests": [
+      {"description": "non-negative integer", "data": 1, "valid": true},
+      {"description": "negative integer", "data": -1, "valid": false},
+      {"description": "string", "data": "a", "valid": true},
+      {"description": "boolean", "data": true, "valid": false}
+    ]
+  }
+]

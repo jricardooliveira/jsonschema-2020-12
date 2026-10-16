@@ -1,0 +1,20 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.1 (allOf)",
+    "description": "allOf requires every subschema",
+    "schema": {"allOf": [{"type": "integer"}, {"minimum": 3}]},
+    "tests": [
+      {"description": "all match", "data": 5, "valid": true},
+      {"description": "one fails", "data": 1, "valid": false},
+      {"description": "both fail", "data": "text", "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.1 (allOf)",
+    "description": "allOf with a false subschema",
+    "schema": {"allOf": [true, false]},
+    "tests": [
+      {"description": "never valid", "data": 1, "valid": false}
+    ]
+  }
+]

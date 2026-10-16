@@ -1,0 +1,20 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.2 (anyOf)",
+    "description": "anyOf needs at least one match",
+    "schema": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+    "tests": [
+      {"description": "first matches", "data": "abc", "valid": true},
+      {"description": "second matches", "data": 4, "valid": true},
+      {"description": "none matches", "data": 1.5, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.2 (anyOf)",
+    "description": "anyOf with several matching choices is valid",
+    "schema": {"anyOf": [{"type": "integer"}, {"minimum": 2}]},
+    "tests": [
+      {"description": "both match", "data": 3, "valid": true}
+    ]
+  }
+]
