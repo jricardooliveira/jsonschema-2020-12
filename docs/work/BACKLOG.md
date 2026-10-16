@@ -7,7 +7,7 @@
 | 3 | Error reports: flag and basic output, multiple documents | released | [003-error-reports-flag-and-basic-output-multiple/](003-error-reports-flag-and-basic-output-multiple/) | 136, 137 |
 | 4 | Number rules | released | [004-number-rules/](004-number-rules/) | 139 |
 | 5 | String rules | released | [005-string-rules/](005-string-rules/) | 138 |
-| 6 | Object rules | to do |  |  |
+| 6 | Object rules | released | [006-object-rules/](006-object-rules/) | 141 |
 | 7 | Array rules | released | [007-array-rules/](007-array-rules/) | 140 |
 | 8 | Combining schemas | to do |  |  |
 | 9 | Base URIs, anchors and local references | to do |  |  |
@@ -43,7 +43,7 @@
    Add the 2020-12 string keywords maxLength, minLength and pattern. Each keyword lives in its own file and registers through the keyword registry. Lengths count Unicode code points, not bytes. The 'pattern' keyword uses Go's standard regexp package through a small translation step that handles common ECMA-262 differences, for example \d meaning ASCII digits only. A pattern the translation step or RE2 cannot handle, such as lookahead or a backreference, is a schema error with exit code 2. Put the translation step in its own reusable file so patternProperties and the regex format can use it later. The keywords apply only to string instances. Write spec-derived positive and negative tests, including multi-byte characters and translated patterns.
    Why: Delivers the string rules and the shared regex translation that object rules and formats later reuse.
 
-6. **Object rules** — to do
+6. **Object rules** — released
    Add the 2020-12 object keywords properties, patternProperties, additionalProperties, propertyNames, dependentSchemas, maxProperties, minProperties, required and dependentRequired. Each keyword lives in its own file and registers through the keyword registry. patternProperties uses the existing ECMA-262-to-RE2 translation step. additionalProperties applies only to properties not matched by properties or patternProperties in the same schema object. The keywords apply only to object instances. Errors report the failing instance location without quoting values. Write spec-derived positive and negative tests for every keyword.
    Why: Groups the object keywords, which depend on each other, so they can be built in parallel with the array and combining rules.
 
