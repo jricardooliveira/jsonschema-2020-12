@@ -1,0 +1,81 @@
+package keywords
+
+import "github.com/neoface/jsonschema/internal/jsonvalue"
+
+// DefaultMaxAnnotations caps how many annotations one evaluation may record,
+// counting ones that are later dropped.
+const DefaultMaxAnnotations = 10_000_000
+
+// Annotation is one collected annotation. Value comes from the schema (by
+// reference, never copied), except that properties, patternProperties and
+// additionalProperties record evaluated property NAMES, which already appear
+// in the instance location. An instance value is never an annotation value.
+type Annotation struct {
+	InstanceLocation        string
+	KeywordLocation         string
+	AbsoluteKeywordLocation string // empty when not known
+	Keyword                 string
+	Value                   any
+	Seq                     int // evaluation order, the last sort tie-break
+}
+
+// TreeNode is the evaluation result of one subschema. Annotations holds the
+// ones recorded directly by this node, and only when it is valid.
+type TreeNode struct {
+	KeywordLocation         string
+	AbsoluteKeywordLocation string
+	InstanceLocation        string
+	Valid                   bool
+	Errors                  []Unit
+	Annotations             []Annotation
+	Children                []*TreeNode
+}
+
+// collector is the per-call annotation log, shared by a context and all of
+// its children. It is append-only so a failed subschema can roll back.
+type collector struct {
+	list     []Annotation
+	count    int
+	max, seq int
+}
+
+// SetMaxAnnotations sets the annotation cap; it must be positive. Call it on
+// the root context before evaluating.
+func (c *EvalContext) SetMaxAnnotations(max int) { c.col.max = max }
+
+// Annotate records an annotation for the keyword being evaluated, at the
+// current locations. value must come from the schema. Every call is counted,
+// even if the annotation is dropped later; over the cap it returns a LimitError.
+func (c *EvalContext) Annotate(value any) error {
+	col := c.col
+	col.count++
+	if col.count > col.max {
+		return &jsonvalue.LimitError{Limit: "annotations", Max: col.max}
+	}
+	col.seq++
+	a := Annotation{InstanceLocation: c.InstanceLocation, KeywordLocation: c.KeywordLocation, Keyword: c.Keyword, Value: value, Seq: col.seq}
+	col.list = append(col.list, a)
+	if c.Tree != nil {
+		c.Tree.Annotations = append(c.Tree.Annotations, a)
+	}
+	return nil
+}
+
+// Annotations returns the annotations kept so far, in evaluation order.
+func (c *EvalContext) Annotations() []Annotation { return c.col.list }
+
+// AnnotateOnly returns a keyword that always passes and annotates its own
+// schema value. Registered or not, it never fails validation.
+func AnnotateOnly(name, vocabulary string) Keyword {
+	return Keyword{
+		Name:       name,
+		Vocabulary: vocabulary,
+		Compile:    func(_ *CompileContext, value any) (any, error) { return value, nil },
+		Evaluate: func(ctx *EvalContext, compiled any, _ any) (bool, error) {
+			return true, ctx.Annotate(compiled)
+		},
+	}
+}
+
+// RegisterAnnotationOnly registers an annotate-only keyword.
+func RegisterAnnotationOnly(name, vocabulary string) { Register(AnnotateOnly(name, vocabulary)) }

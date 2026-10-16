@@ -23,6 +23,9 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 		return false, err
 	}
 	defer leave()
+	if ctx.Tree != nil {
+		ctx.Tree.KeywordLocation = pf.dynamic
+	}
 	if n.Bool != nil {
 		if *n.Bool {
 			return true, nil
@@ -33,6 +36,7 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	valid := true
 	for _, it := range n.Items {
 		ctx.KeywordLocation = pf.at(it.Keyword.Name, it.Location)
+		ctx.Keyword = it.Keyword.Name
 		before := len(ctx.Units())
 		ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
 		if err != nil {

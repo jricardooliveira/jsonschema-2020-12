@@ -45,12 +45,17 @@ type Unit struct {
 type EvalContext struct {
 	InstanceLocation string // JSON Pointer of the instance being checked
 	KeywordLocation  string // JSON Pointer of the keyword being evaluated
+	Keyword          string // name of the keyword being evaluated
+	// Tree is the evaluation-tree node of the subschema being evaluated; nil
+	// when the caller builds no tree.
+	Tree *TreeNode
 	// Items is the per-evaluation record of item annotations (an
 	// *eval.EvaluatedItems, which implements ItemRecorder), shared with every
 	// child context. It is typed any so this package need not import eval.
 	Items    any
 	units    []Unit
 	count    *int
+	col      *collector
 	max      int
 	evalNode func(ctx *EvalContext, node any, instance any) (bool, error)
 }
@@ -58,7 +63,7 @@ type EvalContext struct {
 // NewEvalContext returns a root context. evalNode evaluates a compiled child
 // schema into the context it is given. max is the output-unit cap.
 func NewEvalContext(max int, evalNode func(ctx *EvalContext, node any, instance any) (bool, error)) *EvalContext {
-	return &EvalContext{count: new(int), max: max, evalNode: evalNode}
+	return &EvalContext{count: new(int), col: &collector{max: DefaultMaxAnnotations}, max: max, evalNode: evalNode}
 }
 
 // Report appends a failure unit at the current locations and counts it. It
@@ -85,15 +90,25 @@ func (c *EvalContext) Keep(units []Unit) { c.units = append(c.units, units...) }
 // child fails, the item annotations it recorded are rolled back (core 7.7.1:
 // a failed schema keeps no annotations).
 func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, []Unit, error) {
-	child := &EvalContext{InstanceLocation: instLoc, count: c.count, max: c.max, evalNode: c.evalNode, Items: c.Items}
+	tn := &TreeNode{InstanceLocation: instLoc}
+	child := &EvalContext{InstanceLocation: instLoc, count: c.count, col: c.col, max: c.max, evalNode: c.evalNode, Items: c.Items, Tree: tn}
 	rec, _ := c.Items.(ItemRecorder)
 	mark := 0
 	if rec != nil {
 		mark = rec.Mark()
 	}
+	amark := len(c.col.list)
 	ok, err := c.evalNode(child, node, instance)
-	if !ok && rec != nil {
-		rec.Rollback(mark)
+	if !ok {
+		if rec != nil {
+			rec.Rollback(mark)
+		}
+		c.col.list = c.col.list[:amark] // a failed schema keeps no annotations
+		tn.Annotations = nil
+	}
+	tn.Valid, tn.Errors = ok, child.units
+	if c.Tree != nil {
+		c.Tree.Children = append(c.Tree.Children, tn)
 	}
 	return ok, child.units, err
 }
