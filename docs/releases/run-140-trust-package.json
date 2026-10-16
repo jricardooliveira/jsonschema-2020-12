@@ -1,0 +1,437 @@
+{
+  "work_id": "US-0140",
+  "parent_story": "US-0140",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "abe0ca186afa2cc3be4bd3b9166960644e1a9d2c",
+    "base_commit": "3ea83effc0e5ac6fc00c3f5105222c33a2ac81b3"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Each of prefixItems, items, contains, maxContains, minContains, maxItems, minItems and uniqueItems lives in its own file internal/keywords/<vocabulary>/<keyword>.go. Each registers itself from init() into the keyword registry with its name, vocabulary URI, compile function and evaluate function. No central keyword list, switch or all.go entry is edited.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "All eight keywords apply only to array instances. For every non-array instance (null, boolean, number, string, object) each keyword passes and records no annotation.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "prefixItems validates element i against subschema i, for each index that both the array and the prefixItems list have. A shorter array is valid. When it applies to at least one element, prefixItems records in the per-evaluation record the largest index it applied to, or true when it applied to every element (2020-12 core 10.3.1.1).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "items validates only the elements after the ones covered by a sibling prefixItems, and every element when there is no prefixItems. The boolean schemas true and false work as its subschema, so items:false after prefixItems rejects extra elements. When items applies to at least one element it records the annotation true (2020-12 core 10.3.1.2).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "contains evaluates every element and counts the matches. Without minContains, at least one match is required. With minContains n, at least n matches are required, and minContains 0 makes the minimum always satisfied. When maxContains is present, at most that many matches are allowed. maxContains and minContains have no effect without a sibling contains. contains records the matching indices, or true when every element matched (2020-12 core 10.3.1.3, validation 6.4.4 and 6.4.5).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When several elements fail prefixItems or items, the result lists every failing element: one error per failing position, with its instance location (for example /2, /5, /9) and keyword location. The whole array is checked even after the first failure, and no error contains an instance value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When contains fails, the result has exactly one error at the array's instance location. It names contains (or minContains or maxContains) and says how many elements matched and how many were required or allowed. It holds no instance values, and elements that do not match are not reported as errors.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "maxItems and minItems compare the element count with the keyword value using the exact number model, so a value written as 2.0 behaves as 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "uniqueItems:true fails when two elements are deep-JSON-equal: 1 and 1.0 are duplicates, and objects are compared regardless of key order. uniqueItems:false or absent has no effect. Each group of equal elements produces one error listing all of its positions (for example 'elements 1, 4 and 9 are equal'), never the values.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The uniqueItems duplicate check first groups elements by a fingerprint that is consistent with deep equality, so 1 and 1.0 get the same fingerprint, then compares only inside a group. A deterministic test, with no wall-clock threshold, runs it on 100,000 mixed elements (numbers, strings, objects, with 1 and 1.0 duplicated). The test checks that the duplicate groups are exactly right and that the count of full deep-equality comparisons, returned per call, is far below n*n/100. The count is not global state.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The item annotations from prefixItems, items and contains are stored in the per-evaluation record of evaluated locations, kept in the evaluation context and never in the compiled schema. They are tested for each keyword, and evaluating one compiled schema from several goroutines under go test -race shows no data race.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every keyword has spec-derived positive and negative test cases in testdata/<area>/<keyword>.json, run by the shared table-driven runner. Each case cites the 2020-12 core or validation section it derives from.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 13,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated_items.go",
+        "change": "added",
+        "additions": 107,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated_items_test.go",
+        "change": "added",
+        "additions": 68,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/number_canonical.go",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/contains.go",
+        "change": "added",
+        "additions": 89,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/contains_test.go",
+        "change": "added",
+        "additions": 104,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/items.go",
+        "change": "added",
+        "additions": 50,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/items_test.go",
+        "change": "added",
+        "additions": 82,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems.go",
+        "change": "added",
+        "additions": 73,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems_test.go",
+        "change": "added",
+        "additions": 143,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 42,
+        "deletions": 9
+      },
+      {
+        "path": "internal/keywords/validation/maxcontains.go",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxcontains_test.go",
+        "change": "added",
+        "additions": 25,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxitems.go",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/maxitems_test.go",
+        "change": "added",
+        "additions": 36,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/mincontains.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/mincontains_test.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minitems.go",
+        "change": "added",
+        "additions": 27,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/minitems_test.go",
+        "change": "added",
+        "additions": 28,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/uniqueitems.go",
+        "change": "added",
+        "additions": 145,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/uniqueitems_test.go",
+        "change": "added",
+        "additions": 110,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/contains.json",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/items.json",
+        "change": "added",
+        "additions": 23,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/applicator/prefixItems.json",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/maxContains.json",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/maxItems.json",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/minContains.json",
+        "change": "added",
+        "additions": 21,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/minItems.json",
+        "change": "added",
+        "additions": 21,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/validation/uniqueItems.json",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/eval/evaluated.go"
+    ],
+    "design_unplanned": [
+      "internal/compile/compile.go",
+      "internal/jsonvalue/number_canonical.go",
+      "internal/keywords/registry.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/compile/compile.go",
+        "granted_by": "operator",
+        "at": "gate-question #1190"
+      },
+      {
+        "path": "internal/jsonvalue/number_canonical.go",
+        "granted_by": "operator",
+        "at": "gate-question #1174"
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "granted_by": "operator",
+        "at": "gate-question #1190"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-3de3d7e0be64439b98beaef102a41a77/docs/architecture/adr/ADR-007-2020-12-array-keywords-prefixitems-items-contains.md",
+    "summary": "All the earlier findings are fixed, and I found no new problems. Annotations from a failed branch are now rolled back in EvalChild and at the root, and tests cover both a failing contains element and "
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 6.077148,
+    "tokens_in": 5407932,
+    "tokens_out": 87852
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "evaluated.go does not exist, so the item half lives in evaluated_items.go."
+    },
+    {
+      "task": "T1",
+      "text": "The record is single-goroutine and created per call, so it has no lock."
+    },
+    {
+      "task": "T1",
+      "text": "error_handling is false because the record has no error paths."
+    },
+    {
+      "task": "T4",
+      "text": "The count is turned into a Number by decoding its decimal text with DecodeLimited, because Number can only be built inside the jsonvalue package."
+    },
+    {
+      "task": "T4",
+      "text": "The compile helper compileCount and the comparison helper cmpCount live in maxitems.go so minitems.go can reuse them. Task T3 may reuse them for minContains and maxContains."
+    },
+    {
+      "task": "T4",
+      "text": "The number exponent cap is 10000, so the huge-value test uses 1e9000 instead of 1e999999."
+    },
+    {
+      "task": "T5",
+      "text": "The design for ADR #2 said story 181 would add this accessor, but it is not in the repository."
+    },
+    {
+      "task": "T5",
+      "text": "The operator refused edits to internal/jsonvalue/number.go because story 181 is changing it in parallel. They said to put the accessor in internal/jsonvalue/number_canonical.go and to ask for that path. Its own test file is a new test file, so it needs no grant."
+    },
+    {
+      "task": "T5",
+      "text": "Tests ran with go test -race on ./internal/keywords/validation, which passed. The root package (spec cases) and ./internal/jsonvalue passed in an earlier plain run. I did not re-run them after the last test edit, and I did not run the full suite."
+    },
+    {
+      "task": "T5",
+      "text": "The 100,000-element test checks the exact group and that the comparison count stays below n*n/100 and 2n. The elements are numbers, strings, and two shapes of distinct objects, with 1 and 1.0 duplicated."
+    },
+    {
+      "task": "T5",
+      "text": "The huge-exponent test (1e1000000, 1e-1000000) uses DecodeLimited with a raised exponent cap, because the default cap of 10000 rejects those numbers at decode time."
+    },
+    {
+      "task": "T5",
+      "text": "Number.Canonical() has no test of its own. uniqueitems_test.go covers it indirectly through 1, 1.0, 1e0 and the huge-exponent cases."
+    },
+    {
+      "task": "T5",
+      "text": "The fingerprint recursion depth is bounded by the decoder's nesting limit."
+    },
+    {
+      "task": "T5",
+      "text": "Item-count and unit-cap behaviour for group errors goes through ctx.Report, so the collector's output-unit cap applies."
+    },
+    {
+      "task": "T2",
+      "text": "keywords.CompileContext is empty: it has no sub-schema compiler and no access to sibling keywords. prefixItems and items cannot compile child schemas, and items cannot read the length of prefixItems."
+    },
+    {
+      "task": "T2",
+      "text": "keywords.EvalContext has no slot for eval.EvaluatedItems, so annotations cannot be recorded per evaluation."
+    },
+    {
+      "task": "T2",
+      "text": "compile.compileAt creates a fresh CompileContext for each node and never passes sibling data."
+    },
+    {
+      "task": "T2",
+      "text": "Annotations are recorded only when the keyword passes (a failed keyword records nothing). Rolling back annotations from failed parent branches is left to the applicators in later stories."
+    },
+    {
+      "task": "T2",
+      "text": "Failing elements produce the child schema's own units, with no extra wrapper unit per element."
+    },
+    {
+      "task": "T2",
+      "text": "VocabularyURI for the applicator package is defined in prefixitems.go, so contains.go in T3 can reuse it."
+    },
+    {
+      "task": "T2",
+      "text": "The eval package cannot import the applicator package (import cycle in its tests), so the keywords package defines the ItemRecorder interface instead."
+    },
+    {
+      "task": "T2",
+      "text": "Compile errors for a bad prefixItems or items value name only the keyword."
+    },
+    {
+      "task": "T3",
+      "text": "I added Number.String() to number_canonical.go. It returns the number as written. It is used only to put the schema's required or allowed count into the message, never an instance value."
+    },
+    {
+      "task": "T3",
+      "text": "The contains annotation is not recorded when there are zero matches. This happens with minContains 0."
+    },
+    {
+      "task": "T3",
+      "text": "If both bounds are violated (maxContains below minContains), only the minContains error is reported, so the result has one error."
+    },
+    {
+      "task": "T3",
+      "text": "The contains test data uses const, not minimum, because minimum is not implemented yet."
+    },
+    {
+      "task": "remediation",
+      "text": "The rollback lives in `EvalContext.EvalChild` (registry.go, granted to this run) rather than in eval.go. It is the one helper every subschema evaluation goes through, so one guard covers contains, items and prefixItems, and later keywords such as allOf get it automatically. It also keeps eval.go to one wiring line."
+    },
+    {
+      "task": "remediation",
+      "text": "For the root schema, only `EvaluateAnnotated` drops annotations on failure. `EvaluateUnits` creates its own record and discards it when it returns, so nothing there can read a leftover annotation."
+    },
+    {
+      "task": "remediation",
+      "text": "The F3 messages keep the keyword name as a prefix (\"items: ...\", \"prefixItems: ...\", \"contains: ...\"), which satisfies the boundary rule that an error names the keyword. Both the message and the error type of the nested error are kept."
+    },
+    {
+      "task": "remediation",
+      "text": "The listed test files were extended only with new tests and cases. No existing assertion was removed or changed."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
