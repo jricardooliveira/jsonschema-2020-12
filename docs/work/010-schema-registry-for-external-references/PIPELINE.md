@@ -3,20 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #145 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 21:54:26 UTC · **Stopped:** 2026-10-16 22:10:03 UTC
+- **Run:** #145 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 21:54:26 UTC · **Stopped:** 2026-10-16 22:10:43 UTC
 - **Story spend:** ~$6.83 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 145` to accept, or `factory reject 145 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-145-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: internal/registry/dbg_tmp_test.go is a stray debug file containing only a package declaration; it serves no purpose and should be removed before release (flagged by tester as F4, low severity). Decide: delete it or document why it is kept.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -63,8 +60,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 22:08:58 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 0 new, 1 persistent, 6 resolved |
 | 2026-10-16 22:08:58 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 22:10:02 | agent | release-agent | ✅ warn · 63.1s · $0.1144 |
-| 2026-10-16 22:10:03 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 22:10:03 | run | run waiting_human | ⏸️ |
+| 2026-10-16 22:10:03 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 22:10:43 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 22:10:43 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
