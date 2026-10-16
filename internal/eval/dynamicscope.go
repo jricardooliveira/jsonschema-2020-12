@@ -35,6 +35,33 @@ func (s *DynamicScope) Outermost(match func(*compile.Node) bool) *compile.Node {
 	return nil
 }
 
+func hasDynamicAnchor(n *compile.Node, name string) bool {
+	if n == nil {
+		return false
+	}
+	for _, it := range n.Items {
+		if it.Keyword.Name == "$dynamicAnchor" && it.Data == name {
+			return true
+		}
+	}
+	return false
+}
+
+// ResolveDynamic implements core 8.2.3.2: bookending when initial has no
+// matching $dynamicAnchor; otherwise the outermost entered node with one.
+// ponytail: matches entered nodes only, so an anchor on a never-entered
+// subschema of an outer resource is not found; falls back to initial.
+func (s *callState) ResolveDynamic(initial any, name string) any {
+	n, _ := initial.(*compile.Node)
+	if !hasDynamicAnchor(n, name) {
+		return initial
+	}
+	if m := s.scope.Outermost(func(c *compile.Node) bool { return hasDynamicAnchor(c, name) }); m != nil {
+		return m
+	}
+	return initial
+}
+
 // ScopeOf returns the dynamic scope of the call ctx belongs to, or nil
 // before the first node was entered.
 func ScopeOf(ctx *keywords.EvalContext) *DynamicScope {

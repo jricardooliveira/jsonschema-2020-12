@@ -101,7 +101,7 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 // $ref). A reference target starts at the $ref keyword itself; any other
 // child keeps its path below the parent node.
 func dynamicLocation(parent *pathFrame, loc string) string {
-	if parent.kw == "$ref" {
+	if parent.kw == "$ref" || parent.kw == "$dynamicRef" {
 		return parent.kwDynamic
 	}
 	if rel, ok := strings.CutPrefix(loc, parent.static); ok && (rel == "" || rel[0] == '/') {
