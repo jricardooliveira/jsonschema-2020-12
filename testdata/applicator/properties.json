@@ -1,0 +1,14 @@
+[
+  {"spec":"core 10.3.2.1","description":"properties","schema":{"properties":{"foo":{"type":"integer"},"bar":{"type":"string"}}},"tests":[
+    {"description":"both valid","data":{"foo":1,"bar":"x"},"valid":true},
+    {"description":"one invalid","data":{"foo":"x","bar":"x"},"valid":false},
+    {"description":"absent ok","data":{},"valid":true},
+    {"description":"extra ignored","data":{"other":1},"valid":true},
+    {"description":"array ignored","data":["foo"],"valid":true},
+    {"description":"string ignored","data":"foo","valid":true},
+    {"description":"number ignored","data":1,"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"core 10.3.2.1","description":"properties boolean schemas","schema":{"properties":{"a":true,"b":false}},"tests":[
+    {"description":"a only","data":{"a":1},"valid":true},
+    {"description":"b present","data":{"b":1},"valid":false}]}
+]

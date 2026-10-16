@@ -1,0 +1,17 @@
+[
+  {"spec":"core 10.3.2.3","description":"additionalProperties with properties and patternProperties","schema":{"properties":{"foo":{}},"patternProperties":{"^v":{}},"additionalProperties":false},"tests":[
+    {"description":"covered only","data":{"foo":1,"vx":2},"valid":true},
+    {"description":"extra","data":{"foo":1,"bar":2},"valid":false},
+    {"description":"empty","data":{},"valid":true},
+    {"description":"array ignored","data":[1],"valid":true},
+    {"description":"string ignored","data":"x","valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"core 10.3.2.3","description":"additionalProperties schema","schema":{"additionalProperties":{"type":"integer"}},"tests":[
+    {"description":"ints","data":{"a":1},"valid":true},
+    {"description":"non-int","data":{"a":"x"},"valid":false}]},
+  {"spec":"core 10.3.2.3","description":"additionalProperties ignores properties in other schema objects","schema":{"allOf":[{"properties":{"foo":{}}}],"additionalProperties":false},"tests":[
+    {"description":"foo is additional here","data":{"foo":1},"valid":false},
+    {"description":"empty","data":{},"valid":true}]},
+  {"spec":"core 10.3.2.3","description":"additionalProperties true","schema":{"additionalProperties":true},"tests":[
+    {"description":"anything","data":{"a":1},"valid":true}]}
+]
