@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #137 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 19:00:55 UTC · **Stopped:** 2026-10-16 19:53:16 UTC
+- **Run:** #137 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 19:00:55 UTC · **Stopped:** 2026-10-16 19:53:46 UTC
 - **Story spend:** ~$4.11 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 137` to accept, or `factory reject 137 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-137-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Breaking change in CLI stdout: Single invalid documents now produce the full 2020-12 basic output instead of the minimal result. This is an accepted breaking change (documented in the architecture), but scripts that parse old output must be updated.
-  >   ◦ Release-agent note: Per-document error messages are built directly from Go's err.Error() without filtering. File system paths or other system details may appear in stderr (e.g., 'open /path/to/file: permission denied'). The tester approved this as acceptable.
-  >   ◦ Release-agent note: Output-unit cap memory usage: The 10M default cap, if fully consumed, could accumulate millions of units in memory on very large schemas. This is generous for legitimate use but worth monitoring if extremely large documents are validated.
-  >   ◦ Release-agent note: Future applicators (story 185) must use the same EvalContext.EvalChild() method to evaluate child schemas, or the output-unit cap could be bypassed. The regression test ensures discarded units are counted; story 185 must maintain this contract.
-  >   ◦ Security note (low): F2 (low): run.go fills per-document NDJSON and stderr reasons from err.Error(). Today this is safe: Validate wraps only the content-free *SyntaxError and *LimitError with %w, and readFile/readCapped produce fixed phrases. Nothing enforces the boundary rule that only typed errors may reach the output, though. A later untyped error from Validate (for example from a future keyword's compile or eval path) would go straight to stdout and stderr. A typed allow-list, or a generic fallback reason for anything that is not a known type, would make this fail closed.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -67,8 +60,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 19:52:18 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 11; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-16 19:52:18 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 19:53:16 | agent | release-agent | ✅ pass · 57.4s · $0.0894 |
-| 2026-10-16 19:53:16 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 19:53:16 | run | run waiting_human | ⏸️ |
+| 2026-10-16 19:53:16 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 19:53:46 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 19:53:46 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
