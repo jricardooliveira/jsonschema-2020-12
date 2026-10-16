@@ -80,6 +80,8 @@ exactly this order:
 
 - The duplicate-address exception for embedded meta-schemas only becomes testable once story 189 embeds them.
 - Default file:// base on Windows paths needs careful RFC 8089 formatting.
+- URIs containing '=' cannot be mapped through --ref. This is a deliberate limit, documented in the help text; the library option covers it.
+- cmd/jsonschema/refs_cli_test.go asserts --base-uri behaviour. It is read only; if the new default file:// base changes its expected messages, it must be added as a write claim.
 
 Implementation constraints the coder must honor:
 
@@ -88,8 +90,10 @@ Implementation constraints the coder must honor:
 - Error messages name addresses and file paths, never instance values.
 - Tests ask the code for limit values instead of repeating the numbers.
 - Do not add code to crowded files beyond the wiring calls.
+- Parse --ref and --ref-dir by the first-'=' rule only: mapping if the prefix is an absolute URI (scheme of two or more characters, no whitespace), else the whole value is a path. Document this in the flag help text, including the './' escape and the note that URIs containing '=' need the library option.
+- Reuse the existing --base-uri flag in run.go; do not declare it again.
 
-- DB impact: no · API impact: yes: new library options and CLI flags (additive) · Migration needed: no
+- DB impact: no · API impact: yes · Migration needed: no
 
 Breaking changes:
 
