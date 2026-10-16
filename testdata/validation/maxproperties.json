@@ -1,0 +1,14 @@
+[
+  {"spec":"validation 6.5.1","description":"maxProperties 2","schema":{"maxProperties":2},"tests":[
+    {"description":"fewer","data":{"a":1},"valid":true},
+    {"description":"exact","data":{"a":1,"b":2},"valid":true},
+    {"description":"more","data":{"a":1,"b":2,"c":3},"valid":false},
+    {"description":"array ignored","data":[1,2,3],"valid":true},
+    {"description":"string ignored","data":"foobar","valid":true},
+    {"description":"number ignored","data":12,"valid":true},
+    {"description":"boolean ignored","data":true,"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"validation 6.5.1","description":"maxProperties 0","schema":{"maxProperties":0},"tests":[
+    {"description":"empty","data":{},"valid":true},
+    {"description":"one","data":{"a":1},"valid":false}]}
+]
