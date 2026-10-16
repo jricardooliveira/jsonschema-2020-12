@@ -1,0 +1,24 @@
+[
+  {"spec":"validation 6.3.3","description":"pattern is unanchored","schema":{"pattern":"^a*$"},"tests":[
+    {"description":"matches","data":"aaa","valid":true},
+    {"description":"does not match","data":"abc","valid":false},
+    {"description":"non-string ignored","data":123,"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"validation 6.3.3","description":"pattern matches anywhere","schema":{"pattern":"a+"},"tests":[
+    {"description":"inside","data":"xxaayy","valid":true},
+    {"description":"absent","data":"xyz","valid":false}]},
+  {"spec":"validation 6.3.3","description":"\\d is ASCII only","schema":{"pattern":"^\\d+$"},"tests":[
+    {"description":"ascii","data":"123","valid":true},
+    {"description":"arabic-indic","data":"١٢٣","valid":false}]},
+  {"spec":"validation 6.3.3","description":"\\p{Letter} long name","schema":{"pattern":"^\\p{Letter}+$"},"tests":[
+    {"description":"letters","data":"éa","valid":true},
+    {"description":"digit","data":"a1","valid":false}]},
+  {"spec":"validation 6.3.3","description":"dot matches one emoji","schema":{"pattern":"^.$"},"tests":[
+    {"description":"emoji","data":"😀","valid":true},
+    {"description":"newline","data":"\n","valid":false},
+    {"description":"line separator","data":" ","valid":false},
+    {"description":"two chars","data":"ab","valid":false}]},
+  {"spec":"validation 6.3.3","description":"unicode escapes","schema":{"pattern":"^\\ud83d\\ude00$"},"tests":[
+    {"description":"pair","data":"😀","valid":true},
+    {"description":"other","data":"a","valid":false}]}
+]
