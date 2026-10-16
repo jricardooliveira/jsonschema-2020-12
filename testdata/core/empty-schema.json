@@ -1,0 +1,23 @@
+[
+  {
+    "spec": "2020-12 core, section 4.3.1 JSON Schema Documents (empty object schema)",
+    "description": "empty schema accepts every document",
+    "schema": {},
+    "tests": [
+      {"description": "null", "data": null, "valid": true},
+      {"description": "number", "data": 1, "valid": true},
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "array", "data": [1, 2], "valid": true},
+      {"description": "object", "data": {"a": {}}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 6.5 Unknown keywords are ignored",
+    "description": "unknown keyword behaves like the empty schema",
+    "schema": {"foo": 1},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "object", "data": {}, "valid": true}
+    ]
+  }
+]
