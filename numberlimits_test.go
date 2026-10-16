@@ -3,6 +3,7 @@ package jsonschema
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"testing"
 
@@ -50,6 +51,17 @@ func TestNumberCapOption(t *testing.T) {
 	}
 	if r, err := s.Validate([]byte(over)); err != nil || !r.Valid() {
 		t.Fatalf("raised cap: %v %v", r.Valid(), err)
+	}
+	// F4: a normalised exponent of MinInt64 is a limit error, never a value.
+	s, err = CompileWithOptions([]byte(`true`), Options{MaxNumberExponent: math.MaxInt})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Validate([]byte("1.5e-9223372036854775807")); !errors.As(err, &le) || le.Limit != "number exponent" {
+		t.Errorf("min exponent: want number exponent LimitError, got %v", err)
+	}
+	if r, err := s.Validate([]byte("15e-9223372036854775807")); err != nil || !r.Valid() {
+		t.Errorf("neighbour that fits: %v %v", r.Valid(), err)
 	}
 	if _, err := CompileWithOptions([]byte(`true`), Options{MaxNumberDigits: -1}); err == nil {
 		t.Error("negative option must error")

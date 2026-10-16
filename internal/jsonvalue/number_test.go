@@ -163,6 +163,9 @@ func TestNumberExponentOverflow(t *testing.T) {
 		"0.001e" + minE,               // exp = -MaxInt64 - 3 wraps
 		"1.25e" + minE,                // exp = -MaxInt64 - 2 wraps
 		"1e-" + "9223372036854775808", // |exp| > MaxInt64
+		"1.5e" + minE,                 // exp = MinInt64: -exp would overflow (F4)
+		"-1.5e" + minE,                // same, negative
+		"0.15e" + minE,                // leading zero does not help
 	}
 	for _, s := range over {
 		_, err := DecodeLimited([]byte(s), huge)
@@ -176,10 +179,23 @@ func TestNumberExponentOverflow(t *testing.T) {
 	if n.exp != math.MaxInt64-1 || !n.IsInteger() || Cmp(n, num(t, "1")) != 1 {
 		t.Errorf("max fit: exp %d", n.exp)
 	}
-	m := num2(t, "1.5e"+minE, huge)
-	if m.exp != math.MinInt64 || m.IsInteger() || Cmp(m, num(t, "0")) != 1 {
-		t.Errorf("min fit: exp %d", m.exp)
+	// Neighbours of 1.5e-MaxInt64 whose normalised exponent is -MaxInt64 fit.
+	for _, s := range []string{"15e" + minE, "1.5e" + fmt.Sprint(int64(-math.MaxInt64+1)), "1.50e" + fmt.Sprint(int64(-math.MaxInt64+1))} {
+		m := num2(t, s, huge)
+		if m.exp != -math.MaxInt64 || m.IsInteger() || Cmp(m, num(t, "0")) != 1 {
+			t.Errorf("%s: min fit: exp %d", s, m.exp)
+		}
 	}
+}
+
+// pow10 fails closed on a negative power instead of returning 1.
+func TestPow10NegativePanics(t *testing.T) {
+	defer func() {
+		if recover() == nil {
+			t.Error("pow10(-1) must panic")
+		}
+	}()
+	pow10(-1)
 }
 
 func num2(t *testing.T, s string, lim NumberLimits) *Number {

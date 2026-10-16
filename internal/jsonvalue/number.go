@@ -42,6 +42,10 @@ func newNumber(text string, writtenExp int64, off int64) (*Number, error) {
 		return nil, &LimitError{Limit: "number exponent", Max: math.MaxInt64, Offset: off}
 	}
 	n.exp = exp + zeros
+	// exp == MinInt64 would make -exp overflow in Rat(): keep it unrepresentable.
+	if n.exp < -math.MaxInt64 {
+		return nil, &LimitError{Limit: "number exponent", Max: math.MaxInt64, Offset: off}
+	}
 	n.neg = neg
 	n.ndig = int64(len(trimmed))
 	n.mant.SetString(trimmed, 10)
@@ -110,7 +114,14 @@ func (n *Number) Rat() *big.Rat {
 	return r
 }
 
-func pow10(e int64) *big.Int { return new(big.Int).Exp(big.NewInt(10), big.NewInt(e), nil) }
+// pow10 returns 10^e. A negative e is an invariant violation (big.Int.Exp
+// would silently return 1), so it panics instead of giving a wrong value.
+func pow10(e int64) *big.Int {
+	if e < 0 {
+		panic("jsonvalue: negative power of ten")
+	}
+	return new(big.Int).Exp(big.NewInt(10), big.NewInt(e), nil)
+}
 
 func cmpInt64(a, b int64) int {
 	switch {
