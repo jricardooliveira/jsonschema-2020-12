@@ -3,19 +3,26 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:38:20 UTC
-- **Story spend:** ~$29.26 of $35.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:42:36 UTC
+- **Story spend:** ~$31.40 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: F1: docs/cli-contract.md and docs/limits.md are required by the boundary rules (document both flags, their defaults, exit 2 and the accepted-input changes) but are not in the reservation's file list. Please add both paths to the reservation so the existing pages can be accepted. Deleting them would break the boundary rule. Not granted automatically: docs/cli-contract.md (not in the approved design and not a test); docs/limits.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: docs/cli-contract.md, docs/limits.md
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
+  >   • Files changed outside the tasks' declared scope (§6): ['docs/cli-contract.md', 'docs/limits.md']
+  >   ◦ Release-agent note: Breaking change: Schemas and documents with non-UTF-8 bytes, duplicate object member names, unpaired Unicode surrogates, or trailing JSON values are now rejected as errors. Any existing input of these kinds must be fixed or the change must not be deployed.
+  >   ◦ Release-agent note: Error type change: LimitError is a new error type for exceeded caps (number digits, number exponent). Code that only checks for SyntaxError will miss these. Use errors.As(err, &jsonvalue.LimitError) to handle both parse and limit errors.
+  >   ◦ Release-agent note: Files outside declared task scope: docs/cli-contract.md and docs/limits.md document the new CLI flags and number cap defaults; they are necessary for users but were not in the original task files list. This is noted in the architecture review.
+  >   ◦ Release-agent note: Two new test files (prescan_test.go, decode_strict_test.go) in internal/jsonvalue demonstrate the strict parsing and UTF-8 validation behavior; they are not in the original scope but are required for the acceptance criteria.
+  >   ◦ Release-agent note: Later stories (180+) depend on this exact number model and deep equality. Any deviation from the Number format, Cmp behavior, or Equal semantics may break multipleOf, uniqueItems, unevaluatedProperties and const validation.
+  >   ◦ Release-agent note: The number cap defaults (10000 digits, 10000 exponent) are generous but hostile input with exponents near int64 limits (e.g., 1e-9223372036854775807) may still succeed at compile time and fail at validation time with a limit error; this is by design.
+  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -135,8 +142,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 18:37:10 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: [unspecified]; findings: 2 new, 0 persistent, 0 resolved |
 | 2026-10-16 18:37:10 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 3 finding(s) |
 | 2026-10-16 18:38:20 | agent | coder-agent | ✅ scope-request · remediation · 69.1s · $1.3359 |
-| 2026-10-16 18:38:20 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-16 18:38:20 | run | run waiting_human | ⏸️ |
+| 2026-10-16 18:38:20 | gate | gate-question | ❌ REJECTED: yes, grant docs/cli-contract.md and docs/limits.md for this run: operator-approved documentation scope. Also on record from the operator: the duplicate internal/speccases runner is an accepted, recorded desi… |
+| 2026-10-16 18:38:44 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 3 finding(s) |
+| 2026-10-16 18:39:18 | agent | coder-agent | ✅ complete · remediation · 33.6s · $1.0868 |
+| 2026-10-16 18:39:18 | gate | gate-build | ✅ [remediation] go_test:pass |
+| 2026-10-16 18:39:18 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 18:40:16 | agent | tester-agent | ✅ pass · 57.2s |
+| 2026-10-16 18:40:16 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 11; findings: 0 new, 0 persistent, 3 resolved |
+| 2026-10-16 18:40:16 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-16 18:42:35 | agent | release-agent | ✅ pass · 39.8s · $0.1171 |
+| 2026-10-16 18:42:36 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-16 18:42:36 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
