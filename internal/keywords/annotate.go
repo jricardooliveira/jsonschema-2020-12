@@ -31,6 +31,20 @@ type TreeNode struct {
 	Children                []*TreeNode
 }
 
+// dropAnnotations clears the annotations of n and its whole subtree; n may be
+// nil. A failing child was already cleared when it failed, so it is skipped.
+func (n *TreeNode) dropAnnotations() {
+	if n == nil {
+		return
+	}
+	n.Annotations = nil
+	for _, c := range n.Children {
+		if c.Valid {
+			c.dropAnnotations()
+		}
+	}
+}
+
 // collector is the per-call annotation log, shared by a context and all of
 // its children. It is append-only so a failed subschema can roll back.
 type collector struct {

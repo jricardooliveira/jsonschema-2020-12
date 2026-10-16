@@ -36,6 +36,33 @@ func TestFailingBasicAndFlagHaveNoAnnotations(t *testing.T) {
 	}
 }
 
+// Distinctive string, number and key values from the document never appear
+// in any shape, passing or failing. The only names reported are ones the
+// schema declares (evaluated property names are allowed in locations).
+func TestNoInstanceValuesInAnyShape(t *testing.T) {
+	const num, key = "987654321.125", "zq-secret-key"
+	schema := write(t, "s.json", `{"title":"T","default":3,"properties":{"a":{"description":"D"},"n":{"type":"string"}}}`)
+	pass := `{"a":"` + annSecret + `","` + key + `":` + num + `}`
+	fail := `{"a":"` + annSecret + `","n":` + num + `,"` + key + `":"` + annSecret + `"}`
+	for _, shape := range []string{"basic", "flag"} {
+		for doc, wantCode := range map[string]int{pass: exitValid, fail: exitInvalid} {
+			code, out, errOut := do([]string{"validate", "-o", shape, schema}, doc)
+			if code != wantCode {
+				t.Errorf("%s: code=%d want %d", shape, code, wantCode)
+			}
+			for _, v := range []string{annSecret, num, "987654321", key} {
+				if strings.Contains(out, v) || strings.Contains(errOut, v) {
+					t.Errorf("%s: value %q leaked: %q %q", shape, v, out, errOut)
+				}
+			}
+		}
+	}
+	// Schema numbers render as written, not as {}.
+	if _, out, _ := do([]string{"validate", schema}, `1`); !strings.Contains(out, `"keywordLocation":"/default","annotation":3}`) {
+		t.Errorf("numeric annotation: %q", out)
+	}
+}
+
 func TestMaxAnnotationsFlag(t *testing.T) {
 	schema := write(t, "s.json", `{"title":"T","description":"D"}`)
 	code, out, errOut := do([]string{"validate", "-max-annotations", "1", schema}, `1`)

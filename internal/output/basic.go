@@ -1,6 +1,10 @@
 package output
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/neoface/jsonschema/internal/jsonvalue"
+)
 
 // basicUnit is one error unit. absoluteKeywordLocation is left out until an
 // absolute base URI is known (stories 186/187).
@@ -20,6 +24,29 @@ type annotationUnit struct {
 	KeywordLocation         string `json:"keywordLocation"`
 	AbsoluteKeywordLocation string `json:"absoluteKeywordLocation,omitempty"`
 	Annotation              any    `json:"annotation"`
+}
+
+// jsonValue maps schema numbers (*jsonvalue.Number, which encoding/json
+// cannot marshal) to json.Number holding their text as written, recursively.
+// Other values are returned as they are; nothing in the schema is changed.
+func jsonValue(v any) any {
+	switch x := v.(type) {
+	case *jsonvalue.Number:
+		return json.Number(x.String())
+	case []any:
+		out := make([]any, len(x))
+		for i, e := range x {
+			out[i] = jsonValue(e)
+		}
+		return out
+	case map[string]any:
+		out := make(map[string]any, len(x))
+		for k, e := range x {
+			out[k] = jsonValue(e)
+		}
+		return out
+	}
+	return v
 }
 
 func put(w *Budget, v any) error {
@@ -66,7 +93,7 @@ func init() {
 			}
 			return writeList(w, true, "annotations", len(r.Annotations), func(i int) any {
 				a := r.Annotations[i]
-				return annotationUnit{true, a.InstanceLocation, a.KeywordLocation, a.AbsoluteKeywordLocation, a.Value}
+				return annotationUnit{true, a.InstanceLocation, a.KeywordLocation, a.AbsoluteKeywordLocation, jsonValue(a.Value)}
 			})
 		}
 		return writeList(w, false, "errors", len(r.Units), func(i int) any {

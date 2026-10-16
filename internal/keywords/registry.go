@@ -90,7 +90,10 @@ func (c *EvalContext) Keep(units []Unit) { c.units = append(c.units, units...) }
 // child fails, the item annotations it recorded are rolled back (core 7.7.1:
 // a failed schema keeps no annotations).
 func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, []Unit, error) {
-	tn := &TreeNode{InstanceLocation: instLoc}
+	var tn *TreeNode // only when the caller builds a tree
+	if c.Tree != nil {
+		tn = &TreeNode{InstanceLocation: instLoc}
+	}
 	child := &EvalContext{InstanceLocation: instLoc, count: c.count, col: c.col, max: c.max, evalNode: c.evalNode, Items: c.Items, Tree: tn}
 	rec, _ := c.Items.(ItemRecorder)
 	mark := 0
@@ -104,10 +107,10 @@ func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, [
 			rec.Rollback(mark)
 		}
 		c.col.list = c.col.list[:amark] // a failed schema keeps no annotations
-		tn.Annotations = nil
+		tn.dropAnnotations()            // nor does anything below it
 	}
-	tn.Valid, tn.Errors = ok, child.units
-	if c.Tree != nil {
+	if tn != nil {
+		tn.Valid, tn.Errors = ok, child.units
 		c.Tree.Children = append(c.Tree.Children, tn)
 	}
 	return ok, child.units, err

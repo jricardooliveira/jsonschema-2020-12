@@ -2,6 +2,8 @@ package eval
 
 import (
 	"errors"
+	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/compile"
@@ -23,7 +25,66 @@ func evalFull(t *testing.T, schema, doc string, maxAnn int) (Evaluation, error) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	return EvaluateFull(n, d, DefaultMaxOutputUnits, maxAnn)
+	return EvaluateTree(n, d, DefaultMaxOutputUnits, maxAnn)
+}
+
+// treeAnnotations collects every annotation held anywhere in the tree.
+func treeAnnotations(tn *Tree) []Annotation {
+	out := append([]Annotation(nil), tn.Annotations...)
+	for _, c := range tn.Children {
+		out = append(out, treeAnnotations(c)...)
+	}
+	return out
+}
+
+func TestPassingDescendantOfFailingNodeKeepsNoAnnotations(t *testing.T) {
+	// anyOf/0 fails, but its allOf/0 grandchild passes and annotates x-g.
+	ev, err := evalFull(t, `{"anyOf":[{"allOf":[{"x-g":1}],"type":"string"},{"x-b":2}]}`, `5`, DefaultMaxAnnotations)
+	if err != nil || !ev.Valid {
+		t.Fatal(ev, err)
+	}
+	got := treeAnnotations(ev.Tree)
+	if len(got) != 1 || got[0].Keyword != "x-b" {
+		t.Fatalf("dropped annotation still in tree: %+v", got)
+	}
+	branch := ev.Tree.Children[0]
+	if branch.Valid || len(branch.Children) != 1 || !branch.Children[0].Valid {
+		t.Fatalf("tree must keep the passing grandchild's result: %+v", branch)
+	}
+}
+
+func TestEvaluateFullBuildsNoTree(t *testing.T) {
+	s, _ := jsonvalue.DecodeLimited([]byte(`{"anyOf":[{"x-a":1}]}`), jsonvalue.NumberLimits{MaxDigits: 10, MaxExponent: 10})
+	n, _ := compile.Compile(s)
+	ev, err := EvaluateFull(n, true, DefaultMaxOutputUnits, DefaultMaxAnnotations)
+	if err != nil || !ev.Valid || ev.Tree != nil || len(ev.Annotations) != 1 {
+		t.Fatalf("got %+v %v", ev, err)
+	}
+}
+
+func TestConcurrentEvaluateTree(t *testing.T) {
+	want, err := evalFull(t, `{"properties":{"a":{"title":"A","anyOf":[{"type":"string"},{"x":1}]}}}`, `{"a":1}`, DefaultMaxAnnotations)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, _ := jsonvalue.DecodeLimited([]byte(`{"properties":{"a":{"title":"A","anyOf":[{"type":"string"},{"x":1}]}}}`), jsonvalue.NumberLimits{MaxDigits: 10, MaxExponent: 10})
+	n, _ := compile.Compile(s)
+	d, _ := jsonvalue.DecodeLimited([]byte(`{"a":1}`), jsonvalue.NumberLimits{MaxDigits: 10, MaxExponent: 10})
+	var wg sync.WaitGroup
+	for g := 0; g < 8; g++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := 0; i < 50; i++ {
+				ev, err := EvaluateTree(n, d, DefaultMaxOutputUnits, DefaultMaxAnnotations)
+				if err != nil || !reflect.DeepEqual(ev.Tree, want.Tree) || !reflect.DeepEqual(ev.Annotations, want.Annotations) {
+					t.Errorf("differs: %v", err)
+					return
+				}
+			}
+		}()
+	}
+	wg.Wait()
 }
 
 func TestUnknownKeywordCollected(t *testing.T) {

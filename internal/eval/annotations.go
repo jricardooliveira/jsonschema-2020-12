@@ -21,9 +21,10 @@ type (
 )
 
 // Evaluation is everything one evaluation produced. Annotations is sorted
-// (see SortAnnotations) and empty unless Valid. Tree holds every evaluated
-// subschema, including passing parts of a failing evaluation; annotations
-// dropped by a failing subschema appear nowhere in it.
+// (see SortAnnotations) and empty unless Valid. Tree (EvaluateTree only)
+// holds every evaluated subschema, including passing parts of a failing
+// evaluation; annotations dropped by a failing subschema, and by everything
+// below it, appear nowhere in it. A failing root keeps none of its own.
 type Evaluation struct {
 	Valid       bool
 	Units       []keywords.Unit
@@ -31,21 +32,35 @@ type Evaluation struct {
 	Tree        *Tree
 }
 
-// EvaluateFull evaluates n with explicit output-unit and annotation caps.
+// EvaluateFull evaluates n with explicit output-unit and annotation caps. It
+// builds no evaluation tree; annotations are always collected.
 func EvaluateFull(n *compile.Node, instance any, maxUnits, maxAnnotations int) (Evaluation, error) {
+	return evaluate(n, instance, maxUnits, maxAnnotations, nil)
+}
+
+// EvaluateTree is EvaluateFull that also returns the per-subschema
+// evaluation tree (for the detailed and verbose shapes).
+func EvaluateTree(n *compile.Node, instance any, maxUnits, maxAnnotations int) (Evaluation, error) {
+	return evaluate(n, instance, maxUnits, maxAnnotations, &Tree{})
+}
+
+func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree *Tree) (Evaluation, error) {
 	ctx := keywords.NewEvalContext(maxUnits, evalNode)
 	ctx.SetMaxAnnotations(maxAnnotations)
-	ctx.Tree = &Tree{}
+	ctx.Tree = tree
 	ok, err := evalNode(ctx, n, instance)
 	if err != nil {
 		return Evaluation{}, err
 	}
-	ctx.Tree.Valid, ctx.Tree.Errors = ok, ctx.Units()
-	ev := Evaluation{Valid: ok, Units: ctx.Units(), Tree: ctx.Tree}
+	ev := Evaluation{Valid: ok, Units: ctx.Units(), Tree: tree}
 	if ok {
 		ev.Annotations = SortAnnotations(ctx.Annotations())
-	} else {
-		ctx.Tree.Annotations = nil
+	}
+	if tree != nil {
+		tree.Valid, tree.Errors = ok, ctx.Units()
+		if !ok {
+			tree.Annotations = nil
+		}
 	}
 	return ev, nil
 }
