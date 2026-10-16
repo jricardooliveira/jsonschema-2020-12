@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "ca148f1e9c26b88d8ee69bca593225c1911e78e3",
+    "commit": "a27d7611ed8a9dfd40fec541aa32ecda731f415d",
     "base_commit": "84d3a386bfcaab9f8ffb7ca8d00f025b241e66ac"
   },
   "tests": {
@@ -68,7 +68,7 @@
         "status": "covered"
       }
     ],
-    "command": "go test ./..."
+    "command": "go test -race ./..."
   },
   "ac_traceability": {
     "total": 11,
@@ -219,7 +219,7 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-d744afbe91f84da39de63c3e616e7063/docs/architecture/adr/ADR-003-error-reports-flag-and-basic-output-multiple-docum.md",
-    "summary": "The implementation meets all 11 acceptance criteria and follows the architecture and boundary rules. Shapes register themselves through one registry. EvalContext gives keywords a value-free Report and"
+    "summary": "The change meets all 11 acceptance criteria and every test that backs them is visible. The output-unit cap is counted through a pointer shared by every child context. Report increments it on every app"
   },
   "security_boundary": {
     "overall": "pass",
@@ -229,16 +229,16 @@
       "CLI stdout for an invalid document changes from the minimal {\"valid\": false} result to the 2020-12 'basic' object (the default). The operator approved this by choosing 'basic' as the default shape."
     ],
     "findings": [
-      "I found no insecure default. Fallback: Options.MaxOutputUnits of 0 maps to the finite DefaultMaxOutputUnits (100000), and a negative value is a compile error, so the cap cannot be silently turned off (numberlimits.go maxUnits). Fail-closed: an unknown shape is rejected before the schema is read, and a render or stdout write failure gives exit 2 (run.go). Leaking: per-document reasons come only from typed errors. SyntaxError and LimitError carry only location and limit, and readFile/readCapped give 'file not found', 'read failed' or 'input exceeds limit'. Render failure is replaced by the fixed text 'cannot render result'. NDJSON lines are built with encoding/json, with RawMessage for the shape object. absoluteKeywordLocation is never derived from a path."
+      "F2 (low): run.go fills per-document NDJSON and stderr reasons from err.Error(). Today this is safe: Validate wraps only the content-free *SyntaxError and *LimitError with %w, and readFile/readCapped produce fixed phrases. Nothing enforces the boundary rule that only typed errors may reach the output, though. A later untyped error from Validate (for example from a future keyword's compile or eval path) would go straight to stdout and stderr. A typed allow-list, or a generic fallback reason for anything that is not a known type, would make this fail closed."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 2.690929,
-    "tokens_in": 1753631,
-    "tokens_out": 48391
+    "usd": 4.107342,
+    "tokens_in": 2181639,
+    "tokens_out": 59286
   },
   "assumptions": [
     {
@@ -304,6 +304,10 @@
     {
       "task": "T5",
       "text": "With '-' given twice, the second read of the already-consumed stdin is a per-document 'error' line, and the exit code is 2."
+    },
+    {
+      "task": "remediation",
+      "text": "The finding asked for this one fix and nothing else, so no other file was changed. A search for 100000 found no other copy of the old cap value; the remaining matches are a JSON number in an equality test and nesting-depth inputs, which are unrelated."
     }
   ],
   "blockers": [],
