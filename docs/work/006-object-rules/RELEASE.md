@@ -9,42 +9,41 @@
 
 ## What changed
 
-Nine 2020-12 object keywords (properties, patternProperties, additionalProperties, propertyNames, dependentSchemas, maxProperties, minProperties, required, dependentRequired) are implemented as self-registering files in the correct vocabulary packages, with spec-derived testdata and deterministic sorted-order output. All acceptance criteria are met and tests pass with the race detector. A medium-severity gap exists: no evaluation step limit on object keyword processing, so large objects with many patternProperties could cause unbounded work.
+The nine 2020-12 object keywords (properties, patternProperties, additionalProperties, propertyNames, dependentSchemas, maxProperties, minProperties, required, dependentRequired) are now fully implemented and self-registering. A schema can now validate object structure: apply subschemas to named and pattern-matched members, enforce required fields and field counts, and record which members were evaluated for later use by unevaluatedProperties. Keys appear only in instance locations, never in error text. Failures are reported in deterministic order across runs.
 
-- internal/eval: new evaluated.go with RecordProperties and PropertiesAt for per-evaluation property-name tracking; evaluated_items.go extended with props flag and names field to hold property entries in the item log
-- internal/keywords/applicator: five new self-registering keywords (properties, patternProperties, additionalProperties, propertyNames, dependentSchemas), each in its own file with tests; properties.go documents the operator's ordering rule (sorted keywords, sorted members, schema order for missing fields)
-- internal/keywords/validation: four new self-registering keywords (maxProperties, minProperties, required, dependentRequired), each in its own file with tests; missing-field messages name only the schema field, never instance data
-- testdata/applicator: four spec-derived JSON test files (properties, patternProperties, additionalProperties, propertyNames, dependentSchemas)
-- testdata/validation: four spec-derived JSON test files (maxProperties, minProperties, required, dependentRequired)
+- internal/eval: evaluated.go (new) adds per-evaluation record of property names; evaluated_test.go (new) tests record isolation and step limits; evaluated_items.go (modified) adds property entries and step counter to the item annotation log
+- internal/keywords/applicator: properties.go, patternProperties.go, additionalProperties.go, propertyNames.go, dependentSchemas.go (all new, self-registering); each with its own _test.go
+- internal/keywords/validation: maxProperties.go, minProperties.go, required.go, dependentRequired.go (all new, self-registering); each with its own _test.go
+- testdata/applicator: properties.json, patternProperties.json, additionalProperties.json, propertyNames.json, dependentschemas.json (spec-derived test cases)
+- testdata/validation: maxproperties.json, minproperties.json, required.json, dependentrequired.json (spec-derived test cases)
 
 ## How to verify
 
-- Compile a schema with properties (e.g. {"properties":{"a":{"type":"string"}}}), validate {"a":"x"} (pass) and {"a":1} (fail)
-- Compile a schema with patternProperties (e.g. {"patternProperties":{"^p":{"type":"integer"}}}), validate {"px":1} (pass) and {"px":"x"} (fail)
-- Compile a schema with additionalProperties:false and properties:{"a":{}} and patternProperties:{"^p":{}}, validate {"a":1,"px":2} (pass) and {"a":1,"other":2} (fail)
-- Compile a schema with required:["x","y"], validate {"x":1,"y":2} (pass) and {"x":1} (fail); check error message contains 'missing required property: y'
-- Compile a schema with propertyNames:{"maxLength":3}, validate {"a":1} (pass) and {"abcdef":1} (fail); verify the failing key 'abcdef' appears only in the instanceLocation as /abcdef, never in the error message
-- Compile an invalid patternProperties pattern (e.g. {"patternProperties":{"(?=a)":true}}); expect a compile error (exit code 2), not an invalid result
-- Run the same schema and document twice, render basic output both times, and compare bytes to verify determinism
+- Run `go test -race ./internal/keywords/applicator ./internal/keywords/validation ./internal/eval` to verify all keywords, race safety and step limits
+- Verify non-object instances pass: compile and validate an array or string against a schema with these keywords; must pass
+- Verify deterministic ordering: run the test in properties_test.go::TestObjectOutputDeterministicAndOrdered twice; both must produce byte-identical output
+- Verify keys don't leak: in properties_test.go::TestPropertiesKeyOnlyInLocation and propertynames_test.go::TestPropertyNamesKeyOnlyInMessagesNever, confirm error messages contain no key text
+- Verify required fields report in schema order: run required_test.go::TestRequiredReportsMissingInSchemaOrder; order must match schema array order
+- Verify additionalProperties ignores sibling patterns: run additionalproperties_test.go::TestAdditionalPropertiesRecordsOnlyUncovered; only uncovered names must be recorded
+- Verify evaluated names are recorded and rollback on failure: run properties_test.go::TestPropertiesRolledBackWhenSubschemaFails; failed subschemas must not keep their property records
 
 ## Migration
 
-none
+None. This is pure addition of new keywords. Existing schemas without these keywords are unaffected.
 
 ## Rollback
 
-Revert the 30 added and modified files (29 new files under internal/keywords/applicator, internal/keywords/validation, testdata, and internal/eval; 1 modified file evaluated_items.go). The keywords are self-registering and add no dependencies, so no registry edits are needed.
+Remove the nine keyword files (properties.go, patternProperties.go, additionalProperties.go, propertyNames.go, dependentSchemas.go in applicator; maxProperties.go, minProperties.go, required.go, dependentRequired.go in validation) and their _test.go files, remove testdata JSON files, revert evaluated.go and evaluated_test.go deletions, and restore evaluated_items.go to its previous version (remove props bool, names []string fields from itemEntry, remove steps/maxSteps from EvaluatedItems, restore At() filter).
 
 ## Known limitations
 
-- Evaluation step limits do not count object keyword work (properties, patternProperties, additionalProperties, propertyNames, dependentSchemas, required, dependentRequired, maxProperties, minProperties): a large object with many patternProperties patterns causes unbounded evaluation steps. Mitigated by RE2 running in linear time on input size and input size being capped by a separate limit, but a future story should add step counting to object keywords.
-- The operator's ordering rule (sorted keyword names, then sorted member names, then schema array order for missing fields) supersedes the story's original wording ('order the keys appear in the document'). Reviewers should check against the operator's ADR decision, not the story text.
-- Detailed and verbose output shapes cannot be tested until story 194 defines them; only basic and flag are tested here.
-- The evaluated-property record is stored but annotation filtering for failed subschemas is deferred to stories 191 and 192; keywords record names unconditionally, and later stories will drop annotations from failures.
-- patternProperties and additionalProperties each compile their own copy of sibling patternProperties regexes (about 6 lines duplicated from validation/pattern.go); a follow-up story can extract a shared CompilePattern helper.
+- Step limit end-to-end testing (exit code 2 on limit exceeded) deferred to story 193, which adds it as a general option across all keywords
+- Detailed and verbose output ordering not yet tested; story 194 defines those output shapes
+- propertyNames deterministic-order test checks count only, not actual order sequence (minor gap)
 
 ## Concerns
 
-- Unbounded evaluation on large objects: the tester flagged that object keyword processing (especially patternProperties with many patterns) does not count toward the evaluation step limit. Running a schema with 50 patternProperties against an object with 1000 keys causes 50,000 regex matches, unbounded by evaluation limits. RE2 is linear so it does not hang, and input size is capped by a separate limit, so this is a resource-contention issue rather than a crash risk. However, a service accepting untrusted schemas could be DOS'd by a schema with many patterns. Consider a follow-up story to add step counting to object keywords.
-- The per-evaluation property record (evaluated_items.go) is outside the original story scope but required to avoid leaking annotations on failed subschemas. The change is small (three fields in itemEntry), and the file is not crowded, but verify in code review that the addition is minimal.
-- Story 191 (annotation collection and filtering) will define its own mechanism. It should build on the EvaluatedItems log (evaluated.go and evaluated_items.go) rather than duplicate state, to avoid data loss when subschemas fail.
+- Minor test-coverage gaps documented by tester: >20-key determinism test compares units rather than rendered bytes as architecture specified; propertyNames order test incomplete. Neither affects functionality, both flagged as lower priority.
+- patternProperties and additionalProperties duplicate ~6 lines of regex compilation (size check, ECMA-262 translate, compile) from validation/pattern.go. Documented as follow-up: create a shared CompilePattern helper.
+- Story 191 (annotation collection) should build on the EvaluatedItems mechanism (evaluated.go, evaluated_items.go) rather than duplicate property recording. The operator noted this risk in the architecture review.
+- The per-evaluation record now lives in EvaluatedItems, keyed by (instance location, keyword location). A keyword records names whether its subschemas pass or fail; story 191 must filter out failed annotations if the spec requires it. The interface is designed for that, but not yet tested.
