@@ -12,6 +12,11 @@ func init() {
 	keywords.Register(keywords.Keyword{Name: "pattern", Vocabulary: VocabularyURI, Compile: compilePattern, Evaluate: evalPattern})
 }
 
+// DefaultMaxPatternSize is the longest accepted pattern, counted in bytes of
+// the schema's UTF-8 text. It is checked before translation and compilation.
+// ponytail: fixed constant; story 193 turns it into a library option and CLI flag.
+const DefaultMaxPatternSize = 64 << 10
+
 // compiledPattern is immutable: the source text and its compiled RE2 form.
 type compiledPattern struct {
 	src string
@@ -22,6 +27,9 @@ func compilePattern(_ *keywords.CompileContext, value any) (any, error) {
 	src, ok := value.(string)
 	if !ok {
 		return nil, fmt.Errorf("pattern: must be a string")
+	}
+	if len(src) > DefaultMaxPatternSize {
+		return nil, fmt.Errorf("pattern: exceeds size limit of %d bytes", DefaultMaxPatternSize)
 	}
 	re2, err := ecmaregex.Translate(src)
 	if err != nil {
