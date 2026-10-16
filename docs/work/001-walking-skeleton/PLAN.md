@@ -75,8 +75,11 @@ exactly this order:
 ## Risks
 
 - Duplicate-key detection through Decoder.Token must be applied recursively. A naive top-level check would miss nested duplicates.
-- Story 179 rewrites internal/jsonvalue. Keep decode.go's surface small (one Decode function) to limit churn.
+- Story 179 rewrites internal/jsonvalue. Keep decode.go's surface small (one Decode function plus the two error types and MaxDepth) to limit churn.
 - Treating unbuilt keywords as {} gives silent 'valid' answers until each keyword lands. The operator accepted this.
+- encoding/json Decoder has its own internal depth limit; if our check is not strictly first, the user sees a json error instead of LimitError. Test at MaxDepth+1 guards this.
+- The size-cap test allocates ~64 MiB; acceptable under -race but slow-ish. Keep it a single case; story 193 makes the cap configurable so tests can lower it later.
+- Line/column computation must use the decoder's InputOffset, which for syntax errors is approximate; message is location-only either way, so imprecision is harmless.
 
 Implementation constraints the coder must honor:
 
@@ -86,8 +89,13 @@ Implementation constraints the coder must honor:
 - Error messages and output never include document values.
 - Tests read case values from the code (for example, exit-code constants) rather than repeating literals where the code defines them.
 - No network or extra file access in code or tests. CLI tests use t.TempDir files and in-memory stdin.
+- Nesting depth is checked before descending into '[' or '{' against jsonvalue.MaxDepth; exceeding it returns *LimitError, never panics or overflows the stack.
+- All CLI input (schema file, document file, stdin) goes through one readCapped helper using io.LimitReader(r, maxInputBytes+1); more than maxInputBytes is a limit error, exit 2.
+- Never surface encoding/json error strings: decode.go maps them to SyntaxError with a fixed Reason and line:column/offset only. Duplicate-member errors give only the location, never the member name.
+- FlagSet uses flag.ContinueOnError and SetOutput(io.Discard); run.go writes the single stderr line for unknown flag, -h, missing argument, unknown subcommand and extra arguments.
+- Required tests: decode_test — depth MaxDepth+1 gives *LimitError and MaxDepth nested arrays decode fine (built from the constant); duplicate-key and syntax errors whose Error() contains none of the input's distinctive fragments. run_test — 100000 nested '[' as document gives exit 2, empty stdout, exactly one stderr line; input of maxInputBytes+1 bytes (built from the constant) gives exit 2; a bad document containing a secret marker string (e.g. {"pw": "s3cr3t" !}) and a duplicate {"s3cr3t":1,"s3cr3t":2} give stderr not containing 's3cr3t'; `validate -bogus schema.json` gives exit 2, empty stdout, exactly one stderr line.
 
-- DB impact: no · API impact: yes: creates the public library API and the CLI contract · Migration needed: no
+- DB impact: no · API impact: yes · Migration needed: no
 
 Breaking changes:
 
