@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #135 · **Status:** failed · **Stage:** coder-agent
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:58:52 UTC
-- **Story spend:** ~$25.67 of $26.00 (estimated at API list prices)
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 18:33:43 UTC
+- **Story spend:** ~$25.67 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -13,7 +13,7 @@ None — the run stopped (failed). Nothing proceeds until the cause under Blocke
 
 ## Blockers
 
-- story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.09 (nine in ten recent calls), so this one would likely pass the cap. Raise [budget] max_story_cost_usd in factory.toml (or FACTORY_MAX_STORY_COST_USD) to continue.
+- story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.10 (nine in ten recent calls), so this one would likely pass the cap. This story's batch reserved $26.00 for it; factory.toml allows more, but the reservation is the cap that binds.
 
 ## Trail
 
@@ -123,7 +123,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:57:35 | gate | gate-release | ❌ REJECTED: Fix only these two, change nothing else. (F4) LimitError.Error for number-digit and number-exponent limits must include the original-input location like SyntaxError does (line:column and offset, never conten… |
 | 2026-10-16 17:58:52 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
 | 2026-10-16 17:58:52 | agent | coder-agent | ❌ error |
-| 2026-10-16 17:58:52 | run | run failed | ❌ story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.09 (nine in ten recent calls), so this one would likely pass the cap. Raise [budget] max_story_cost_usd in factory.toml (or FACTO… |
+| 2026-10-16 18:33:43 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 18:33:43 | agent | coder-agent | ❌ error |
+| 2026-10-16 18:33:43 | run | run failed | ❌ story budget nearly spent: ~$25.67 of $26.00, and a coder-agent call has cost up to ~$1.10 (nine in ten recent calls), so this one would likely pass the cap. This story's batch reserved $26.00 for it; factory.toml all… |
 
 ## Warnings (recorded, not blocking)
 
