@@ -1,0 +1,18 @@
+[
+  {"spec":"validation 6.1.3","description":"const number","schema":{"const":1},"tests":[
+    {"description":"same","data":1,"valid":true},
+    {"description":"1.0","data":1.0,"valid":true},
+    {"description":"1e0","data":1e0,"valid":true},
+    {"description":"other number","data":2,"valid":false},
+    {"description":"true is not 1","data":true,"valid":false}]},
+  {"spec":"validation 6.1.3","description":"const null","schema":{"const":null},"tests":[
+    {"description":"null","data":null,"valid":true},
+    {"description":"0 fails","data":0,"valid":false},
+    {"description":"false fails","data":false,"valid":false}]},
+  {"spec":"validation 6.1.3","description":"const object","schema":{"const":{"a":1,"b":[1,2]}},"tests":[
+    {"description":"any member order","data":{"b":[1.0,2],"a":1},"valid":true},
+    {"description":"missing member","data":{"a":1},"valid":false}]},
+  {"spec":"validation 6.1.3","description":"const nested array","schema":{"const":[[1],[2,3]]},"tests":[
+    {"description":"same","data":[[1],[2,3]],"valid":true},
+    {"description":"different order","data":[[2,3],[1]],"valid":false}]}
+]

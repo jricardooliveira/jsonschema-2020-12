@@ -1,0 +1,35 @@
+[
+  {"spec":"validation 6.1.1","description":"single type string","schema":{"type":"string"},"tests":[
+    {"description":"string ok","data":"a","valid":true},
+    {"description":"number fails","data":1,"valid":false},
+    {"description":"null fails","data":null,"valid":false}]},
+  {"spec":"validation 6.1.1","description":"integer accepts zero fractional part","schema":{"type":"integer"},"tests":[
+    {"description":"1 ok","data":1,"valid":true},
+    {"description":"1.0 ok","data":1.0,"valid":true},
+    {"description":"1e2 ok","data":1e2,"valid":true},
+    {"description":"-0 ok","data":-0,"valid":true},
+    {"description":"big integer ok","data":12345678901234567890,"valid":true},
+    {"description":"1.5 fails","data":1.5,"valid":false},
+    {"description":"0.1 fails","data":0.1,"valid":false},
+    {"description":"string fails","data":"1","valid":false}]},
+  {"spec":"validation 6.1.1","description":"number matches integers","schema":{"type":"number"},"tests":[
+    {"description":"1 ok","data":1,"valid":true},
+    {"description":"1.5 ok","data":1.5,"valid":true},
+    {"description":"string fails","data":"1","valid":false}]},
+  {"spec":"validation 6.1.1","description":"object type","schema":{"type":"object"},"tests":[
+    {"description":"object ok","data":{},"valid":true},
+    {"description":"array fails","data":[],"valid":false}]},
+  {"spec":"validation 6.1.1","description":"array type","schema":{"type":"array"},"tests":[
+    {"description":"array ok","data":[],"valid":true},
+    {"description":"object fails","data":{},"valid":false}]},
+  {"spec":"validation 6.1.1","description":"boolean type","schema":{"type":"boolean"},"tests":[
+    {"description":"false ok","data":false,"valid":true},
+    {"description":"0 fails","data":0,"valid":false}]},
+  {"spec":"validation 6.1.1","description":"null type","schema":{"type":"null"},"tests":[
+    {"description":"null ok","data":null,"valid":true},
+    {"description":"false fails","data":false,"valid":false}]},
+  {"spec":"validation 6.1.1","description":"array form is any-of","schema":{"type":["string","null"]},"tests":[
+    {"description":"string ok","data":"a","valid":true},
+    {"description":"null ok","data":null,"valid":true},
+    {"description":"number fails","data":1,"valid":false}]}
+]
