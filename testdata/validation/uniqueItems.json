@@ -1,0 +1,19 @@
+[
+  {"spec":"validation 6.4.3","description":"uniqueItems true","schema":{"uniqueItems":true},"tests":[
+    {"description":"unique numbers","data":[1,2],"valid":true},
+    {"description":"duplicate numbers","data":[1,1],"valid":false},
+    {"description":"1 and 1.0 are duplicates","data":[1,1.0],"valid":false},
+    {"description":"1 and true differ","data":[1,true],"valid":true},
+    {"description":"0 and false differ","data":[0,false],"valid":true},
+    {"description":"objects equal regardless of key order","data":[{"a":1,"b":2},{"b":2,"a":1}],"valid":false},
+    {"description":"objects differ","data":[{"a":1},{"a":2}],"valid":true},
+    {"description":"nested arrays equal","data":[[1,[2.0]],[1,[2]]],"valid":false},
+    {"description":"array order matters","data":[[1,2],[2,1]],"valid":true},
+    {"description":"empty array","data":[],"valid":true},
+    {"description":"non-array ignored","data":"aa","valid":true},
+    {"description":"object ignored","data":{"a":1,"b":1},"valid":true}]},
+  {"spec":"validation 6.4.3","description":"uniqueItems false","schema":{"uniqueItems":false},"tests":[
+    {"description":"duplicates allowed","data":[1,1],"valid":true}]},
+  {"spec":"validation 6.4.3","description":"uniqueItems absent","schema":{},"tests":[
+    {"description":"duplicates allowed","data":[1,1],"valid":true}]}
+]
