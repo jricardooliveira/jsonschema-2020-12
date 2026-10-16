@@ -23,3 +23,7 @@ Declared `$id` values and resolved references get RFC 3986 6.2.2 syntax normaliz
 ## Loops
 - Load time: schemas holding only `$ref` that point at each other are a schema error (exit 2).
 - Evaluation: re-entering the same schema location at the same instance location on the current path is a loop error (exit 2). Recursion that descends into the document (trees, lists) is fine.
+- Backstop: at most 40000 schema nodes (4 × the decoder's nesting limit of 10000) may be nested on one evaluation path. Past that, evaluation stops with an `evaluation depth` limit error (exit 2), never a stack overflow. The bound is fixed for now; a later story makes it configurable.
+
+## Output locations
+`keywordLocation` follows the evaluation path through `$ref` (core 12.3.1): a failure inside a referenced schema reached from `/properties/p/$ref` is reported at `/properties/p/$ref/minLength`, not at the target's own location such as `/$defs/a/minLength`. `absoluteKeywordLocation` is not emitted yet.

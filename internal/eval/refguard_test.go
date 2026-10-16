@@ -2,6 +2,7 @@ package eval_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/compile"
@@ -46,6 +47,51 @@ func TestNonDescendingLoop(t *testing.T) {
 	var le *eval.LoopError
 	if ok || !errors.As(err, &le) || le.SchemaLocation != "" || le.InstanceLocation != "" {
 		t.Errorf("%v %v", ok, err)
+	}
+}
+
+func nested(open, mid, close string, n int) string {
+	return strings.Repeat(open, n) + mid + strings.Repeat(close, n)
+}
+
+// The depth limit is the backstop for recursion that descends: a hostile
+// schema gets a LimitError (exit 2), never a stack overflow.
+func TestEvalDepthLimit(t *testing.T) {
+	k := 10 // allOf wrappers per instance level: k+2 nodes per level
+	schema := `{"items":` + nested(`{"allOf":[`, `{"$ref":"#"}`, `]}`, k) + `}`
+	doc := nested("[", "", "]", eval.MaxEvalDepth/(k+2)+10)
+	ok, err := guardRun(t, schema, doc)
+	var le *jsonvalue.LimitError
+	if ok || !errors.As(err, &le) || le.Max != eval.MaxEvalDepth {
+		t.Errorf("%v %v", ok, err)
+	}
+}
+
+// A legitimate recursive schema over the deepest document the decoder
+// accepts stays well inside the limit.
+func TestEvalDepthLimitIsGenerous(t *testing.T) {
+	doc := nested("[", "", "]", jsonvalue.MaxDepth)
+	if ok, err := guardRun(t, `{"items":{"$ref":"#"}}`, doc); err != nil || !ok {
+		t.Errorf("%v %v", ok, err)
+	}
+}
+
+// keywordLocation follows the evaluation path through $ref (core 12.3.1).
+func TestRefKeywordLocationIsEvaluationPath(t *testing.T) {
+	s, _ := jsonvalue.DecodeLimited([]byte(`{"$defs":{"a":{"minLength":2}},"properties":{"p":{"$ref":"#/$defs/a"}},"then":{"$ref":"#/$defs/a"},"if":true}`), jsonvalue.NumberLimits{})
+	n, err := compile.CompileDocument(s, "file:///s.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d, _ := jsonvalue.DecodeLimited([]byte(`{"p":"x"}`), jsonvalue.NumberLimits{})
+	_, units, err := eval.EvaluateUnits(n, d, eval.DefaultMaxOutputUnits)
+	if err != nil || len(units) == 0 || units[0].KeywordLocation != "/properties/p/$ref/minLength" {
+		t.Fatalf("%+v %v", units, err)
+	}
+	d, _ = jsonvalue.DecodeLimited([]byte(`"x"`), jsonvalue.NumberLimits{})
+	_, units, err = eval.EvaluateUnits(n, d, eval.DefaultMaxOutputUnits)
+	if err != nil || len(units) == 0 || units[0].KeywordLocation != "/then/$ref/minLength" {
+		t.Fatalf("%+v %v", units, err)
 	}
 }
 

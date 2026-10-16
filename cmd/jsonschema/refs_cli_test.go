@@ -1,6 +1,11 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/neoface/jsonschema/internal/eval"
+)
 
 // Broken references, ids and anchors are exit 2 whatever the document is.
 func TestBrokenSchemasExitError(t *testing.T) {
@@ -23,6 +28,16 @@ func TestEvaluationLoopExitError(t *testing.T) {
 	s := write(t, "s.json", `{"$ref":"#","type":"object"}`)
 	code, out, errOut := do([]string{"validate", s, write(t, "d.json", `{}`)}, "")
 	wantErr(t, "loop", code, out, errOut)
+}
+
+// Recursion that descends past the evaluation depth limit is exit 2, not a crash.
+func TestEvaluationDepthExitError(t *testing.T) {
+	k := 10
+	schema := `{"items":` + strings.Repeat(`{"allOf":[`, k) + `{"$ref":"#"}` + strings.Repeat(`]}`, k) + `}`
+	n := eval.MaxEvalDepth/(k+2) + 10
+	doc := strings.Repeat("[", n) + strings.Repeat("]", n)
+	code, out, errOut := do([]string{"validate", write(t, "s.json", schema), write(t, "d.json", doc)}, "")
+	wantErr(t, "depth", code, out, errOut)
 }
 
 // core 9.1: --base-uri changes how a relative $ref resolves.
