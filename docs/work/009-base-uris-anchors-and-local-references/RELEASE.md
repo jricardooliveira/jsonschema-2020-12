@@ -9,45 +9,43 @@
 
 ## What changed
 
-Enables core $id, $anchor, $defs, $ref, and $comment keywords for within-document schema identification and reference resolution. $id sets base URIs using RFC 3986 resolution; $ref resolves local JSON Pointer fragments and plain-name anchors with full normalization and escaping; load-time validation catches broken schemas (unresolved refs, bad syntax, pure cycles); evaluation-time loop detection stops non-descending recursion. The change is tested at library and CLI levels, with spec-derived cases. One medium-severity limitation remains: a schema with branching $ref can take exponential time in document depth because there is no general evaluation-step limit; this is deferred to story 193 and does not block.
+Schemas can now identify themselves and reference their own subschemas: $id sets the base URI (including for embedded resources), $anchor defines plain-name fragments, $ref resolves local and anchor references, $defs holds reusable schemas, and $comment is accepted. All references are validated at load time before any document is checked. Loop detection and depth limits protect against hostile schemas.
 
-- internal/uri/resolve.go, pointer.go: RFC 3986 reference resolution, safe URI normalization (lowercase scheme/host, unescape unreserved, remove . and .. segments), and JSON Pointer parsing with percent-decoding followed by ~0/~1 unescaping
-- internal/registry/index.go: resource index building walks the schema, computes base URIs for each subschema, indexes normalized $id values and per-resource $anchor names, validates $id fragments and anchor syntax, reports duplicates
-- internal/keywords/core/{id,anchor,defs,comment,ref}.go: five keyword files registering themselves. $id, $anchor, $defs, $comment have no effect at evaluation time. $ref holds a compiled target pointer and evaluates it alongside sibling keywords
-- internal/compile/refs.go: load-time reference resolution. Chooses root base URI (override, file location, or stdin placeholder). Resolves every $ref once against the resource index. Follows object/boolean targets under any keyword; rejects other values. Reports unresolved refs, bad percent-encoding, and pure $ref cycles as broken schema (exit code 2)
-- internal/eval/refguard.go: per-call evaluation context tracks (schema location, instance location) pairs. Detects re-entry at the same schema and instance location as a loop error. Enforces MaxEvalDepth = 4 × decoder max to prevent stack overflow on deep recursion
-- internal/eval/eval.go: one wiring call to enter/exit nodes for the loop guard. keywordLocation now follows the evaluation path through $ref targets
-- jsonschema.go, numberlimits.go, options.go: new Options fields BaseURI (override) and SchemaPath (file location, string work only). Root base URI selection via RootBaseURI in compile package
-- cmd/jsonschema/run.go: one --base-uri flag; passes schema path to Options
-- testdata/core/{id,anchor,defs,ref,comment,uri_normalization}.json: spec-derived positive and negative test cases citing 2020-12 core sections
-- docs/references.md: documents base URI selection, resolution, normalization (RFC 3986 6.2.2), non-schema targets, loop handling, and output locations
+- internal/uri: RFC 3986 reference resolution, safe normalization for URI comparison, JSON Pointer parsing with percent-decoding and ~0/~1 unescaping
+- internal/registry: Resource index with base URI tracking, normalized $id values indexed by resource, and per-resource anchor mapping; validates $id fragments and anchor syntax
+- internal/keywords/core: Five new keywords ($id, $anchor, $defs, $comment, $ref); $ref compiles to a direct pointer to its target; $comment and $defs have no validation effect
+- internal/compile/refs: Load-time reference resolution, root base URI selection (override > file path > stdin placeholder), and pure-cycle detection
+- internal/eval/refguard: Per-call evaluation guard that detects (schema location, instance location) re-entry loops and enforces evaluation depth limits
+- Library API: Options.BaseURI override and Options.SchemaPath for file-based base URI; CLI: --base-uri flag on 'jsonschema validate'
+- testdata/core: Six spec-derived JSON test suites for $id, $anchor, $defs, $ref, $comment, and URI normalization, each citing 2020-12 core sections
+- docs/references.md: Design decisions on base URI selection, RFC 3986 normalization before comparison, non-schema targets, and loop handling
 
 ## How to verify
 
-- Run `go test ./internal/uri/...`: tests RFC 3986 resolution against RFC 3986 section 5.4.1/5.4.2 examples, safe normalization matching rules (scheme/host lowercase, unreserved unescaping, dot segment removal), and JSON Pointer escaping (percent-decode before ~1/~0)
-- Run `go test ./internal/registry/...`: tests resource indexing with embedded $id, empty/non-empty $id fragment rules, $anchor syntax validation, duplicate $id and anchor detection
-- Run `go test ./internal/keywords/core/...`: tests $ref evaluation with siblings (both must pass), $comment and $defs having no effect
-- Run `go test ./internal/compile/...`: tests reference resolution of reachable and unreachable targets, non-schema targets (object/boolean followed, others rejected), invalid percent-encoding, pure reference cycles, base URI selection
-- Run `go test -race ./internal/eval/...`: tests non-descending loops caught at evaluation time, tree recursion (descending) allowed, depth limit as a backstop
-- Run the CLI: `jsonschema validate --base-uri http://x/y/s.json schema.json doc.json` with a relative $ref in the schema; use --base-uri to change resolution; omit it to get the file-path default; verify exit code 2 for unresolved refs and reference loops
-- Inspect docs/references.md: base URI selection rules, normalization algorithm, non-schema target handling, loop error conditions
+- go test ./... passes all tests
+- go test -race ./internal/eval/... detects no race conditions in the loop guard
+- A schema with relative $ref resolves correctly when --base-uri sets the context, and fails to resolve without it
+- An unresolved $ref in an unreached branch (e.g. inside a non-matching property) causes load-time exit code 2
+- A schema with a pure reference cycle ($ref pointing at itself) causes load-time exit code 2
+- A recursive tree schema with properties containing $ref to the root validates correctly on nested documents without hanging or looping
 
 ## Migration
 
-None. This story adds new keywords; existing schemas without $id, $anchor, $defs, $ref, or $comment are unaffected. Schemas using these keywords are now supported where they were previously rejected as unknown.
+No migration required. Schemas without $id, $anchor, or $ref are unaffected. Schemas using these keywords now compile and validate correctly.
 
 ## Rollback
 
-Remove the 30 new files and revert the three modified files (jsonschema.go, numberlimits.go, cmd/jsonschema/run.go) to their prior state. No database or persistent state is affected.
+Revert to the previous release. Schemas that use $id, $anchor, or $ref will no longer compile until restored to this version or later.
 
 ## Known limitations
 
-- $ref recursion with branching (multiple $ref to the same schema at different paths in the document) can take exponential time in document depth, because there is no per-evaluation-step limit yet. A deeply nested document with a schema like {allOf: [{$ref: #}, {$ref: #}]} can cause exponential re-evaluation. This is deferred to story 193 (configurable evaluation limits) and does not block this release.
-- References to schemas outside the loaded document are unresolved errors. Cross-document resolution via a registry is story 187.
-- $dynamicRef and dynamic-scope $anchor resolution are not implemented. Only $dynamicAnchor syntax is validated. Story 188 adds dynamic resolution.
-- No network fetching or autonomous disk reading. References must be satisfied within the loaded document.
-- A root schema has no default $id; the validator assigns a base URI from file location (file:///...), --base-uri override, or a fixed stdin placeholder (https://stdin.invalid/schema.json).
+- External schema registry through caller-supplied mappings (story 187)
+- $dynamicRef dynamic-scope resolution (story 188); only $dynamicAnchor syntax is validated
+- Meta-schema validation and $schema/$vocabulary enforcement (stories 189, 190)
+- Annotation collection through $ref and unevaluated* keywords (stories 191, 192)
+- Configurable evaluation limits and CLI flags beyond the fixed recursion backstop (story 193)
+- JSON Schema drafts prior to 2020-12
 
 ## Concerns
 
-- Exponential-time evaluation: a schema with branching $ref (e.g. {allOf: [{$ref: #}, {$ref: #}]}) on a deeply nested document can cause exponential re-evaluation because each branch re-enters the same subschema. This is not a correctness issue but a performance issue that would manifest in denial-of-service scenarios. The tester noted it as medium severity and deferred to story 193. A future story should add a per-evaluation-step limit to catch runaway evaluation deterministically.
+- F7 (medium severity, security and performance): Load-time memory can grow quadratically in pathological cases. When reference targets under unknown keywords are discovered in ancestor-after-descendant order across resolver batches, already-compiled subtrees may be recompiled. A multi-MB hostile schema could trigger this before the depth limit applies. The tester estimated this from code inspection; it has not been measured experimentally. Does not block shipping but should be addressed in story 193 (limits) or in a near-term follow-up to prevent potential denial-of-service.
