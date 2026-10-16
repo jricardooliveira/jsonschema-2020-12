@@ -1,0 +1,18 @@
+[
+  {"spec":"validation 6.1.2","description":"enum of mixed values","schema":{"enum":[1,"a",null,[1,2],{"a":1,"b":2}]},"tests":[
+    {"description":"member number","data":1,"valid":true},
+    {"description":"1.0 equals 1","data":1.0,"valid":true},
+    {"description":"member string","data":"a","valid":true},
+    {"description":"member null","data":null,"valid":true},
+    {"description":"nested array","data":[1,2],"valid":true},
+    {"description":"array order matters","data":[2,1],"valid":false},
+    {"description":"object member order ignored","data":{"b":2,"a":1},"valid":true},
+    {"description":"object with extra member","data":{"a":1,"b":2,"c":3},"valid":false},
+    {"description":"false is not 0","data":false,"valid":false},
+    {"description":"string 1 is not 1","data":"1","valid":false}]},
+  {"spec":"validation 6.1.2","description":"enum with false does not match 0","schema":{"enum":[false]},"tests":[
+    {"description":"0 fails","data":0,"valid":false},
+    {"description":"false ok","data":false,"valid":true}]},
+  {"spec":"validation 6.1.2","description":"empty enum matches nothing","schema":{"enum":[]},"tests":[
+    {"description":"null fails","data":null,"valid":false}]}
+]
