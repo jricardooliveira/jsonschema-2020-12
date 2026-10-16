@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #144 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:53:00 UTC
+- **Run:** #144 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-16 21:28:36 UTC · **Stopped:** 2026-10-16 21:53:23 UTC
 - **Story spend:** ~$9.59 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 144` to accept, or `factory reject 144 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-144-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: dbg_test.go is an empty stray file with only a package declaration; it should be deleted. Tester found this as F5 (low severity, persistent).
-  >   ◦ Release-agent note: Report-bytes error in run.go passes through but cannot be tested from CLI until story 193 adds the -max-report-bytes flag. Feature is covered at library level in reportbytes_test.go.
-  >   ◦ Release-agent note: Breaking change: passing 'basic' reports now include annotation units (longer output). Operator explicitly approved this as matching the 2020-12 standard shape. Scripts comparing before/after output will see a difference.
-  >   ◦ Release-agent note: Tester found no security issues. Build and go test -race pass. Every acceptance criterion (1-11) is covered by spec-derived tests.
-  >   ◦ Security note (low): No insecure defaults found. Budget and RenderReport treat a cap of 0 or less as DefaultMaxReportBytes, never as unlimited. A negative MaxAnnotations or MaxReportBytes is a compile error. The CLI rejects a -max-annotations value of 0 or less, or one it cannot parse, with exit 2. run.go passes only the *LimitError text through and keeps 'cannot render result' for other render errors. Annotation values are schema values held by reference. Tests check that distinctive string, number and key values from the document never appear in output.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -78,8 +71,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:51:48 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 0 new, 1 persistent, 6 resolved |
 | 2026-10-16 21:51:48 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 21:52:59 | agent | release-agent | ✅ warn · 70.4s · $0.1285 |
-| 2026-10-16 21:53:00 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:53:00 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:53:00 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-16 21:53:23 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-16 21:53:23 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
