@@ -51,6 +51,17 @@ func TestBrokenJSONExitsTwo(t *testing.T) {
 	}
 }
 
+// Files go through readCapped too, not only stdin (ADR-001 input-size limit).
+func TestOversizeFilesExitTwo(t *testing.T) {
+	good := writeTemp(t, `true`)
+	big := writeTemp(t, strings.Repeat(" ", maxInputBytes+1))
+	for _, args := range [][]string{{"validate", big, good}, {"validate", good, big}} {
+		if c, out, e := runCLI(t, "", args...); c != 2 || out != "" || !strings.Contains(e, "exceeds limit") {
+			t.Errorf("%v: code %d out %q err %q", args, c, out, e)
+		}
+	}
+}
+
 func TestNumberCapFlags(t *testing.T) {
 	sch := writeTemp(t, `true`)
 	over := fmt.Sprintf("1e%d", jsonschema.DefaultMaxNumberExponent+1)

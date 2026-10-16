@@ -1,8 +1,9 @@
 # Default limits
 
 Limits stop hostile input from hanging or exhausting the validator. Exceeding
-one is an error (CLI exit code 2, library `*jsonvalue.LimitError` reachable with
-`errors.As`), never a valid or invalid result. The error names the limit and
+one is an error (CLI exit code 2; in the library, `Compile`, `CompileWithOptions`
+or `Validate` return an error wrapping the module's internal
+`*jsonvalue.LimitError`), never a valid or invalid result. The error names the limit and
 its value, never the offending input.
 
 | Limit | Default | Raise it with | Applies to |
