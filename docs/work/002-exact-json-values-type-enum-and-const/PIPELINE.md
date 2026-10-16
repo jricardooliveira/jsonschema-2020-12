@@ -3,19 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:47:52 UTC
-- **Story spend:** ~$19.17 of $26.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** failed · **Stage:** tester-agent
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:50:51 UTC
+- **Story spend:** ~$20.35 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+None — the run stopped (failed). Nothing proceeds until the cause under Blockers is fixed and a new run is started.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: Two parts of F5 and F4 need file changes the guard refused: deleting internal/speccases/ (rm is not allowed) and a one-line docs fix in docs/cli-contract.md (outside the write scope). The code and test changes are done and pass. Please delete internal/speccases/ and grant docs/cli-contract.md. Not granted automatically: docs/cli-contract.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: docs/cli-contract.md
+- tester-agent failed: the model call failed: The usage limit has been reached — nothing is wrong with the story; try again later (`factory retry 135`, or `factory status` if no checkpoint was answered yet)
 
 ## Trail
 
@@ -99,8 +97,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:45:16 | gate | gate-release | ❌ REJECTED: Last round, narrow scope, change nothing else: (F4) in cmd/jsonschema/run.go report the flag whose parsing actually failed (validate --max-number-digits=10 --max-number-exponent=abc must name max-number-expo… |
 | 2026-10-16 17:46:06 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
 | 2026-10-16 17:47:52 | agent | coder-agent | ✅ scope-request · remediation · 105.1s · $1.5529 |
-| 2026-10-16 17:47:52 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-16 17:47:52 | run | run waiting_human | ⏸️ |
+| 2026-10-16 17:47:52 | gate | gate-question | ❌ REJECTED: yes, grant docs/cli-contract.md for this run. Do not delete anything: keep internal/speccases/ as it is (file deletion is not available in this session); the operator accepts F5 (low) as a recorded design di… |
+| 2026-10-16 17:48:13 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (3 finding(s)) |
+| 2026-10-16 17:49:20 | agent | coder-agent | ✅ complete · remediation · 66.7s · $1.1887 |
+| 2026-10-16 17:49:22 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:49:22 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 17:50:51 | agent | tester-agent | ❌ error |
+| 2026-10-16 17:50:51 | run | run failed | ❌ tester-agent failed: the model call failed: The usage limit has been reached — nothing is wrong with the story; try again later (`factory retry 135`, or `factory status` if no checkpoint was answered yet) |
 
 ## Warnings (recorded, not blocking)
 
