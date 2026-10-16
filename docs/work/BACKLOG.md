@@ -9,7 +9,7 @@
 | 5 | String rules | released | [005-string-rules/](005-string-rules/) | 138 |
 | 6 | Object rules | released | [006-object-rules/](006-object-rules/) | 141 |
 | 7 | Array rules | released | [007-array-rules/](007-array-rules/) | 140 |
-| 8 | Combining schemas | to do |  |  |
+| 8 | Combining schemas | released | [008-combining-schemas/](008-combining-schemas/) | 142 |
 | 9 | Base URIs, anchors and local references | to do |  |  |
 | 10 | Schema registry for external references | to do |  |  |
 | 11 | Dynamic references | to do |  |  |
@@ -51,7 +51,7 @@
    Add the 2020-12 array keywords prefixItems, items, contains, maxContains, minContains, maxItems, minItems and uniqueItems. Each keyword lives in its own file and registers through the keyword registry. 'items' applies only to elements after those covered by prefixItems. maxContains and minContains work with contains, and minContains 0 makes contains always pass. uniqueItems uses deep JSON equality, so 1 and 1.0 are duplicates and objects compare regardless of key order. The keywords apply only to array instances. Write spec-derived positive and negative tests for every keyword.
    Why: Groups the array keywords, which depend on each other, as a separate part that can be built at the same time as the object rules.
 
-8. **Combining schemas** — to do
+8. **Combining schemas** — released
    Add the 2020-12 applicator keywords allOf, anyOf, oneOf, not, and if/then/else. Each keyword lives in its own file and registers through the keyword registry. 'then' and 'else' have no effect without 'if', and a failure inside 'if' alone never makes the document invalid. Boolean schemas true and false work as subschemas everywhere. Write spec-derived positive and negative tests, including nested combinations and oneOf with more than one match.
    Why: Completes the in-place applicators, which annotation and unevaluated handling later rely on.
 
