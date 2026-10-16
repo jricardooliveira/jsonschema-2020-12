@@ -3,19 +3,21 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #143 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-16 20:56:33 UTC · **Stopped:** 2026-10-16 21:04:53 UTC
-- **Story spend:** ~$2.78 of $35.00 (estimated at API list prices)
+- **Run:** #143 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-16 20:56:33 UTC · **Stopped:** 2026-10-16 21:12:38 UTC
+- **Story spend:** ~$6.90 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 143` to accept, or `factory reject 143 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 143` to accept, or `factory reject 143 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: The design lists options.go and main.go. The Options type is in numberlimits.go and the compile call is in jsonschema.go. The CLI flags are parsed in cmd/jsonschema/run.go, not main.go. I need edit access to jsonschema.go, numberlimits.go and cmd/jsonschema/run.go to wire the base URI option and the CLI flag. Not granted automatically: jsonschema.go (not in the approved design and not a test); numberlimits.go (not in the approved design and not a test); cmd/jsonschema/run.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: jsonschema.go, numberlimits.go, cmd/jsonschema/run.go
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
+  >   • Security finding (medium) not resolved: Resolved: the evaluation-depth backstop is now in internal/eval/refguard.go enterNode (MaxEvalDepth = 4 × jsonvalue.MaxDepth). Past it, evaluation returns a jsonvalue.LimitError (exit 2) instead of overflowing the Go stack. It is tested at the library level (TestEvalDepthLimit) and through the CLI (TestEvaluationDepthExitError), both under -race.; Resolved: enterNode now fails closed with an internal error when the per-call state is missing (TestEnterNodeFailsClosed).
+  >   ◦ Release-agent note: Exponential-time evaluation: a schema with branching $ref (e.g. {allOf: [{$ref: #}, {$ref: #}]}) on a deeply nested document can cause exponential re-evaluation because each branch re-enters the same subschema. This is not a correctness issue but a performance issue that would manifest in denial-of-service scenarios. The tester noted it as medium severity and deferred to story 193. A future story should add a per-evaluation-step limit to catch runaway evaluation deterministically.
+  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -48,8 +50,23 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:04:27 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
 | 2026-10-16 21:04:27 | boss | authorize coder-agent:T6 | ✅ gate-2-architect passed |
 | 2026-10-16 21:04:53 | agent | coder-agent | ✅ scope-request · T6 · 25.5s · $0.3600 |
-| 2026-10-16 21:04:53 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:04:53 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:04:53 | gate | gate-question | ❌ REJECTED: yes, grant jsonschema.go, numberlimits.go and cmd/jsonschema/run.go for this run (Options live in numberlimits.go, flags in run.go; no other story is running). |
+| 2026-10-16 21:05:32 | boss | authorize coder-agent:T6 | ✅ gate-2-architect passed |
+| 2026-10-16 21:06:49 | agent | coder-agent | ✅ complete · T6 · 77.3s · $0.5163 |
+| 2026-10-16 21:06:53 | gate | gate-build | ✅ [T6] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 21:06:53 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 21:08:59 | agent | tester-agent | ❌ fail · 125.1s · $1.0654 |
+| 2026-10-16 21:08:59 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ["AC11 (part): 'with the recursion limit as the backstop'. internal/eval has no evaluation recursion or $ref depth limit at all (grep finds none, only the… |
+| 2026-10-16 21:08:59 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 8 finding(s) |
+| 2026-10-16 21:11:23 | agent | coder-agent | ✅ complete · remediation · 144.2s · $1.6820 |
+| 2026-10-16 21:11:25 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 21:11:25 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 21:12:03 | agent | tester-agent | ✅ warn · 37.4s · $0.7518 |
+| 2026-10-16 21:12:03 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 0 new, 2 persistent, 6 resolved |
+| 2026-10-16 21:12:03 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-16 21:12:38 | agent | release-agent | ✅ warn · 34.7s · $0.1009 |
+| 2026-10-16 21:12:38 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-16 21:12:38 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
