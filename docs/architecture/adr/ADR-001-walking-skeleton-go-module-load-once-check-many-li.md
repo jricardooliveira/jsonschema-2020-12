@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #1
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #134, 2026-10-16 16:38 UTC)
 
 ## Decision
 Root package `jsonschema` (jsonschema.go): Compile(schema []byte) (*Schema, error), (*Schema).Validate(doc []byte) (Result, error), Result.Valid(). Errors are typed so the CLI can map them to exit code 2. internal/jsonvalue/decode.go: strict decoder built on encoding/json Decoder.Token with UseNumber. It detects duplicate member names per object and trailing tokens, and returns plain Go values (map[string]any, []any, json.Number, string, bool, nil); story 179 replaces the value model in this package. internal/keywords/registry.go: Keyword{Name, Vocabulary, Compile, Evaluate}, Register (panics on duplicates), Lookup. The compile and evaluate function types and their context types are defined here, so keyword packages import only internal/keywords and there are no import cycles. internal/keywords/all/all.go blank-imports the seven vocabulary packages, which only hold doc.go for now. internal/compile walks a schema object's members in sorted order, asks the registry for each name and ignores unknown names (annotation collection comes later, in story 191). internal/eval runs the compiled nodes against a document with a per-call context and never writes to the compiled schema. cmd/jsonschema/main.go calls os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr)). run.go parses the `validate` subcommand with the flag package, reads the files or stdin, calls the root package and writes {"valid": bool} through encoding/json. Hubs: main.go/run.go (later CLI flags), internal/keywords/registry.go and all.go are written once here so later keyword stories only add files.
