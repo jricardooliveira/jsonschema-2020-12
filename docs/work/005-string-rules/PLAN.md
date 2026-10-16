@@ -1,7 +1,7 @@
 # PLAN #5: String keywords maxLength, minLength and pattern, with a reusable ECMA-262-to-RE2 translation step
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #138, 2026-10-16 19:56 UTC)
 - Design: see `ADR-005-*.md` under `docs/architecture/adr/`
 
 ## Files that change

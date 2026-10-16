@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #5
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #138, 2026-10-16 19:56 UTC)
 
 ## Decision
 New package internal/ecmaregex contains translate.go, a single-pass scanner over runes that tracks whether it is inside a character class, and properties.go, which maps long General_Category names to short ones and validates script names against unicode.Scripts and unicode.Categories. It exposes only Translate(pattern string) (string, error), which returns a typed error describing the unsupported construct. The keyword files under internal/keywords/validation/ register name, vocabulary URI (https://json-schema.org/draft/2020-12/vocab/validation), compile function and evaluate function through internal/keywords/registry.go, so no central list is edited. pattern compiles *regexp.Regexp once at Compile time and stores it in the immutable compiled keyword. *regexp.Regexp is safe for concurrent use. The pattern-size limit is read from the compile options carried by the compile context. The only edit to the crowded file cmd/jsonschema/main.go is a single flag registration line passed to the existing options. internal/eval/eval.go, the other crowded file, is not touched.
