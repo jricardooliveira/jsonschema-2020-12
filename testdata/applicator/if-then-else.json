@@ -1,0 +1,48 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.2.1-10.2.2.3 (if, then, else)",
+    "description": "if with then and else",
+    "schema": {"if": {"type": "integer"}, "then": {"minimum": 10}, "else": {"type": "string"}},
+    "tests": [
+      {"description": "if passes, then passes", "data": 20, "valid": true},
+      {"description": "if passes, then fails", "data": 5, "valid": false},
+      {"description": "if fails, else passes", "data": "a", "valid": true},
+      {"description": "if fails, else fails", "data": true, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.2.2 (then without if has no effect)",
+    "description": "then and else without if",
+    "schema": {"then": false, "else": false},
+    "tests": [
+      {"description": "ignored", "data": 1, "valid": true}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.2.1 (if alone never fails)",
+    "description": "if alone",
+    "schema": {"if": {"type": "string"}},
+    "tests": [
+      {"description": "if fails", "data": 1, "valid": true},
+      {"description": "if passes", "data": "a", "valid": true}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.2.2 (then only)",
+    "description": "if with then only",
+    "schema": {"if": {"type": "integer"}, "then": {"minimum": 10}},
+    "tests": [
+      {"description": "if fails, no else", "data": "a", "valid": true},
+      {"description": "then fails", "data": 3, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.2.3 (else only)",
+    "description": "if with else only",
+    "schema": {"if": {"type": "integer"}, "else": {"type": "string"}},
+    "tests": [
+      {"description": "if passes, no then", "data": 3, "valid": true},
+      {"description": "else fails", "data": null, "valid": false}
+    ]
+  }
+]

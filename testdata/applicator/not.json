@@ -1,0 +1,20 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.4 (not)",
+    "description": "not inverts its subschema",
+    "schema": {"not": {"type": "string"}},
+    "tests": [
+      {"description": "subschema fails so valid", "data": 1, "valid": true},
+      {"description": "subschema matches so invalid", "data": "abc", "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.4 (not)",
+    "description": "not with a compound subschema",
+    "schema": {"not": {"allOf": [{"type": "integer"}, {"minimum": 5}]}},
+    "tests": [
+      {"description": "only one part matches", "data": 2, "valid": true},
+      {"description": "all parts match", "data": 7, "valid": false}
+    ]
+  }
+]

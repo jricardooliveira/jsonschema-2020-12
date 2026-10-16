@@ -1,0 +1,31 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.3 (oneOf)",
+    "description": "oneOf needs exactly one match",
+    "schema": {"oneOf": [{"type": "integer"}, {"minimum": 2}]},
+    "tests": [
+      {"description": "only first matches", "data": 1, "valid": true},
+      {"description": "only second matches", "data": 2.5, "valid": true},
+      {"description": "both match", "data": 3, "valid": false},
+      {"description": "non-number matches only second (minimum ignores strings)", "data": "x", "valid": true},
+      {"description": "none matches", "data": 1.5, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.3 (oneOf)",
+    "description": "oneOf with three choices, two or more matching",
+    "schema": {"oneOf": [true, {"type": "integer"}, {"type": "number"}]},
+    "tests": [
+      {"description": "all three match", "data": 1, "valid": false},
+      {"description": "first and third match", "data": 1.5, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 10.2.1.3 (oneOf)",
+    "description": "oneOf with no matching choice",
+    "schema": {"oneOf": [{"type": "string"}, {"type": "boolean"}]},
+    "tests": [
+      {"description": "none matches", "data": 12, "valid": false}
+    ]
+  }
+]

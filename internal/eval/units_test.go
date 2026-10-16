@@ -2,6 +2,7 @@ package eval
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -15,14 +16,14 @@ import (
 // their units and always passes (like a passing anyOf).
 // x-test-keep evaluates one child and keeps its units before its own.
 func init() {
-	comp := func(_ *keywords.CompileContext, v any) (any, error) {
+	comp := func(cc *keywords.CompileContext, v any) (any, error) {
 		var nodes []*compile.Node
-		for _, e := range v.([]any) {
-			n, err := compile.Compile(e)
+		for i, e := range v.([]any) {
+			n, err := cc.Sub(e, "/"+strconv.Itoa(i))
 			if err != nil {
 				return nil, err
 			}
-			nodes = append(nodes, n)
+			nodes = append(nodes, n.(*compile.Node))
 		}
 		return nodes, nil
 	}
@@ -88,7 +89,7 @@ func TestUnitOrderAndNoValues(t *testing.T) {
 		t.Fatalf("units=%v", units)
 	}
 	// child units (sorted keyword order: const, type) come before the wrapper
-	if units[0].KeywordLocation != "/const" || units[1].KeywordLocation != "/type" ||
+	if units[0].KeywordLocation != "/x-test-keep/0/const" || units[1].KeywordLocation != "/x-test-keep/0/type" ||
 		units[2].KeywordLocation != "/x-test-keep" || units[0].InstanceLocation != "/a" || units[2].InstanceLocation != "" {
 		t.Errorf("order: %+v", units)
 	}

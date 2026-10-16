@@ -61,6 +61,13 @@ func compileAt(v any, loc string) (*Node, error) {
 					}
 					return c, nil
 				},
+				CompileAt: func(v any, at string) (any, error) {
+					c, err := compileAt(v, at)
+					if err != nil {
+						return nil, err
+					}
+					return c, nil
+				},
 			}
 			data, err := kw.Compile(ctx, s[name])
 			if err != nil {

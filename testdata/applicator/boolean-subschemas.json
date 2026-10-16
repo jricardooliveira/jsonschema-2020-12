@@ -1,0 +1,58 @@
+[
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.1",
+    "description": "true and false as allOf/anyOf subschemas",
+    "schema": {"allOf": [true], "anyOf": [false, true]},
+    "tests": [
+      {"description": "valid", "data": 1, "valid": true}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.1.2",
+    "description": "anyOf of only false",
+    "schema": {"anyOf": [false, false]},
+    "tests": [
+      {"description": "invalid", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.1.3",
+    "description": "oneOf with one true",
+    "schema": {"oneOf": [false, true]},
+    "tests": [
+      {"description": "valid", "data": 1, "valid": true}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.1.4",
+    "description": "not true and not false",
+    "schema": {"allOf": [{"not": false}, {"not": {"not": true}}]},
+    "tests": [
+      {"description": "valid", "data": "x", "valid": true}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.1.4",
+    "description": "not true",
+    "schema": {"not": true},
+    "tests": [
+      {"description": "invalid", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.2",
+    "description": "boolean if, then and else",
+    "schema": {"if": true, "then": false},
+    "tests": [
+      {"description": "then false applies", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "JSON Schema 2020-12 core, section 4.3.2 (boolean schemas) and 10.2.2",
+    "description": "false if selects else",
+    "schema": {"if": false, "then": false, "else": true},
+    "tests": [
+      {"description": "else true applies", "data": 1, "valid": true}
+    ]
+  }
+]
