@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "166536a166bd7193cb3b0ff3ae2fb515d0bb1437",
+    "commit": "f13af44811d794172d1ea698b824b70ddd823bc1",
     "base_commit": "d6e1a9c2c7d4144dbc18281b8f0a6f4ba76aa15c"
   },
   "tests": {
@@ -111,13 +111,13 @@
       {
         "path": "internal/compile/refs.go",
         "change": "added",
-        "additions": 348,
+        "additions": 320,
         "deletions": 0
       },
       {
         "path": "internal/compile/refs_test.go",
         "change": "added",
-        "additions": 149,
+        "additions": 173,
         "deletions": 0
       },
       {
@@ -306,23 +306,23 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-d924bf8a66e847abada484a21fcadf33/docs/architecture/adr/ADR-009-core-identification-and-referencing-within-one-sch.md",
-    "summary": "Second pass. F1 to F6 are resolved. The resolver memo is now seeded with every node from the root compile, so a $ref chain under known keywords (the reported attack) compiles each node once. New tests"
+    "summary": "The change delivers all 12 criteria, and the tests prove them rather than restating them: URI resolution follows the RFC 3986 5.4 examples, normalization has positive and negative cases, and percent-d"
   },
   "security_boundary": {
-    "overall": "warn",
-    "highest_severity": "medium",
+    "overall": "pass",
+    "highest_severity": "low",
     "breaking_changes": [],
     "findings": [
-      "F7 (medium): load-time memory can still grow quadratically on a hostile schema, in internal/compile/refs.go compileDocument/resolver.target. resolver.target checks the memo only for the target pointer itself. On a miss, compileAt recompiles the whole subtree, including descendants that an earlier batch already compiled and memoized. A schema can place a chain under an unknown keyword (for example definitions/x/not/not/...): each level holds a $ref to its parent, the root refs only the deepest node, and each level carries a wide sibling payload (for example allOf with many 'true' items). Each batch then recompiles a growing ancestor subtree. That gives about d\u00b2\u00b7w/2 nodes, each with an O(d) location string, and re-adds every copied $ref to r.refs. There is no input-size limit yet (only jsonvalue.MaxDepth), so a crafted schema of a few MB can plausibly exhaust memory rather than return exit 2. This estimate comes from reading the code; I did not run it. The coder acknowledges the gap in a 'ponytail' comment. It is much narrower than F1, because subtrees under known keywords are now memoized from the root compile. Fix: when compileAt runs on a target, reuse memoized descendant nodes instead of rebuilding them, or add a load-time node budget that returns a LimitError (exit 2)."
+      "No network or disk access in resolution: locate() only looks up idx.Resources and navigates the in-memory document. A file:///etc/passwd ref is unresolved (tested). RootBaseURI only calls filepath.Abs, which reads the working directory, not the path. The base URI override is validated: it must be absolute, have no non-empty fragment and have valid percent-encoding, and it fails closed. The loop guard state is per call (callState in ctx.Items) and its frames are removed on exit. Error messages contain only schema locations, ref strings, $id and anchor values; LoopError gives the instance location as a pointer only."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 11.75432,
-    "tokens_in": 10250978,
-    "tokens_out": 139595
+    "usd": 14.274092,
+    "tokens_in": 12397433,
+    "tokens_out": 159209
   },
   "assumptions": [
     {
@@ -448,6 +448,14 @@
     {
       "task": "remediation",
       "text": "The anchor name is decoded with url.PathUnescape. This is safe because uri.Resolve has already rejected invalid percent-escapes, and '+' stays a literal '+'."
+    },
+    {
+      "task": "remediation",
+      "text": "The memo is keyed by schema location. Every keyword's Sub and CompileAt call compiles the value at that location in the document (checked with grep in internal/keywords), so one location always holds one value and reusing the node is correct. When 'if' compiles then/else and the then/else keywords compile them again, they now get the same memoized node."
+    },
+    {
+      "task": "remediation",
+      "text": "resolver.compile repeats the body of compileAt in compile.go (about 30 lines) with a memo check added. compile.go is outside this finding's scope, and the operator asked for the fix in refs.go only. The copy is marked with a ponytail comment."
     }
   ],
   "blockers": [],
