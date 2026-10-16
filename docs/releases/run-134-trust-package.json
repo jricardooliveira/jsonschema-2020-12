@@ -1,0 +1,328 @@
+{
+  "work_id": "US-0134",
+  "parent_story": "US-0134",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "350dc33aaff5d3632937d1faf67d3ce69bceff83",
+    "base_commit": "9ba7010b02eff0bdd7eef5334aeba0bdff047296"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "go.mod declares module github.com/neoface/jsonschema with `go 1.26` and no require lines. `go build ./...`, `go vet ./...` and `go build ./cmd/jsonschema` succeed with the standard library only.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The root package exposes a load-once, check-many API. Compile(schema []byte) returns a *Schema for the schemas true, false and {}. That *Schema checks any number of JSON documents with Validate(document []byte), which returns a Result with Valid() bool. true and {} accept every well-formed JSON document. false rejects every one. Validate never changes the compiled Schema.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A schema object with keywords that are not built yet (for example {\"type\": \"string\"} or {\"foo\": 1}) compiles and behaves exactly like {}, as the operator decided. A schema that is neither a boolean nor an object (for example 5, \"x\", null or []) is a compile error, never 'invalid'.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Broken JSON in a schema or a document is an error returned by Compile or Validate, never an invalid result. Broken JSON covers: syntax errors, empty input, extra data after the value (for example `{} {}`), and the same member name twice in one object at any depth (for example {\"a\": 1, \"a\": 2}).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "internal/keywords/registry.go provides the ONE keyword registration point. A keyword file calls Register from init() with its name, vocabulary URI, compile function and evaluate function. Registering the same name twice panics. The compiler finds keywords only through the registry, with no central list or switch. internal/keywords/all/all.go blank-imports every 2020-12 vocabulary package (core, applicator, unevaluated, validation, metadata, formatannotation, content), and each package already exists. A test registers a test keyword and shows that compile and evaluate reach it through the registry.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "`jsonschema validate <schema-file> [<document-file>|-]` prints exactly one JSON object, {\"valid\": true} or {\"valid\": false}, followed by a newline on stdout. It exits 0 when the document is valid and 1 when it is invalid.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When no document path is given, or the document path is a single `-`, the document is read from standard input.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every usage or input error exits 2, writes nothing to stdout and writes one plain line to stderr (for example 'cannot read schema.json: file not found'). This covers: a missing schema argument, an unknown flag or subcommand, two or more document paths ('only one document is supported for now'), an unreadable schema or document file, broken JSON in either input, and a schema that is not a boolean or an object. The stderr message never quotes document content.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "cmd/jsonschema/main.go only parses arguments and calls run.go, which in turn calls the root package. The CLI logic is an in-process function run(args, stdin, stdout, stderr) int, so the exit-code tests run without building or spawning a binary.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Tests cover the library (true, false, {} and an unbuilt-keyword schema over several document types; compile errors; every broken-JSON case) and every CLI exit code (0, 1, and 2 for each error case above, including stdin input). Spec-derived cases live in testdata/core/*.json, read by a shared table-driven runner that cites the 2020-12 core section (4.3.2 boolean schemas). `go test -race ./...` passes with no network access.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test ./..."
+  },
+  "ac_traceability": {
+    "total": 10,
+    "covered": 10,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/main.go",
+        "change": "added",
+        "additions": 8,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "added",
+        "additions": 114,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run_test.go",
+        "change": "added",
+        "additions": 118,
+        "deletions": 0
+      },
+      {
+        "path": "dispatch_test.go",
+        "change": "added",
+        "additions": 64,
+        "deletions": 0
+      },
+      {
+        "path": "go.mod",
+        "change": "added",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "added",
+        "additions": 54,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile_test.go",
+        "change": "added",
+        "additions": 61,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "added",
+        "additions": 25,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval_test.go",
+        "change": "added",
+        "additions": 50,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/decode.go",
+        "change": "added",
+        "additions": 148,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/decode_test.go",
+        "change": "added",
+        "additions": 75,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/all/all.go",
+        "change": "added",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/content/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/formatannotation/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/metadata/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "added",
+        "additions": 50,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry_test.go",
+        "change": "added",
+        "additions": 46,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/unevaluated/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/doc.go",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema_test.go",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "spec_test.go",
+        "change": "added",
+        "additions": 55,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/boolean-schemas.json",
+        "change": "added",
+        "additions": 27,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/empty-schema.json",
+        "change": "added",
+        "additions": 23,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-f456bb339c414b72ac40c12989e0fefb/docs/architecture/adr/ADR-001-walking-skeleton-go-module-load-once-check-many-li.md",
+    "summary": "The remediation addresses the prior blocking coverage gaps without changing production behavior: tests now prove registered-keyword dispatch through the public API, preserve callback errors as errors,"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 3.084534,
+    "tokens_in": 1949771,
+    "tokens_out": 51950
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "encoding/json's own depth cap (10000) fires inside Token before our check can run. So when the decoder fails at stack depth >= MaxDepth and the next byte is '[' or '{', Decode returns *LimitError instead of a syntax error."
+    },
+    {
+      "task": "T1",
+      "text": "I ran `go vet ./...` and the jsonvalue tests only. I did not run `go build ./...` or the full test suite. Only this task's files exist so far."
+    },
+    {
+      "task": "T2",
+      "text": "CompileContext and EvalContext are empty structs for now; later tasks add fields."
+    },
+    {
+      "task": "T2",
+      "text": "CompileFunc is func(*CompileContext, any) (any, error). EvaluateFunc is func(*EvalContext, compiled any, instance any) (bool, error)."
+    },
+    {
+      "task": "T2",
+      "text": "Tests delete their test keywords from the registry map via t.Cleanup, so they cannot change other tests' results."
+    },
+    {
+      "task": "T2",
+      "text": "Register also panics when the name is empty or Compile or Evaluate is nil. The task did not ask for this."
+    },
+    {
+      "task": "T3",
+      "text": "Compiled keyword data is stored in compile.Item, which eval reads. Eval imports compile, so there is no import cycle."
+    },
+    {
+      "task": "T3",
+      "text": "The test keyword x-compile-test-kw stays registered for the rest of that test binary. Nothing else uses the name, so other tests are unaffected."
+    },
+    {
+      "task": "T3",
+      "text": "I ran `go vet` and `go test -race` on the root package, internal/compile and the other internal packages, and they pass. I did not run the full suite or build the CLI."
+    },
+    {
+      "task": "T4",
+      "text": "The glob is testdata/*/*.json, which covers every area folder one level down."
+    },
+    {
+      "task": "T4",
+      "text": "Spec citations are in a 'spec' field per group. The empty-schema file cites sections 4.3.1 and 6.5 from memory of the 2020-12 spec; those numbers were not checked against the spec text."
+    },
+    {
+      "task": "T5",
+      "text": "The unknown-flag message names the first dash-prefixed argument as typed; flags are only recognised before the schema path, so `validate schema.json -x` treats `-x` as a document path."
+    },
+    {
+      "task": "T5",
+      "text": "`-h` is treated as a usage error: one stderr line, exit 2."
+    },
+    {
+      "task": "T5",
+      "text": "No subcommand or an unknown one gives 'unknown subcommand'."
+    },
+    {
+      "task": "remediation",
+      "text": "internal/compile/compile_test.go was changed only to move the test keyword's registration into init() (F3). Its assertions are unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "compile_test.go still calls Evaluate directly, because a test inside package compile cannot import internal/eval without an import cycle. The proof that the production pipeline reaches registered keywords (F1) is in internal/eval/eval_test.go and the root dispatch_test.go, both new test files."
+    },
+    {
+      "task": "remediation",
+      "text": "Keywords registered in tests are never removed. Their names start with x-*-test-, they are scoped to one test binary, and no other test schema uses them, so they cannot change other tests' results."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}
