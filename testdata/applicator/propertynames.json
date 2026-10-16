@@ -1,0 +1,18 @@
+[
+  {"spec":"core 10.3.2.4","description":"propertyNames with maxLength","schema":{"propertyNames":{"maxLength":3}},"tests":[
+    {"description":"short names","data":{"a":1,"bcd":2},"valid":true},
+    {"description":"long name","data":{"abcd":1},"valid":false},
+    {"description":"empty object","data":{},"valid":true},
+    {"description":"array ignored","data":["abcdef"],"valid":true},
+    {"description":"string ignored","data":"abcdef","valid":true},
+    {"description":"number ignored","data":12345,"valid":true},
+    {"description":"null ignored","data":null,"valid":true}]},
+  {"spec":"core 10.3.2.4","description":"propertyNames boolean schemas","schema":{"propertyNames":false},"tests":[
+    {"description":"empty ok","data":{},"valid":true},
+    {"description":"any name rejected","data":{"a":1},"valid":false}]},
+  {"spec":"core 10.3.2.4","description":"propertyNames true","schema":{"propertyNames":true},"tests":[
+    {"description":"anything","data":{"a":1},"valid":true}]},
+  {"spec":"core 10.3.2.4","description":"propertyNames with pattern","schema":{"propertyNames":{"pattern":"^a"}},"tests":[
+    {"description":"matches","data":{"ab":1},"valid":true},
+    {"description":"does not match","data":{"ba":1},"valid":false}]}
+]
