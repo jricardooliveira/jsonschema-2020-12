@@ -3,25 +3,19 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:35:34 UTC
-- **Story spend:** ~$11.45 of $26.00 (estimated at API list prices)
+- **Run:** #135 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:41:46 UTC
+- **Story spend:** ~$15.19 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
+The operator decides at gate-question: `factory approve 135` to accept, or `factory reject 135 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Files changed outside the tasks' declared scope (§6): ['docs/cli-contract.md', 'docs/limits.md']
-  >   ◦ Release-agent note: Race-detector execution not verified: the tester notes missing race-detector evidence. The design claims Number.mant is immutable and only read (safe for concurrent use), but `go test -race ./internal/jsonvalue` has not been run in the test factory to prove it. Verify before shipping.
-  >   ◦ Release-agent note: Bounded Rat conversion defect: at the minimum int64 exponent under extreme raised caps (e.g., MaxExponent near math.MinInt64), exponent arithmetic in Rat() can overflow; the design catches this as a limit error but it is a latent issue. Not practical at defaults (10000) but latent at extreme caps.
-  >   ◦ Release-agent note: Breaking input changes: invalid UTF-8, surrogates, over-cap numbers and duplicate keys now reject (exit 2) instead of accepting silently. Callers must clean their input or raise the cap. This is correct per operator clarification but is an incompatibility.
-  >   ◦ Release-agent note: Scope gap: docs/cli-contract.md and docs/limits.md were added but not explicitly listed in task scope; evidence gap notes them as outside §6 (runner) scope. They document already-implemented contract; clarify whether documentation is in scope or defer to later.
-  >   ◦ Release-agent note: Tester verdict is 'warn', not 'pass': approval is qualified by the race-detector and extreme-exponent concerns. Do not ship until race-detector verification passes and the documented concerns are addressed.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: FR1: docs/cli-contract.md and docs/limits.md are required by the boundary rules but are not in the binding reservation. The operator needs to add them to the reservation; removing them is not the fix. Not granted automatically: docs/cli-contract.md (not in the approved design and not a test); docs/limits.md (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: docs/cli-contract.md, docs/limits.md
 
 ## Trail
 
@@ -84,8 +78,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 17:34:06 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 1 new, 1 persistent, 2 resolved |
 | 2026-10-16 17:34:07 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 17:35:34 | agent | release-agent | ✅ warn · 86.9s · $0.1416 |
-| 2026-10-16 17:35:34 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 17:35:34 | run | run waiting_human | ⏸️ |
+| 2026-10-16 17:35:34 | gate | gate-release | ❌ REJECTED: Fix tester finding F4 (medium) before release: Number.Rat() returns 15 instead of the exact tiny rational when the normalised exponent is math.MinInt64 (e.g. 1.5e-9223372036854775807 under absurdly raised li… |
+| 2026-10-16 17:37:53 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 17:39:11 | agent | coder-agent | ✅ complete · remediation · 77.6s · $1.3315 |
+| 2026-10-16 17:39:14 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass |
+| 2026-10-16 17:39:15 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 17:40:17 | agent | tester-agent | ❌ fail · 62.2s |
+| 2026-10-16 17:40:17 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: [unspecified]; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-16 17:40:17 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 4 finding(s) |
+| 2026-10-16 17:41:46 | agent | coder-agent | ✅ scope-request · remediation · 88.1s · $1.4684 |
+| 2026-10-16 17:41:46 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-16 17:41:46 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
