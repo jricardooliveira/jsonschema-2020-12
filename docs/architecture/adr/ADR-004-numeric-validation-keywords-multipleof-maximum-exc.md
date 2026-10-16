@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #4
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #139, 2026-10-16 19:57 UTC)
 
 ## Decision
 This revision only replaces the big.Rat arithmetic, as the boundary review asked. Every file, name, constraint and test from the reviewed design stays the same. I checked the existing code: internal/jsonvalue/number.go defines *Number as {neg, mant big.Int, exp int64, ndig}. The value is (-1)^neg × mant × 10^exp, mant has no trailing zeros, and zero has a single form. Cmp(a, b) compares the sign first and then the adjusted exponent (ndig+exp). It aligns mantissas only when the adjusted exponents are equal, so its cost is bounded by the digit cap. Rat() exists but must not be used here. Keywords in internal/keywords/validation register from init() with VocabularyURI, the same way as const.go and type.go. Compile errors are plain errors that name the keyword (e.g. fmt.Errorf("multipleOf: must be a number")). Failures go through ctx.Report(msg). The root TestSpecCases in spec_test.go globs testdata/*/*.json, so the new testdata files are found with no edit to the runner.
