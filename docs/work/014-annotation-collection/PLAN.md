@@ -49,7 +49,6 @@ Modules the architecture expects to touch:
 - `internal/keywords/registry.go`
 - `internal/compile/compile.go`
 - `internal/keywords/annotate.go`
-- `internal/keywords/annotate_test.go`
 - `internal/keywords/metadata/annotations.go`
 - `internal/keywords/metadata/annotations_test.go`
 - `internal/keywords/formatannotation/format.go`
@@ -64,9 +63,10 @@ Modules the architecture expects to touch:
 - `internal/keywords/applicator/contains.go`
 - `annotations.go`
 - `jsonschema.go`
-- `options.go`
 - `numberlimits.go`
+- `output.go`
 - `annotations_test.go`
+- `internal/output/registry.go`
 - `internal/output/basic.go`
 - `cmd/jsonschema/run.go`
 - `cmd/jsonschema/annotations_test.go`
@@ -90,23 +90,29 @@ exactly this order:
 
 ## Risks
 
-- numberlimits.go is outside the reservation. The Options struct, and its MaxOutputUnits field, are defined there, so the MaxAnnotations field must be added there too (one line plus a comment). options.go keeps the maxAnnotations() method.
-- The plan now has 32 files, which is the cap.
-- Recording every annotation on large documents costs time and memory. The operator accepted this ('always collect'), and the limit bounds it.
+- output.go and internal/output/registry.go are outside the reservation. The current Renderer only receives (valid, units), so annotations and the byte cap cannot reach basic.go without these edits. Neither file is crowded, and the existing Register/Render signatures are kept so the other output callers are not touched.
+- numberlimits.go now holds both new Options fields and their resolver methods, next to maxUnits(). options.go is no longer touched, which frees a crowded file.
+- internal/keywords/annotate_test.go was dropped to stay within 32 files. RegisterAnnotationOnly is tested only through the three vocabulary test files.
+- The CLI path for an exceeded report-bytes cap cannot be triggered from the command line until story 193 adds the flag. In this story it is covered at the library level, and run.go's pass-through of the error text is a small reviewed change.
+- Wrapped old-style renderers (flag) are checked against the cap after json.Marshal. Their output has a fixed small size, so this is safe. New shapes must use RegisterReport to keep memory bounded.
+- The plan has 32 files, which is the cap.
+- Recording every annotation costs time and memory. The operator accepted this, and the annotation limit and the report-bytes limit bound it.
 - eval.go and compile.go are crowded files. Changes there must stay minimal and only wire in the code in annotations.go.
-- There is no docs/ file in the plan for the 'names, not values' rule, to stay within the cap. The rule is recorded in the Annotation godoc and in the ADR.
 
 Implementation constraints the coder must honor:
 
 - Only the standard library; go.mod stays without require lines.
-- Annotation values come only from the schema. Evaluated property names may appear, because they are already in instanceLocation. Instance VALUES never appear in an annotation, a report or an error.
+- Annotation values come only from the schema. Evaluated property names may appear because they are already in instanceLocation. Instance VALUES never appear in an annotation, a report or an error.
 - Annotations from failing subschemas are discarded and appear nowhere, not even in the internal tree.
-- The compiled Schema and everything reachable from it are immutable. Annotation state lives in the per-call evaluation context, and tests run under -race.
-- MaxAnnotations copies MaxOutputUnits exactly. Unset or 0 means DefaultMaxAnnotations, a negative value is a compile error, and an explicit CLI value of 0 or less is a usage error. There is never a 'collection off' mode.
-- The counter increments on every recorded annotation, including ones later dropped. Going over the limit gives LimitError{Limit: "annotations"}.
-- The sort is stable. It compares instance location, then keyword location, both as decoded JSON Pointer tokens (byte order, prefix first), then absolute keyword location, then keyword name, then evaluation sequence. Tests include ties from different dynamic paths and a ~1-escaped token.
+- The compiled Schema and everything reachable from it are immutable. Annotation state and the render Budget are per call. Tests run under -race.
+- MaxAnnotations and MaxReportBytes copy MaxOutputUnits exactly: the field is in numberlimits.go, its resolver method sits beside maxUnits(), 0 means the default and a negative value is a compile error. There is never an 'off' mode.
+- The annotation counter counts every recorded annotation, including ones later dropped. Going over gives LimitError{Limit: "annotations"}.
+- The report-bytes cap is enforced inside rendering through output.Budget, unit by unit. Going over returns LimitError{Limit: "report bytes", Max: cap} and nil bytes, never a truncated report. Every shape goes through the Budget: old-style renderers are wrapped by Register, and new shapes use RegisterReport.
+- Register and Render keep their current signatures, so flag.go and the existing output tests are not edited.
+- run.go passes a render LimitError through as the stderr message (exit 2, empty stdout for one document). Other render failures keep 'cannot render result'.
+- The sort is stable and compares decoded JSON Pointer tokens, with the documented tie-breaks. Tests include dynamic-path ties and a ~1-escaped token.
 - The NDJSON wrapper and the failing-report shape are unchanged.
-- Tests read DefaultMaxAnnotations instead of repeating 10000000.
+- Tests read DefaultMaxAnnotations and DefaultMaxReportBytes instead of repeating the numbers. The report-bytes test uses a large 'default' value under 'items', applied to many array items, with a lowered Options.MaxReportBytes, and checks for *LimitError 'report bytes'. The same input renders fine under the default cap. A negative MaxReportBytes is a compile error.
 - main.go is not edited, and no central keyword list or switch is edited: keywords register from init().
 
 - DB impact: no · API impact: yes · Migration needed: no
@@ -114,6 +120,7 @@ Implementation constraints the coder must honor:
 Breaking changes:
 
 - A passing 'basic' report now lists annotation units, so it is longer than before. The operator approved this.
+- Result.Output can now return a 'report bytes' LimitError, but only above 256 MiB under the default.
 
 ## Proof
 
