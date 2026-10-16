@@ -15,7 +15,7 @@
 | 11 | Dynamic references | to do |  |  |
 | 12 | Embedded meta-schemas and schema validation | to do |  |  |
 | 13 | $vocabulary handling | to do |  |  |
-| 14 | Annotation collection | to do |  |  |
+| 14 | Annotation collection | released | [014-annotation-collection/](014-annotation-collection/) | 144 |
 | 15 | unevaluatedProperties and unevaluatedItems | to do |  |  |
 | 16 | Limits against hostile input | to do |  |  |
 | 17 | Detailed and verbose output | to do |  |  |
@@ -75,7 +75,7 @@
    Add '$vocabulary' support as 2020-12 core describes. When a schema's meta-schema declares vocabularies, the validator processes them. A required vocabulary it does not know is an error with exit code 2. An optional unknown vocabulary is ignored. The format-assertion vocabulary is recognised so a later story can honour it. Use the embedded meta-schemas and custom meta-schemas supplied through the registry. Write spec-derived tests for required, optional and unknown vocabularies.
    Why: Builds directly on the embedded meta-schemas and prepares the hook that format assertion needs.
 
-14. **Annotation collection** — to do
+14. **Annotation collection** — released
    Collect 2020-12 annotations during evaluation, with their instance and keyword locations. Annotations are dropped from any subschema that fails. Collect these: annotation keywords such as title, description, default, deprecated, readOnly, writeOnly and examples; 'format' values, which by default are annotations only and never fail validation; contentEncoding, contentMediaType and contentSchema, which are annotations only; and unknown keywords, which are ignored for validation and collected as annotations. Unknown formats are never an error. Applicators record which properties and items they evaluated. Annotations appear in the output formats wherever the 2020-12 shapes include them. Write spec-derived tests.
    Why: Annotation tracking is what unevaluatedProperties and unevaluatedItems depend on, so it comes first.
 
