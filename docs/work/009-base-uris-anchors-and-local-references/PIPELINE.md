@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #143 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-16 20:56:33 UTC · **Stopped:** 2026-10-16 21:21:46 UTC
-- **Story spend:** ~$11.75 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-16 20:56:33 UTC · **Stopped:** 2026-10-16 21:26:40 UTC
+- **Story spend:** ~$14.27 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,10 +14,12 @@ The operator decides at gate-release: `factory approve 143` to accept, or `facto
 ## Blockers
 
 - Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: F7 (medium): load-time memory can still grow quadratically on a hostile schema, in internal/compile/refs.go compileDocument/resolver.target. resolver.target checks the memo only for the target pointer itself. On a miss, compileAt recompiles the whole subtree, including descendants that an earlier batch already compiled and memoized. A schema can place a chain under an unknown keyword (for example definitions/x/not/not/...): each level holds a $ref to its parent, the root refs only the deepest node, and each level carries a wide sibling payload (for example allOf with many 'true' items). Each batch then recompiles a growing ancestor subtree. That gives about d²·w/2 nodes, each with an O(d) location string, and re-adds every copied $ref to r.refs. There is no input-size limit yet (only jsonvalue.MaxDepth), so a crafted schema of a few MB can plausibly exhaust memory rather than return exit 2. This estimate comes from reading the code; I did not run it. The coder acknowledges the gap in a 'ponytail' comment. It is much narrower than F1, because subtrees under known keywords are now memoized from the root compile. Fix: when compileAt runs on a target, reuse memoized descendant nodes instead of rebuilding them, or add a load-time node budget that returns a LimitError (exit 2).
-  >   ◦ Release-agent note: F7 (medium severity, security and performance): Load-time memory can grow quadratically in pathological cases. When reference targets under unknown keywords are discovered in ancestor-after-descendant order across resolver batches, already-compiled subtrees may be recompiled. A multi-MB hostile schema could trigger this before the depth limit applies. The tester estimated this from code inspection; it has not been measured experimentally. Does not block shipping but should be addressed in story 193 (limits) or in a near-term follow-up to prevent potential denial-of-service.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: Low: Error messages name schema locations but use format strings with substring assertions in tests (e.g. 'want %q in err.Error()'). A future refactor to error message wording could pass all tests without catching location format drift. Recommendation before shipping story 187 (external registry): tighten error assertions to exact format or dedicated error types.
+  >   ◦ Release-agent note: Low: An empty --base-uri flag (--base-uri '') is treated as unset and falls back to stdin placeholder, rather than rejected as an error. The documentation says 'must be absolute', which is correct, but the CLI silently ignores empty input. Recommendation: test and document this edge case explicitly, or reject --base-uri '' with a 'must not be empty' error.
+  >   ◦ Release-agent note: Low: '$id' appearing inside unknown keywords (e.g. inside 'enum' or 'const') is correctly not indexed, since those are data values not schemas. However, this design choice and its rationale are not explicitly documented in a way a reader of docs/references.md would discover without reading the spec. Recommendation: add a note under 'Non-schema targets' stating that unknown keywords are traversed only to find schema substructures, and that $id/anchor inside data keywords have no effect.
+  >   ◦ Security note (low): No network or disk access in resolution: locate() only looks up idx.Resources and navigates the in-memory document. A file:///etc/passwd ref is unresolved (tested). RootBaseURI only calls filepath.Abs, which reads the working directory, not the path. The base URI override is validated: it must be absolute, have no non-empty fragment and have valid percent-encoding, and it fails closed. The loop guard state is per call (callState in ctx.Items) and its frames are removed on exit. Error messages contain only schema locations, ref strings, $id and anchor values; LoopError gives the instance location as a pointer only.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -80,8 +82,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 21:20:35 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 1 new, 0 persistent, 6 resolved |
 | 2026-10-16 21:20:35 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-16 21:21:46 | agent | release-agent | ✅ warn · 70.9s · $0.1251 |
-| 2026-10-16 21:21:46 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-16 21:21:46 | run | run waiting_human | ⏸️ |
+| 2026-10-16 21:21:46 | gate | gate-release | ❌ REJECTED: Fix F7 (medium) narrowly: in internal/compile/refs.go, compileAt for a $ref target must consult the memo at EVERY node it visits (not only the target pointer) and reuse already-compiled descendants, so each … |
+| 2026-10-16 21:22:44 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-16 21:24:56 | agent | coder-agent | ✅ complete · remediation · 132.2s · $1.5993 |
+| 2026-10-16 21:25:00 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 21:25:00 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-16 21:25:53 | agent | tester-agent | ✅ warn · 52.5s · $0.8143 |
+| 2026-10-16 21:25:53 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-16 21:25:53 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-16 21:26:39 | agent | release-agent | ✅ warn · 46.1s · $0.1061 |
+| 2026-10-16 21:26:40 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-16 21:26:40 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
