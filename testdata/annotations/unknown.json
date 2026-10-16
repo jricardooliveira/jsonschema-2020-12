@@ -1,0 +1,7 @@
+[
+  {"spec":"core 6.5 unrecognized keywords","description":"unknown keyword ignored and annotated","schema":{"x-note":{"a":[1]}},"tests":[{"description":"valid","data":1,"valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/x-note","keyword":"x-note","value":{"a":[1]}}]}]},
+  {"spec":"core 6.5 unrecognized keywords","description":"unknown keyword inside a $ref target","schema":{"$ref":"#/$defs/a","$defs":{"a":{"x-n":1}}},"tests":[{"description":"valid","data":1,"valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/$ref/x-n","keyword":"x-n","value":1}]}]},
+  {"spec":"core 7.7.1.3 annotations of failing schemas are dropped","description":"failing anyOf branch drops its annotations","schema":{"anyOf":[{"x-a":1,"type":"string"},{"x-b":2}]},"tests":[{"description":"second branch","data":5,"valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/anyOf/1/x-b","keyword":"x-b","value":2}]}]},
+  {"spec":"core 7.7.1.3 annotations of failing schemas are dropped","description":"not drops its subschema annotations","schema":{"not":{"x-a":1,"type":"string"}},"tests":[{"description":"passes","data":5,"valid":true,"annotations":[]}]},
+  {"spec":"core 7.7.1.3 annotations of failing schemas are dropped","description":"failed if drops its annotations","schema":{"if":{"x-i":1,"type":"string"},"else":{"x-e":2}},"tests":[{"description":"else","data":5,"valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/else/x-e","keyword":"x-e","value":2}]}]}
+]

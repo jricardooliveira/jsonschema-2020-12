@@ -1,0 +1,4 @@
+[
+  {"spec":"validation 7.2.1 format is an annotation by default","description":"known format does not assert","schema":{"format":"email"},"tests":[{"description":"not an email","data":"nope","valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/format","keyword":"format","value":"email"}]}]},
+  {"spec":"validation 7.2.1 unknown formats","description":"unknown format is no error","schema":{"format":"made-up"},"tests":[{"description":"any","data":5,"valid":true,"annotations":[{"instanceLocation":"","keywordLocation":"/format","keyword":"format","value":"made-up"}]}]}
+]
