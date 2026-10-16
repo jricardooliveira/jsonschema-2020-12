@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #135 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 16:59:45 UTC
-- **Story spend:** ~$2.10 of $26.00 (estimated at API list prices)
+- **Started:** 2026-10-16 16:50:29 UTC · **Stopped:** 2026-10-16 17:06:38 UTC
+- **Story spend:** ~$2.84 of $26.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -17,15 +17,10 @@ The operator decides at gate-2-architect: `factory approve 135` to accept, or `f
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
   >   • The `type` keyword is now enforced, which changes 178's TestValidateSchemas expectation for {"type":"string"}; that entry becomes an unknown keyword.
   >   • Input that 178 accepted is now rejected as broken JSON (exit 2): invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap. A leading BOM is now accepted (178 rejected it).
-  >   • The `type` keyword is now enforced. The {"type":"string"} entry in 178's TestValidateSchemas becomes {"x-unknown":"string"}. The operator accepted this at Checkpoint 2.
-  >   • Input that 178 accepted is now rejected with exit code 2: invalid UTF-8, unpaired \u surrogates, and numbers over the digit or exponent cap. The operator accepted this.
-  >   • A leading BOM is now accepted. 178 rejected it.
+  >   • The `type` keyword is now enforced. The `{"type":"string"}` entry in 178's TestValidateSchemas becomes `{"x-unknown":"string"}`. The operator accepted this change.
+  >   • Input that 178 accepted is now exit 2: invalid UTF-8, an unpaired \u surrogate, and numbers over the digit or exponent cap. A leading BOM is now accepted. The operator accepted these changes.
+  >   • The keyword evaluate signature keeps the `any` instance type, so nothing changes for later keyword stories.
   >   → Approve these breaking changes?
-  >
-  > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • security: Memory and CPU amplification from eagerly building a big.Rat for every number at decode time. This follows the operator's Fix 1, but it opens a new hostile-input path. With the default cap, a 7-byte token such as `1e10000` becomes a big.Rat holding 10^10000 (about 4 KB), and SetString has to compute that value. A 64 MiB document of such tokens (roughly 9 million numbers) would need tens of GB of memory and a lot of CPU. It would do so before any keyword runs and even when the schema has no numeric keyword. The risk entry calls this 'linear in input size and bounded', but the amplification factor is about 600x. It is not bounded by the input size cap. Equal, Cmp and IsInteger are cheap once the rats exist, so the decode step is now the cost. A human should confirm one of these: (a) a per-decode budget on the total expanded number size, with a LimitError when it is exceeded; (b) a compact exact form (big.Int mantissa plus an int exponent) that is expanded only when two numbers of very different scale must be compared; or (c) accepting the risk and recording it for story 193. Do not defer it with an unspecified 'later'.
-  >   • security: Not a defect: the Fix 2 differential test (table plus fuzz target with f.Add seeds) now cross-checks the string boundaries between scanText and encoding/json, and checks that no U+FFFD can appear silently. The earlier parser-differential concern is closed. The earlier concern about re-parsing numbers in Equal is also closed, because Equal no longer parses.
-  >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
 
@@ -50,8 +45,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 16:59:06 | agent | architect-agent | ✅ pass · 102.0s · $0.6455 |
 | 2026-10-16 16:59:06 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-16 16:59:45 | agent | boundary-agent | ✅ warn · 38.5s · $0.2054 |
-| 2026-10-16 16:59:45 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-16 16:59:45 | run | run waiting_human | ⏸️ |
+| 2026-10-16 16:59:45 | gate | gate-2-architect | ❌ REJECTED: Take option (b); keep everything else in this revision. A Number stores a compact exact decimal computed once at decode: a big.Int mantissa with trailing zeros removed, an int64 exponent, the sign, and the o… |
+| 2026-10-16 17:04:51 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-16 17:06:07 | agent | architect-agent | ✅ pass · 76.0s · $0.5268 |
+| 2026-10-16 17:06:07 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
+| 2026-10-16 17:06:38 | agent | boundary-agent | ✅ pass · 30.7s · $0.2087 |
+| 2026-10-16 17:06:38 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-16 17:06:38 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
