@@ -1,0 +1,14 @@
+# Build output and tooling noise (written by the factory; extend it freely).
+/jsonschema-2020-12
+!/jsonschema-2020-12/
+/jsonschema-2020-12.exe
+/dist/
+*.test
+*.out
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.venv/
+node_modules/
+.DS_Store
