@@ -18,16 +18,21 @@ func Evaluate(n *compile.Node, instance any) (bool, error) {
 func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	n := node.(*compile.Node)
 	attachItems(ctx)
+	pf, leave, err := enterNode(ctx, n)
+	if err != nil {
+		return false, err
+	}
+	defer leave()
 	if n.Bool != nil {
 		if *n.Bool {
 			return true, nil
 		}
-		ctx.KeywordLocation = n.Location
+		ctx.KeywordLocation = pf.dynamic
 		return false, ctx.Report("schema is false, no value is valid")
 	}
 	valid := true
 	for _, it := range n.Items {
-		ctx.KeywordLocation = it.Location
+		ctx.KeywordLocation = pf.at(it.Keyword.Name, it.Location)
 		before := len(ctx.Units())
 		ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
 		if err != nil {

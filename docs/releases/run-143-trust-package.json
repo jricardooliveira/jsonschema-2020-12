@@ -1,0 +1,463 @@
+{
+  "work_id": "US-0143",
+  "parent_story": "US-0143",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "f13af44811d794172d1ea698b824b70ddd823bc1",
+    "base_commit": "d6e1a9c2c7d4144dbc18281b8f0a6f4ba76aa15c"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "'$id' sets the base URI of its schema resource by RFC 3986 reference resolution against the enclosing base URI. This includes embedded schema resources with their own '$id', whose subschemas resolve against the embedded resource's base. An '$id' ending in an empty fragment ('#') is accepted and the empty fragment is ignored. An '$id' with a non-empty fragment is a broken schema (exit code 2), and the error names the schema location.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$anchor' defines a plain-name fragment in its schema resource. '$anchor' and '$dynamicAnchor' values must match ^[A-Za-z_][-A-Za-z0-9._]*$, otherwise the schema is broken (exit code 2). A repeated '$id' or a repeated anchor name within one schema resource is a broken schema (exit code 2), and the error names the repeated '$id' or anchor. This story checks '$dynamicAnchor' syntax only; dynamic resolution belongs to story 188.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$defs' holds reusable subschemas. They are compiled with the base URI in effect at their location, can be reached by '$ref', and have no effect on validation unless referenced.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$ref' resolves local JSON Pointer fragments. Pointer tokens are percent-decoded first and then ~1 and ~0 are unescaped, in that order, so '#/$defs/a~1b', '#/$defs/a~0b' and '#/$defs/a%25b' reach the correct keys. A reference with invalid percent-encoding (for example '%zz') is a broken schema (exit code 2), and the error names the schema location.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$ref' resolves plain-name anchor fragments and relative references against the current base URI. Before comparison, both the reference and every declared '$id' get RFC 3986 safe normalization: lowercase scheme and host, unescaping of unreserved characters, uppercase percent-escape hex digits, and removal of '.' and '..' segments. For example, 'https://Example.com/a%7Eb.json' matches 'https://example.com/a~b.json', while addresses differing in anything else (for example path case or a different path) do not match. Positive and negative tests cover this choice.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A '$ref' whose target is an object or a boolean that is not a recognised subschema location (for example '#/definitions/x', where 'definitions' is an unknown keyword in 2020-12) is followed. The target is compiled as a subschema with the base URI in effect at that location. A target that is a number, string, array or null is an unresolvable reference (exit code 2). This choice is documented with the note that 2020-12 core 9.4.2 leaves it undefined.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$ref' works alongside sibling keywords in the same schema object: the referenced schema and every sibling keyword are all applied, and the document is valid only when all of them pass.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$comment' is accepted in any schema object and has no effect on validation results.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every '$ref' in a schema is resolved once when the schema is loaded, before any document is checked. A reference that cannot be resolved is a broken-schema error (exit code 2, never 'invalid') naming the reference and its schema location, even when it sits in a branch that a given document never reaches.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A root schema without '$id' gets its base URI from its file location (for example file:///home/me/schema.json). The caller can override it through a library option and a CLI flag. A schema piped in without a file gets a fixed, documented placeholder base URI. Working out the base URI never reads anything from disk.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Legitimate recursive schemas whose references descend into the document (trees, linked lists) validate correctly. At load time, a pure reference cycle (schema objects containing only '$ref' that point at each other) is a broken-schema error (exit code 2). During evaluation, re-entering the same schema location at the same instance location on the current evaluation path is a loop error (exit code 2, never a hang and never valid or invalid), with the recursion limit as the backstop.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The validator never fetches a reference target from the network or reads it from disk. A reference to another resource that is not inside the loaded document is an unresolved-reference error (exit code 2). Spec-derived positive and negative tests cite their 2020-12 core sections (8.2.1 $id, 8.2.2 $anchor, 8.2.3.1 $ref, 8.2.4 $defs, 8.3 $comment, 9.1 base URI, 9.2 embedded resources, 9.4 JSON Pointer fragments). docs/references.md documents the default base URI, the stdin placeholder, the normalization rule, non-schema targets and loop handling.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "baseuri_option_test.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/refs_cli_test.go",
+        "change": "added",
+        "additions": 58,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 1
+      },
+      {
+        "path": "docs/references.md",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "added",
+        "additions": 320,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/refs_test.go",
+        "change": "added",
+        "additions": 173,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 7,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/refguard.go",
+        "change": "added",
+        "additions": 116,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/refguard_internal_test.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/refguard_test.go",
+        "change": "added",
+        "additions": 136,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/anchor.go",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/comment.go",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/core_keywords_test.go",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/defs.go",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/id.go",
+        "change": "added",
+        "additions": 25,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/ref.go",
+        "change": "added",
+        "additions": 46,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/ref_test.go",
+        "change": "added",
+        "additions": 55,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/index.go",
+        "change": "added",
+        "additions": 166,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/index_test.go",
+        "change": "added",
+        "additions": 106,
+        "deletions": 0
+      },
+      {
+        "path": "internal/uri/pointer.go",
+        "change": "added",
+        "additions": 40,
+        "deletions": 0
+      },
+      {
+        "path": "internal/uri/pointer_test.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "internal/uri/resolve.go",
+        "change": "added",
+        "additions": 206,
+        "deletions": 0
+      },
+      {
+        "path": "internal/uri/resolve_test.go",
+        "change": "added",
+        "additions": 63,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 1
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 0
+      },
+      {
+        "path": "options.go",
+        "change": "added",
+        "additions": 9,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/anchor.json",
+        "change": "added",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/comment.json",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/defs.json",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/id.json",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/ref.json",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/uri_normalization.json",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "cmd/jsonschema/main.go"
+    ],
+    "design_unplanned": [
+      "cmd/jsonschema/run.go",
+      "jsonschema.go",
+      "numberlimits.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "cmd/jsonschema/run.go",
+        "granted_by": "operator",
+        "at": "gate-question #1238"
+      },
+      {
+        "path": "jsonschema.go",
+        "granted_by": "operator",
+        "at": "gate-question #1238"
+      },
+      {
+        "path": "numberlimits.go",
+        "granted_by": "operator",
+        "at": "gate-question #1238"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-d924bf8a66e847abada484a21fcadf33/docs/architecture/adr/ADR-009-core-identification-and-referencing-within-one-sch.md",
+    "summary": "The change delivers all 12 criteria, and the tests prove them rather than restating them: URI resolution follows the RFC 3986 5.4 examples, normalization has positive and negative cases, and percent-d"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [
+      "No network or disk access in resolution: locate() only looks up idx.Resources and navigates the in-memory document. A file:///etc/passwd ref is unresolved (tested). RootBaseURI only calls filepath.Abs, which reads the working directory, not the path. The base URI override is validated: it must be absolute, have no non-empty fragment and have valid percent-encoding, and it fails closed. The loop guard state is per call (callState in ctx.Items) and its frames are removed on exit. Error messages contain only schema locations, ref strings, $id and anchor values; LoopError gives the instance location as a pointer only."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 14.274092,
+    "tokens_in": 12397433,
+    "tokens_out": 159209
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Resolve and Normalize reject invalid percent-encoding anywhere in the input, not just in the fragment."
+    },
+    {
+      "task": "T1",
+      "text": "ParsePointer rejects a '~' not followed by 0 or 1, and a non-empty fragment that does not start with '/'. The task did not specify either; I chose to reject them."
+    },
+    {
+      "task": "T1",
+      "text": "Normalize does not add '/' to an empty path when an authority is present."
+    },
+    {
+      "task": "T2",
+      "text": "Only known subschema keywords are walked: applicators, $defs and contentSchema. $id inside enum, const or unknown keywords is not indexed. T4 must compute the base URI for non-schema $ref targets itself, using Index.Bases or an ancestor lookup."
+    },
+    {
+      "task": "T2",
+      "text": "$anchor and $dynamicAnchor share one namespace per resource."
+    },
+    {
+      "task": "T2",
+      "text": "The root with no $id is registered under rootBase; the caller must pass an absolute rootBase."
+    },
+    {
+      "task": "T2",
+      "text": "A non-string $id or $anchor is ignored here, because the meta-schema check handles it."
+    },
+    {
+      "task": "T3",
+      "text": "VocabularyURI and the shared noEffect evaluator live in id.go, because a separate file was outside this task's scope."
+    },
+    {
+      "task": "T3",
+      "text": "Ref.Target is meant to be filled by load-time resolution in T4 (internal/compile/refs.go), before the Schema is shared. Until then the ref tests set it by hand."
+    },
+    {
+      "task": "T3",
+      "text": "$defs members are not compiled here. T4 compiles a member when a $ref reaches it, so $defs has no effect unless referenced."
+    },
+    {
+      "task": "T3",
+      "text": "$id and $anchor value syntax, duplicates and base URIs are checked by internal/registry (T2), not here."
+    },
+    {
+      "task": "T4",
+      "text": "compile.go is outside this task's scope, so refs.go finds the compiled $ref keywords by a read-only reflection walk over keyword data. It only follows types from this module."
+    },
+    {
+      "task": "T4",
+      "text": "Targets under unknown keywords take their base URI from the nearest indexed ancestor. A $id inside such a target is not indexed."
+    },
+    {
+      "task": "T4",
+      "text": "Refs in $defs and other uncompiled branches are checked by compiling those subschemas. This also makes compile errors in those branches surface at load time."
+    },
+    {
+      "task": "T4",
+      "text": "filepath.Abs may read the working directory for a relative schema path. It never stats or opens the path."
+    },
+    {
+      "task": "T4",
+      "text": "Nothing calls CompileDocument or RootBaseURI yet. Wiring into the library, the option and the CLI flag belongs to T6."
+    },
+    {
+      "task": "T5",
+      "text": "evaluated_items.go is outside this task's scope, so the guard state lives in a callState type that embeds *EvaluatedItems. The first evalNode frame wraps the raw record in it. The wrapper uses the same pointer, so callers that keep the record still see every annotation, and the keywords' interface assertions on ctx.Items still hold."
+    },
+    {
+      "task": "T5",
+      "text": "There is no recursion-depth limit in eval yet, so the step counter and story 193 remain the only backstop beyond the loop guard."
+    },
+    {
+      "task": "T6",
+      "text": "The Options struct is declared in numberlimits.go, not options.go. A BaseURI/SchemaPath field has to go into that declaration."
+    },
+    {
+      "task": "T6",
+      "text": "CompileWithOptions in jsonschema.go calls compile.Compile, which never resolves $ref. It must switch to compile.CompileDocument(v, compile.RootBaseURI(opts.BaseURI, opts.SchemaPath)). Without that change none of the reference work in T1\u2013T5 takes effect in the library or the CLI."
+    },
+    {
+      "task": "T6",
+      "text": "Options is in numberlimits.go, so BaseURI and SchemaPath fields were added there. options.go holds only the baseURI() helper."
+    },
+    {
+      "task": "T6",
+      "text": "main.go is unchanged because flags are parsed in run.go."
+    },
+    {
+      "task": "T6",
+      "text": "The new --base-uri CLI flag is documented in docs/references.md, not in docs/cli-contract.md (outside scope)."
+    },
+    {
+      "task": "remediation",
+      "text": "The depth limit counts every schema node on the evaluation path, not only `$ref` jumps, because what has to be prevented is a stack overflow. It is fixed at 4 \u00d7 `jsonvalue.MaxDepth` (40000). Recursion through `items` or `properties` uses about 2 nodes per document level, so even the deepest accepted document fits. The exact value is still provisional: story 193 is meant to make it configurable."
+    },
+    {
+      "task": "remediation",
+      "text": "`LoopError` still names the schema location where the node is defined (not the evaluation path), because that is what a schema author needs to find the loop."
+    },
+    {
+      "task": "remediation",
+      "text": "`refguard_test.go` gains new tests; none of its existing assertions changed. `refs_cli_test.go` gains one CLI test (exit code 2 at the depth limit)."
+    },
+    {
+      "task": "remediation",
+      "text": "The step is counted before the depth and loop checks, so every node entry is counted, including the one that hits a limit. Existing tests that lower the step limit still pass."
+    },
+    {
+      "task": "remediation",
+      "text": "Only `enterNode` counts the step; `eval.go` is not changed, because every node evaluation already goes through `enterNode`."
+    },
+    {
+      "task": "remediation",
+      "text": "I did not watch the n\u2248MaxDepth chain test fail on the old code, because it would have run out of memory. The 200-reference test and the anchor test did fail first, as described above."
+    },
+    {
+      "task": "remediation",
+      "text": "Errors from a target's compile are now reported in batch order (sorted by target pointer), not reference order. Each error still names the reference and its schema location, and the existing error-text tests pass unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "The anchor name is decoded with url.PathUnescape. This is safe because uri.Resolve has already rejected invalid percent-escapes, and '+' stays a literal '+'."
+    },
+    {
+      "task": "remediation",
+      "text": "The memo is keyed by schema location. Every keyword's Sub and CompileAt call compiles the value at that location in the document (checked with grep in internal/keywords), so one location always holds one value and reusing the node is correct. When 'if' compiles then/else and the then/else keywords compile them again, they now get the same memoized node."
+    },
+    {
+      "task": "remediation",
+      "text": "resolver.compile repeats the body of compileAt in compile.go (about 30 lines) with a memo check added. compile.go is outside this finding's scope, and the operator asked for the fix in refs.go only. The copy is marked with a ponytail comment."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

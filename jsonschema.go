@@ -42,11 +42,15 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 	if err != nil {
 		return nil, err
 	}
+	base, err := opts.baseURI()
+	if err != nil {
+		return nil, fmt.Errorf("options: %w", err)
+	}
 	v, err := jsonvalue.DecodeLimited(schema, lim)
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	n, err := compile.Compile(v)
+	n, err := compile.CompileDocument(v, base)
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}

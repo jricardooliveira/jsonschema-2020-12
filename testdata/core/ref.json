@@ -1,0 +1,51 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.3.1 $ref and 9.4 JSON Pointer fragments",
+    "description": "$ref with siblings applies both",
+    "schema": {"$defs": {"a": {"minLength": 2}}, "$ref": "#/$defs/a", "type": "string"},
+    "tests": [
+      {"description": "passes both", "data": "ab", "valid": true},
+      {"description": "fails referenced", "data": "a", "valid": false},
+      {"description": "fails sibling", "data": 5, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 9.4 JSON Pointer escaping: ~1, ~0, percent-decoding",
+    "description": "pointer tokens decode percent first, then ~1 and ~0",
+    "schema": {"$defs": {"a/b": {"type": "string"}, "a~b": {"type": "integer"}, "a%b": {"type": "boolean"}},
+      "properties": {"x": {"$ref": "#/$defs/a~1b"}, "y": {"$ref": "#/$defs/a~0b"}, "z": {"$ref": "#/$defs/a%25b"}}},
+    "tests": [
+      {"description": "all match", "data": {"x": "s", "y": 1, "z": true}, "valid": true},
+      {"description": "x wrong", "data": {"x": 1}, "valid": false},
+      {"description": "y wrong", "data": {"y": "s"}, "valid": false},
+      {"description": "z wrong", "data": {"z": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.2 $anchor and 8.2.3.1 $ref",
+    "description": "plain-name anchor reference",
+    "schema": {"$defs": {"a": {"$anchor": "x", "type": "string"}}, "$ref": "#x"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "number", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 9.4.2 (undefined): object target under an unknown keyword is followed",
+    "description": "definitions target",
+    "schema": {"definitions": {"x": {"type": "string"}}, "$ref": "#/definitions/x"},
+    "tests": [
+      {"description": "string", "data": "s", "valid": true},
+      {"description": "number", "data": 1, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.1 and 9.2: recursion that descends into the document",
+    "description": "tree",
+    "schema": {"type": "object", "properties": {"v": {"type": "integer"}, "kid": {"$ref": "#"}}},
+    "tests": [
+      {"description": "deep valid", "data": {"v": 1, "kid": {"v": 2, "kid": {"v": 3}}}, "valid": true},
+      {"description": "deep invalid", "data": {"v": 1, "kid": {"v": "x"}}, "valid": false}
+    ]
+  }
+]
