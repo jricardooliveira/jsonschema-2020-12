@@ -1,7 +1,7 @@
 # PLAN #2: Exact JSON value model, deep equality, and the type, enum and const keywords
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #135, 2026-10-16 17:13 UTC)
 - Design: see `ADR-002-*.md` under `docs/architecture/adr/`
 
 ## Files that change

@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #2
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #135, 2026-10-16 17:13 UTC)
 
 ## Decision
 Revision 3. This revision changes only what the reviewer asked for, option (b): the eager big.Rat is gone, and a Number is now a compact exact decimal. Everything the review accepted stays exactly as it was: the file mapping (compiler.go is jsonschema.go, the flags live in cmd/jsonschema/run.go, main.go is not touched, the existing spec_test.go runner replaces internal/speccases), the `any` instance type with registry.go, eval.go and compile.go unchanged, the *SyntaxError Reasons "invalid UTF-8" and "unpaired surrogate escape", the *LimitError Limit names "number digits" and "number exponent", NumberLimits with DefaultMaxNumberDigits = DefaultMaxNumberExponent = 10000, Options in numberlimits.go (0 means the default, a negative value is an error, an explicit CLI value of 0 or less is a usage error), the BOM, trailing-data and cap-on-raw-text rules, the type, enum and const keywords, the one allowed change to TestValidateSchemas (`{"type":"string"}` becomes `{"x-unknown":"string"}`), the shared decode(data, lim, exact) routine, Decode keeping json.Number leaves, and prescan.go with its differential fuzz test.
