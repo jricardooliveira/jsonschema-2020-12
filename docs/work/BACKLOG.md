@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | 1 | Walking skeleton | released | [001-walking-skeleton/](001-walking-skeleton/) | 134 |
 | 2 | Exact JSON values, type, enum and const | released | [002-exact-json-values-type-enum-and-const/](002-exact-json-values-type-enum-and-const/) | 135 |
-| 3 | Error reports: flag and basic output, multiple documents | to do |  |  |
+| 3 | Error reports: flag and basic output, multiple documents | released | [003-error-reports-flag-and-basic-output-multiple/](003-error-reports-flag-and-basic-output-multiple/) | 136, 137 |
 | 4 | Number rules | to do |  |  |
 | 5 | String rules | to do |  |  |
 | 6 | Object rules | to do |  |  |
@@ -31,7 +31,7 @@
    Read schemas and documents with an exact JSON value model built only on the standard library. Numbers are kept exactly as written using math/big. This means huge integers like 12345678901234567890 and decimals like 0.1 lose no precision, and 1.0 counts as an integer. Broken JSON in a schema or a document is an error with exit code 2, never 'invalid'. Add deep JSON equality: numbers compare by mathematical value, objects compare regardless of key order, and arrays compare element by element. Then add the 2020-12 validation keywords 'type' (string or array form, all seven JSON types), 'enum' and 'const', each in its own file registered through the keyword registry. Write positive and negative tests derived from the 2020-12 validation specification text.
    Why: Every later rule needs exact numbers and equality, and type/enum/const are the simplest rules that exercise them.
 
-3. **Error reports: flag and basic output, multiple documents** — to do
+3. **Error reports: flag and basic output, multiple documents** — released
    Make the validator produce the standard 2020-12 output formats 'flag' and 'basic' as JSON, in both the library and the CLI. The CLI picks the shape with an output-format option, and 'basic' is the default. Every reported error gives the instance location, the keyword location, the absolute keyword location where one is known, and which rule failed. A report never quotes the document's values, so it is safe to save in logs. Give output formats one registration point so later shapes can be added as new files. The CLI accepts several document paths in one run. When exactly one document is checked, stdout is exactly one 2020-12 output object for the chosen shape and nothing else. When several documents are checked, the CLI prints one JSON report per line. Each line carries a label for its document, and the label does not change the standard output object inside the line. The worst result sets the exit code: 2 if any document could not be checked, otherwise 1 if any document is invalid, otherwise 0. Add CLI contract tests for both shapes, stdin input, multiple documents and exit codes.
    Why: Fixes the machine-readable result contract early so every keyword story reports errors the same way.
 
