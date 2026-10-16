@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #140 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-16 19:55:58 UTC · **Stopped:** 2026-10-16 19:59:13 UTC
-- **Story spend:** ~$1.27 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-16 19:55:58 UTC · **Stopped:** 2026-10-16 20:03:51 UTC
+- **Story spend:** ~$1.95 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,8 +14,8 @@ The operator decides at gate-question: `factory approve 140` to accept, or `fact
 ## Blockers
 
 - Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: T5 needs the new file internal/jsonvalue/number_canonical.go. It holds a read-only method on *Number that returns the normalised (sign, mantissa, exponent) as canonical text, so the uniqueItems fingerprint never calls Rat() or expands a power of ten. Not granted automatically: internal/jsonvalue/number_canonical.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: internal/jsonvalue/number_canonical.go
+  > The coder asks for files the approved design does not name: The skeleton registry gives compile functions no way to compile sub-schemas or read sibling keywords, because CompileContext is empty. EvalContext also has no item-annotation record. prefixItems and items cannot be built without extending internal/keywords/registry.go and internal/compile/compile.go. In CompileContext, registry.go needs a sub-schema compile function and the sibling values. In EvalContext, it needs a slot for the evaluated-items record, designed so it doesn't create an import cycle with internal/eval. compile.go must then populate them. Both files are outside this task's scope. Not granted automatically: internal/keywords/registry.go (not in the approved design and not a test); internal/compile/compile.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: internal/keywords/registry.go, internal/compile/compile.go
 
 ## Trail
 
@@ -42,8 +42,14 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-16 19:58:27 | gate | gate-question | ❌ REJECTED: no: do not edit internal/jsonvalue/number.go, because story 181 runs in parallel and adds its own accessor there (merge conflict). Put your read-only accessor (normalised sign, mantissa and exponent as canon… |
 | 2026-10-16 19:59:01 | boss | authorize coder-agent:T5 | ✅ gate-2-architect passed |
 | 2026-10-16 19:59:13 | agent | coder-agent | ✅ scope-request · T5 · 11.5s · $0.2117 |
-| 2026-10-16 19:59:13 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-16 19:59:13 | run | run waiting_human | ⏸️ |
+| 2026-10-16 19:59:13 | gate | gate-question | ❌ REJECTED: yes, grant internal/jsonvalue/number_canonical.go (and its test) for this run: read-only accessor, no change to number.go. |
+| 2026-10-16 19:59:31 | boss | authorize coder-agent:T5 | ✅ gate-2-architect passed |
+| 2026-10-16 20:03:26 | agent | coder-agent | ✅ complete · T5 · 234.5s · $0.4133 |
+| 2026-10-16 20:03:31 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-16 20:03:31 | boss | authorize coder-agent:T2 | ✅ gate-2-architect passed |
+| 2026-10-16 20:03:51 | agent | coder-agent | ✅ scope-request · T2 · 20.4s · $0.2717 |
+| 2026-10-16 20:03:51 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-16 20:03:51 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
