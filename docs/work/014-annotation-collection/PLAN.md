@@ -1,7 +1,7 @@
 # PLAN #14: Annotation collection: metadata, format, content and unknown keywords, evaluated properties and items
 
 - Date: 2026-10-16
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #144, 2026-10-16 21:34 UTC)
 - Design: see `ADR-014-*.md` under `docs/architecture/adr/`
 
 ## Files that change

@@ -2,7 +2,7 @@
 
 - Date: 2026-10-16
 - Story: #14
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #144, 2026-10-16 21:34 UTC)
 
 ## Decision
 This revision adds the one bound the reviewer asked for: a cap on the total bytes of a rendered report. Everything else from the reviewed design stays, except three file-list fixes that reading the code made necessary. They are listed at the end.
