@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "4b89472ff48ffc2c1b6fd3cb493cac2af0c80154",
+    "commit": "35bbc3a660aecc6858608e5418dca20871c91aa2",
     "base_commit": "a87dd434c54059e44e2b6b421cb428f2ae8bc385"
   },
   "tests": {
@@ -82,25 +82,25 @@
       {
         "path": "internal/eval/evaluated.go",
         "change": "added",
-        "additions": 24,
+        "additions": 57,
         "deletions": 0
       },
       {
         "path": "internal/eval/evaluated_items.go",
         "change": "modified",
-        "additions": 5,
-        "deletions": 2
+        "additions": 11,
+        "deletions": 3
       },
       {
         "path": "internal/eval/evaluated_test.go",
         "change": "added",
-        "additions": 50,
+        "additions": 67,
         "deletions": 0
       },
       {
         "path": "internal/keywords/applicator/additionalproperties.go",
         "change": "added",
-        "additions": 78,
+        "additions": 89,
         "deletions": 0
       },
       {
@@ -112,7 +112,7 @@
       {
         "path": "internal/keywords/applicator/dependentschemas.go",
         "change": "added",
-        "additions": 66,
+        "additions": 72,
         "deletions": 0
       },
       {
@@ -124,31 +124,31 @@
       {
         "path": "internal/keywords/applicator/patternproperties.go",
         "change": "added",
-        "additions": 85,
+        "additions": 91,
         "deletions": 0
       },
       {
         "path": "internal/keywords/applicator/patternproperties_test.go",
         "change": "added",
-        "additions": 27,
+        "additions": 61,
         "deletions": 0
       },
       {
         "path": "internal/keywords/applicator/properties.go",
         "change": "added",
-        "additions": 94,
+        "additions": 104,
         "deletions": 0
       },
       {
         "path": "internal/keywords/applicator/properties_test.go",
         "change": "added",
-        "additions": 92,
+        "additions": 109,
         "deletions": 0
       },
       {
         "path": "internal/keywords/applicator/propertynames.go",
         "change": "added",
-        "additions": 47,
+        "additions": 53,
         "deletions": 0
       },
       {
@@ -160,7 +160,7 @@
       {
         "path": "internal/keywords/validation/dependentrequired.go",
         "change": "added",
-        "additions": 59,
+        "additions": 62,
         "deletions": 0
       },
       {
@@ -196,7 +196,7 @@
       {
         "path": "internal/keywords/validation/required.go",
         "change": "added",
-        "additions": 56,
+        "additions": 69,
         "deletions": 0
       },
       {
@@ -266,23 +266,24 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-076b681b0171495db65114bffa8859a5/docs/architecture/adr/ADR-006-2020-12-object-keywords-properties-patternproperti.md",
-    "summary": "All nine keywords are implemented as self-registering files in the correct vocabulary packages, follow the ADR, and have spec-cited testdata run by the shared runner. The build gate passed, including "
+    "summary": "The nine object keywords follow the approved design. Each is in its own self-registering file in the correct vocabulary package, and no hub file is edited. patternProperties, and the copy of the sibli"
   },
   "security_boundary": {
-    "overall": "warn",
-    "highest_severity": "medium",
+    "overall": "pass",
+    "highest_severity": "low",
     "breaking_changes": [],
     "findings": [
-      "Boundary rule not met: every member visited and every pattern match attempt was supposed to count toward an evaluation step limit. No such limit exists in the engine (EvalContext has only the output-unit counter), and the code does not add one. Only failures are bounded, by the output-unit cap, which TestPropertiesLimit and TestPropertyNamesLimit check. A hostile schema with many large patternProperties (each up to DefaultMaxPatternSize) against an object with many members that all pass does members\u00d7patterns RE2 matches and never gets a LimitError. RE2 is linear and input size is capped, so this is bounded CPU cost, not a hang (medium)"
+      "No insecure defaults found. Compile errors quote only the schema's own pattern. Unit messages are fixed phrases or schema-sourced names. Instance keys appear only in the JSON Pointer instance location, with ~0/~1 escaping. The step limit and the output-unit cap both return a LimitError that is passed on and never swallowed (TestPatternPropertiesStepLimit, TestPropertiesLimit, TestPropertyNamesLimit).",
+      "Low: the new 'evaluation steps' limit is only tested at the internal eval level (EvaluateLimited). No test goes through jsonschema.Validate or the CLI to show it gives exit code 2. With the 100M default, a library caller cannot trigger it in practice. Story 193 makes it configurable and should add that end-to-end check."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 4.571877,
-    "tokens_in": 2997734,
-    "tokens_out": 63276
+    "usd": 7.027369,
+    "tokens_in": 5314325,
+    "tokens_out": 84929
   },
   "assumptions": [
     {
@@ -332,6 +333,22 @@
     {
       "task": "T5",
       "text": "Ordering follows the operator's rule: sorted keyword names, then sorted member names, then schema order for missing names. The 'document key order' wording in the story is superseded by that rule. The test uses two wrong fields and two missing fields rather than one."
+    },
+    {
+      "task": "remediation",
+      "text": "The step counter lives in *eval.EvaluatedItems because ctx.Items is the only per-call handle that child contexts inherit. Putting it elsewhere would mean editing registry.go, which this pass may only read."
+    },
+    {
+      "task": "remediation",
+      "text": "Steps are counted only through ctx.Items. In real evaluation ctx.Items is always set (evalNode calls attachItems), so leaving it unset does not skip the limit."
+    },
+    {
+      "task": "remediation",
+      "text": "The new rollback test (F3) asserts behaviour that already works. It passed as soon as it compiled, so it guards against regressions rather than reproducing a bug."
+    },
+    {
+      "task": "remediation",
+      "text": "maxProperties and minProperties do a constant amount of work, so they count no steps."
     }
   ],
   "blockers": [],
