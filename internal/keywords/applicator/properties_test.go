@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 )
 
 // The testdata/applicator/properties.json cases run through the root TestSpecCases.

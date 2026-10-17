@@ -3,9 +3,9 @@ package compile
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/perfdata"
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // buildBuiltinForBench builds the built-in meta-schema index and compiles the

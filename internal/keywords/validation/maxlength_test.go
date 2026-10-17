@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 func TestLengthSchemaErrors(t *testing.T) {

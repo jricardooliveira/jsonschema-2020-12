@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // Group is one schema with its instances and the spec section it derives from.

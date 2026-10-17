@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 func multipleOfValid(t *testing.T, schema, doc string, opts jsonschema.Options) bool {

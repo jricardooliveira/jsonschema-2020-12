@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords/validation"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/validation"
 )
 
 // Many members x many patterns must hit the evaluation step limit as an

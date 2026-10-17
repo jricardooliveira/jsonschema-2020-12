@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // libOptions sets the Options field behind a limit flag name.

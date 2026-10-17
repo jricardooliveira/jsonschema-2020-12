@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/keywords"
-	"github.com/neoface/jsonschema/internal/keywords/core"
-	"github.com/neoface/jsonschema/internal/registry"
-	"github.com/neoface/jsonschema/internal/uri"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/core"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/uri"
 )
 
 // StdinBaseURI is the fixed base URI of a schema that has no file and no

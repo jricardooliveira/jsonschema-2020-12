@@ -3,9 +3,9 @@ package eval
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	_ "github.com/neoface/jsonschema/internal/keywords/all"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/all"
 )
 
 // locs is one unit's keyword location and absolute keyword location.

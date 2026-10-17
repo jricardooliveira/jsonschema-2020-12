@@ -6,7 +6,7 @@ import (
 	"io/fs"
 	"sync"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // The official 2020-12 meta-schema and its vocabulary meta-schemas, read only

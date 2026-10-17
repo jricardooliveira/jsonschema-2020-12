@@ -3,7 +3,7 @@ package validation_test
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 func TestMinLengthBoundary(t *testing.T) {

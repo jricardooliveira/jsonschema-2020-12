@@ -1,6 +1,6 @@
 package content
 
-import "github.com/neoface/jsonschema/internal/keywords"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 
 // VocabularyURI is the 2020-12 content vocabulary.
 const VocabularyURI = "https://json-schema.org/draft/2020-12/vocab/content"

@@ -3,7 +3,7 @@ package jsonschema
 import (
 	"errors"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // Default number caps, applied when an Options field is 0.

@@ -4,10 +4,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	_ "github.com/neoface/jsonschema/internal/keywords/all"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/all"
 )
 
 func annotate(t *testing.T, schema, doc string) map[string]any {

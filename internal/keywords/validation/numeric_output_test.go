@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // No applicator exists yet, so the failure is at the root: instanceLocation "".

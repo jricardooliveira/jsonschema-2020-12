@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/uri"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/uri"
 )
 
 var anchorRe = regexp.MustCompile(`^[A-Za-z_][-A-Za-z0-9._]*$`)

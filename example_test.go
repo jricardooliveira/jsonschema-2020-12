@@ -3,7 +3,7 @@ package jsonschema_test
 import (
 	"fmt"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // ExampleCompile compiles a schema once and checks several documents with it.

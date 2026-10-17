@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // RegistryFile is one supplied schema file. URI is its mapped address; empty

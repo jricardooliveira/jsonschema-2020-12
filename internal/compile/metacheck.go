@@ -1,7 +1,7 @@
 package compile
 
 import (
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // Doc is a schema document to be meta-checked and where it came from

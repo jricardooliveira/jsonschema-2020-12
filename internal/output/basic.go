@@ -3,7 +3,7 @@ package output
 import (
 	"encoding/json"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // basicUnit is one error unit. absoluteKeywordLocation is omitted when

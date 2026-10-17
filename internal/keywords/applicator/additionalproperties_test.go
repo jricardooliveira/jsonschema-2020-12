@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 )
 
 // The testdata/applicator/additionalproperties.json cases run through the root TestSpecCases.

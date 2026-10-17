@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords/core"
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/core"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 func decode(t *testing.T, s string) any {

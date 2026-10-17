@@ -61,7 +61,8 @@ The rules for keeping the evaluation independent:
   - Round 2, the same behaviour made faster: commit `f35d9e4000a57a7c2bdda7a4f216b648de5265b4`
     (tag `performance-round-2`).
   - Both are the Factory's final integrated main for their round. The only commits in this
-    repository not made by the Factory are the README updates and their merge.
+    repository not made by the Factory are the README updates, their merge and the module-path
+    rename.
 
 Known gaps are listed honestly in [`docs/deviations.md`](docs/deviations.md):
 
@@ -69,8 +70,18 @@ Known gaps are listed honestly in [`docs/deviations.md`](docs/deviations.md):
 - Some formats are only partly checked.
 - `verbose` output is only partly produced.
 
-The Go module path is `github.com/neoface/jsonschema` (the Factory chose it). Build from a clone
-as shown below.
+This public copy uses the Go module path `github.com/jricardooliveira/jsonschema-2020-12`. It was
+renamed after the experiment, in one commit made outside the Factory. The Factory's own repository
+and the two tagged candidates still use `github.com/neoface/jsonschema`, the path the Factory
+chose; that is also why the historical evidence under `docs/work` and `docs/releases` shows the
+old path.
+
+```sh
+go get github.com/jricardooliveira/jsonschema-2020-12
+go install github.com/jricardooliveira/jsonschema-2020-12/cmd/jsonschema@latest
+```
+
+Or build from a clone as shown below.
 
 ## Round 2: performance
 

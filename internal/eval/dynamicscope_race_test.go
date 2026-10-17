@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // core 8.2.3.2: the dynamic scope is per call, so parallel validations with

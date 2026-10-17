@@ -1,6 +1,6 @@
 package jsonschema
 
-import "github.com/neoface/jsonschema/internal/eval"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 
 // DefaultMaxAnnotations is the default cap on annotations one Validate may
 // record (dropped ones count too). Exceeding it is a LimitError.

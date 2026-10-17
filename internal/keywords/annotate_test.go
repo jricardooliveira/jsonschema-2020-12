@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 func TestAnnotateOnlyAnnotatesAndPasses(t *testing.T) {

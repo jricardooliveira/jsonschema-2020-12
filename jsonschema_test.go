@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 var docs = []string{`null`, `true`, `1`, `"s"`, `[1,2]`, `{"a":{}}`}

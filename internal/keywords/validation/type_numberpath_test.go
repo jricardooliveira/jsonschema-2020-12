@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // npValid compiles schema, validates doc and reports validity.

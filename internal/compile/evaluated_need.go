@@ -3,7 +3,7 @@ package compile
 import (
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // NeedsEvaluated reports whether unevaluatedProperties or unevaluatedItems

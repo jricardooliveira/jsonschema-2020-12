@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/formats"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/formats"
 )
 
 func init() { formats.Register("stub-only-x", func(s string) bool { return s == "x" }) }

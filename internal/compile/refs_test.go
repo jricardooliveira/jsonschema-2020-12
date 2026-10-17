@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	_ "github.com/neoface/jsonschema/internal/keywords/all"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/all"
 )
 
 func load(t *testing.T, src string) (*Node, error) {

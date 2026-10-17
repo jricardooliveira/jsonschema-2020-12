@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	jsonschema "github.com/neoface/jsonschema"
+	jsonschema "github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // core 8.1.1, 8.1.2, 8.3: $schema, $vocabulary and $comment have no validation

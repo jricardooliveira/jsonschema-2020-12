@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/registry"
-	"github.com/neoface/jsonschema/internal/uri"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/uri"
 )
 
 // Draft2020 is the only supported meta-schema root (core 8.1.1).

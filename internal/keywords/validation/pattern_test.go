@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 func TestPatternSchemaErrors(t *testing.T) {

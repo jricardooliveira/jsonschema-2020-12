@@ -13,7 +13,7 @@ import (
 	"syscall"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // TestCLIPeakMemory reports the peak resident memory of one CLI run per

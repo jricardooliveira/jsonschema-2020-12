@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // DefaultMaxReportBytes caps the size of one rendered report.

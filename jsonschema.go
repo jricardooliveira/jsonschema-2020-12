@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords"
-	_ "github.com/neoface/jsonschema/internal/keywords/all"
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/all"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // Schema is a compiled schema, immutable and safe for concurrent use.

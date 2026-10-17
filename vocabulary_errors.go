@@ -1,6 +1,6 @@
 package jsonschema
 
-import "github.com/neoface/jsonschema/internal/compile"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
 
 // Vocabulary and '$schema' errors returned by Compile. Detect them with
 // errors.As. They carry only URIs and the bad entry's key, never instance values.

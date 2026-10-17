@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 var errTestEval = errors.New("test evaluate failure")

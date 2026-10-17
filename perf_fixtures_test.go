@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 func perfSchema(t *testing.T) *Schema {

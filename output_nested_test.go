@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 const nestedSchema = `{"$id":"http://x/r","$ref":"#/$defs/a%20b%25%C3%A9",

@@ -3,7 +3,7 @@ package core
 import (
 	"fmt"
 
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // Ref is the compiled data of a $ref. Target is filled in once, by load-time

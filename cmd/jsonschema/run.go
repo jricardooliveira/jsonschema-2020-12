@@ -10,8 +10,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/output"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/output"
 )
 
 // Exit codes: the CLI contract.

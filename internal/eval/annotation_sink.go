@@ -1,6 +1,6 @@
 package eval
 
-import "github.com/neoface/jsonschema/internal/keywords"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 
 // discardsAnnotations reports whether the annotations recorded while
 // evaluating keyword name can never be shown. 'not' drops its subschema's

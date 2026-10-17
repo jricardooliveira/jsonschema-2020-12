@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"unicode/utf8"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 func init() {

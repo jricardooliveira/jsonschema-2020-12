@@ -3,7 +3,7 @@ package eval
 import (
 	"sync"
 
-	"github.com/neoface/jsonschema/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
 )
 
 // EvaluateLazy is EvaluateWith (no tree) that leaves Annotations in recording

@@ -3,7 +3,7 @@ package applicator_test
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 )
 
 func TestThenAppliesOnlyWhenIfPasses(t *testing.T) {

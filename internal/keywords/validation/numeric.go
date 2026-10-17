@@ -3,7 +3,7 @@ package validation
 import (
 	"fmt"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // numberValue reads a keyword's value at compile time. A non-number is a

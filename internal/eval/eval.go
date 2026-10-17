@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // Evaluate reports whether instance is valid. An error is never valid.

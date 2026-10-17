@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // The testdata/validation/maxItems.json cases run through the root TestSpecCases.

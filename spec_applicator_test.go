@@ -3,7 +3,7 @@ package jsonschema_test
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/speccases"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/speccases"
 )
 
 // TestApplicatorSpecCases runs testdata/applicator through the shared runner,

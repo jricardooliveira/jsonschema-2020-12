@@ -3,11 +3,11 @@
 package all
 
 import (
-	_ "github.com/neoface/jsonschema/internal/keywords/applicator"
-	_ "github.com/neoface/jsonschema/internal/keywords/content"
-	_ "github.com/neoface/jsonschema/internal/keywords/core"
-	_ "github.com/neoface/jsonschema/internal/keywords/formatannotation"
-	_ "github.com/neoface/jsonschema/internal/keywords/metadata"
-	_ "github.com/neoface/jsonschema/internal/keywords/unevaluated"
-	_ "github.com/neoface/jsonschema/internal/keywords/validation"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/applicator"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/content"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/core"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/formatannotation"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/metadata"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/unevaluated"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/validation"
 )

@@ -1,6 +1,6 @@
 package keywords
 
-import "github.com/neoface/jsonschema/internal/jsonvalue"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 
 // DefaultMaxAnnotations caps how many annotations one evaluation may record,
 // counting ones that are later dropped.
