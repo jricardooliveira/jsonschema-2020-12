@@ -122,7 +122,7 @@ func TestRegistryLimitsRaisable(t *testing.T) {
 	f := RegistryFile{Path: regDir + "file/person.json"}
 	var le *jsonvalue.LimitError
 	_, err := CompileWithRegistry([]byte(`true`), Options{}, Registry{Files: []RegistryFile{f}, MaxFileBytes: 5})
-	if !errors.As(err, &le) || !strings.Contains(err.Error(), "person.json") {
+	if !errors.As(err, &le) || le.Limit != "input size" { // story 193: the limit error names the limit, not the file
 		t.Fatalf("per-file: %v", err)
 	}
 	_, err = CompileWithRegistry([]byte(`true`), Options{}, Registry{Files: []RegistryFile{f, {Path: regDir + "file/self_id.json"}}, MaxTotalBytes: 100})

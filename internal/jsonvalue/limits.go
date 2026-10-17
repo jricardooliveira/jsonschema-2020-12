@@ -12,12 +12,21 @@ const (
 
 // NumberLimits caps number size. A zero or negative field is never read as
 // "no limit": it falls back to the default.
+//
+// ponytail: it also carries the nesting-depth cap so one value reaches every
+// decode; rename to DecodeLimits when this file is next in scope.
 type NumberLimits struct {
 	MaxDigits   int
 	MaxExponent int
+	// MaxDepth is the deepest array/object nesting; 0 means MaxDepth. A very
+	// large value can exhaust the goroutine stack in later recursive passes.
+	MaxDepth int
 }
 
 func (l NumberLimits) resolved() NumberLimits {
+	if l.MaxDepth <= 0 {
+		l.MaxDepth = MaxDepth
+	}
 	if l.MaxDigits <= 0 {
 		l.MaxDigits = DefaultMaxNumberDigits
 	}

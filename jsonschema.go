@@ -84,6 +84,10 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err != nil {
 		return nil, fmt.Errorf("options: %w", err)
 	}
+	lim.MaxDepth = rl.depth // one depth for the schema, registry files and documents
+	if reg.MaxFileBytes == 0 {
+		reg.MaxFileBytes = rl.input // each input shares one cap
+	}
 	if err := checkInput(schema, rl.input); err != nil {
 		return nil, err
 	}
