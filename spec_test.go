@@ -25,6 +25,9 @@ func TestSpecCases(t *testing.T) {
 		t.Fatalf("no testdata files: %v", err)
 	}
 	for _, f := range files {
+		if filepath.Base(filepath.Dir(f)) == "metaschema" {
+			continue // own case shape and runner: metaschema_test.go
+		}
 		raw, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatal(err)
@@ -37,6 +40,8 @@ func TestSpecCases(t *testing.T) {
 			if g.Spec == "" {
 				t.Errorf("%s: %q cites no spec section", f, g.Description)
 			}
+			// A group rejected by the meta-schema fails here: invalid-schema
+			// cases belong in testdata/metaschema (metaschema_test.go).
 			s, err := Compile(g.Schema)
 			if err != nil {
 				t.Errorf("%s: %s: compile: %v", f, g.Description, err)

@@ -1,0 +1,9 @@
+[
+ {"name":"custom meta-schema ending in 2020-12","spec":"core 8.1.1","schema":{"$schema":"https://x.test/meta","type":"string"},"registry":[{"uri":"https://x.test/meta","doc":{"$id":"https://x.test/meta","$schema":"https://json-schema.org/draft/2020-12/schema","type":"object"}}],"want":"ok"},
+ {"name":"schema failing the custom meta-schema","spec":"core 8.1.1","schema":{"$schema":"https://x.test/meta","type":"string"},"registry":[{"uri":"https://x.test/meta","doc":{"$id":"https://x.test/meta","$schema":"https://json-schema.org/draft/2020-12/schema","required":["title"]}}],"want":"invalid_schema","location":""},
+ {"name":"custom meta-schema itself invalid","spec":"core 8.1.1","schema":{"$schema":"https://x.test/meta"},"registry":[{"uri":"https://x.test/meta","doc":{"$id":"https://x.test/meta","type":"nope"}}],"want":"invalid_schema","source":"meta","location":"/type"},
+ {"name":"custom meta-schema with a nested invalid subschema","spec":"core 8.1.1, 8.2.4.2","schema":{"$schema":"https://x.test/meta"},"registry":[{"uri":"https://x.test/meta","doc":{"$id":"https://x.test/meta","$schema":"https://json-schema.org/draft/2020-12/schema","properties":{"a":{"minLength":-1}}}}],"want":"invalid_schema","source":"meta","location":"/properties/a/minLength"},
+ {"name":"chain ending in draft-07 is rejected","spec":"core 8.1.1","schema":{"$schema":"https://x.test/meta"},"registry":[{"uri":"https://x.test/meta","doc":{"$id":"https://x.test/meta","$schema":"http://json-schema.org/draft-07/schema#"}}],"want":"error","errorNotContains":"draft-07"},
+ {"name":"self-referencing chain terminates","spec":"core 8.1.1","schema":{"$schema":"https://x.test/meta"},"registry":[{"uri":"https://x.test/meta","doc":{"$id":"https://x.test/meta","$schema":"https://x.test/meta"}}],"want":"error"},
+ {"name":"unknown custom meta-schema is not supported","spec":"core 8.1.1","schema":{"$schema":"https://x.test/missing"},"want":"error","errorContains":"not supported"}
+]

@@ -1,0 +1,8 @@
+[
+ {"name":"no $schema is 2020-12","spec":"core 8.1.1","schema":{"type":"string"},"want":"ok"},
+ {"name":"2020-12 $schema","spec":"core 8.1.1","schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"string"},"want":"ok"},
+ {"name":"2020-12 $schema with empty fragment","spec":"core 8.1.1","schema":{"$schema":"https://json-schema.org/draft/2020-12/schema#","type":"string"},"want":"ok"},
+ {"name":"draft-07 is unsupported","spec":"core 8.1.1","schema":{"$schema":"http://json-schema.org/draft-07/schema#"},"want":"error","errorContains":"not supported","errorNotContains":"draft-07"},
+ {"name":"boolean schema is valid","spec":"core 4.3.2","schema":true,"want":"ok"},
+ {"name":"unknown keywords are accepted","spec":"core 6.5","schema":{"x-foo":[1,2]},"want":"ok"}
+]

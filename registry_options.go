@@ -47,16 +47,19 @@ func CompileWithRegistry(schema []byte, opts Options, reg Registry) (*Schema, er
 	return compileWith(schema, opts, reg)
 }
 
-// load reads the listed sources and indexes them; the result is read-only.
+// load indexes the embedded meta-schemas, then reads the listed sources and
+// indexes them; the result is read-only. Built-ins go first, so a supplied
+// file at a built-in address is accepted only when equal to it and the
+// embedded copy stays indexed.
 func (r Registry) load(lim jsonvalue.NumberLimits) (*registry.Index, error) {
 	if r.MaxFileBytes < 0 || r.MaxTotalBytes < 0 {
 		return nil, errors.New("options: registry limits must not be negative")
 	}
-	if len(r.Files) == 0 && len(r.Dirs) == 0 {
-		return nil, nil
-	}
 	idx, err := registry.Build(true, "https://registry.invalid/unused")
 	if err != nil {
+		return nil, err
+	}
+	if err := idx.AddBuiltins(); err != nil {
 		return nil, err
 	}
 	ld := &registry.Loader{PerFile: r.MaxFileBytes, Total: r.MaxTotalBytes, Numbers: lim}

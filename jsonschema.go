@@ -3,6 +3,7 @@
 package jsonschema
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/neoface/jsonschema/internal/compile"
@@ -10,6 +11,7 @@ import (
 	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/keywords"
 	_ "github.com/neoface/jsonschema/internal/keywords/all"
+	"github.com/neoface/jsonschema/internal/registry"
 )
 
 // Schema is a compiled schema, immutable and safe for concurrent use.
@@ -43,6 +45,15 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 }
 
 func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
+	s, err := compileChecked(schema, opts, reg)
+	var ise *InvalidSchemaError
+	if errors.As(err, &ise) && ise.Source == "" {
+		ise.Source = opts.SchemaPath // name the main schema file when known
+	}
+	return s, err
+}
+
+func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	lim, err := opts.limits()
 	if err != nil {
 		return nil, err
@@ -71,11 +82,51 @@ func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("registry: %w", err)
 	}
-	n, err := compile.CompileWithRegistry(v, base, ext)
+	n, docs, err := compile.CompileReached(v, base, ext)
 	if err != nil {
+		// A keyword rejecting its own value is usually a meta-schema failure
+		// of the main schema or of a supplied one reached before the failure:
+		// report that as InvalidSchemaError naming the failing document. A
+		// limit or '$schema' error from the check is reported as such.
+		if merr := metaCheck(docs, ext, max, maxAnn); merr != nil {
+			return nil, merr
+		}
 		return nil, fmt.Errorf("schema: %w", err)
 	}
+	if err := metaCheck(docs, ext, max, maxAnn); err != nil {
+		return nil, err
+	}
 	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep}, nil
+}
+
+// metaCheck validates the main schema and every reached supplied schema,
+// and each custom meta-schema on their chains, against their meta-schema
+// (core 8.1.1), under the caller's output-unit and annotation caps. Failing
+// is *InvalidSchemaError naming the failing document; limit errors and any
+// internal error also fail (fail closed). Format is never asserted here,
+// whatever the options say.
+func metaCheck(docs []compile.Doc, ext *registry.Index, max, maxAnn int) error {
+	err := compile.MetaChecks(docs, ext, func(c compile.Check) error {
+		ev, err := eval.EvaluateFull(c.Meta, c.Doc.Value, max, maxAnn)
+		if err != nil {
+			return err
+		}
+		if ev.Valid {
+			return nil
+		}
+		var deepest keywords.Unit
+		for _, u := range ev.Units {
+			if len(u.KeywordLocation) >= len(deepest.KeywordLocation) {
+				deepest = u
+			}
+		}
+		return newInvalidSchemaError(c.Doc.Source, deepest.InstanceLocation, deepest.KeywordLocation)
+	})
+	var ise *InvalidSchemaError
+	if err != nil && !errors.As(err, &ise) {
+		return fmt.Errorf("schema: %w", err)
+	}
+	return err
 }
 
 // Validate checks a JSON document. An error means it could not be checked.
