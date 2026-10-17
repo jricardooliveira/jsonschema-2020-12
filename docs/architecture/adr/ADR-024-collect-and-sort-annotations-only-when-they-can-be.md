@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #24
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #158, 2026-10-17 11:34 UTC)
 
 ## Decision
 New logic goes into new files in internal/eval: annotation_order.go for segment-based sorting, annotation_record.go for compact records and on-demand building, and annotation_sink.go for discard-mode evaluation. Two crowded files, internal/eval/eval.go and jsonschema.go, are touched only to wire these in: one switch to the sink in eval.go, and a lazy field and accessor guard on Result where the Result type is defined. The annotation-count limit stays where it is charged today, at record time, so it fires during Validate at the same inputs. Building on demand reads only data owned by the Result. It never reads pooled or per-call evaluation state, which keeps the Result immutable and race-free. Discard mode affects only annotation recording. Step charging, depth, ref-chain and output-unit accounting run unchanged.
