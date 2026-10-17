@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #151 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:23:37 UTC
-- **Story spend:** ~$3.86 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:27:29 UTC
+- **Story spend:** ~$5.89 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,10 +15,10 @@ The operator decides at gate-release: `factory approve 151` to accept, or `facto
 
 - Waiting for the operator at **gate-release**:
   > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: F1 (medium): errors from an externally referenced registry resource that declares its own '$schema' lose their type. They pass through the existing refs.go line 212 wrap, fmt.Errorf("...: %v", err). Examples are UnknownVocabularyError and CoreVocabularyError. The CLI still exits 2, so the check still fails closed, but errors.As cannot see the type, which falls short of AC2's library contract for that path. No test covers a $ref-reached resource with its own vocabulary set.
-  >   ◦ Release-agent note: Breaking change: basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. Tests and evaluators that expected these annotations will need updating.
-  >   ◦ Release-agent note: The change routes inactive-vocabulary keywords through the existing unknown-keyword path in compile.go, a crowded file. The edit is surgical (four lines in the keyword loop), but future changes to that loop must be aware of the new condition.
-  >   ◦ Release-agent note: Error message for malformed '$vocabulary' entries (the bound entry key) is asserted only at unit test level, not in CLI integration tests (F3). The message is generated and used correctly, but large entry keys longer than 80 characters are silently truncated in the error message.
+  >   • Security finding (medium) not resolved: F5 (low): UnknownVocabularyError puts the unknown vocabulary URI into its message at full length. The boundary rule asks for quoted text to be bounded. The URI comes from the schema, not the instance, so no instance value can leak; the input-size cap limits it, but bound() is not applied here as it is for malformed entries.
+  >   ◦ Release-agent note: F1: An http:// 2020-12 $schema produces a contradictory message. The regex otherDraft() checks the URI pattern and extracts 'draft-07' etc., but an http:// URI matching 'draft/2020-12' would return 'draft-07'-style extraction. This is a real gap but rare (who uses http:// for 2020-12?). Consider: accept as known limitation, or fix before release to avoid confusing users.
+  >   ◦ Release-agent note: F3: Test coverage for AC4's annotation aspect (unlisted vocabulary keywords should be in annotations, e.g. 'minimum' as annotation when validation is omitted) does not appear to be in the test files. The feature works by routing inactive keywords to unknown-keyword handling, but no test explicitly asserts they show up in reports. Should add a test case.
+  >   ◦ Release-agent note: Breaking change: Reports no longer carry $schema/$vocabulary/$comment annotations. Any user tooling parsing these annotations will break. The architecture notes this, but it's significant enough to highlight prominently in migration.
   >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
@@ -61,8 +61,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 01:23:04 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 01:23:04 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 01:23:36 | agent | release-agent | ✅ warn · 31.8s · $0.0778 |
-| 2026-10-17 01:23:37 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 01:23:37 | run | run waiting_human | ⏸️ |
+| 2026-10-17 01:23:37 | gate | gate-release | ❌ REJECTED: Fix these two, nothing else: (F1) in internal/compile/refs.go compileDocument wrap target-compile errors with %w (not %v) so UnknownVocabularyError, unsupported-$schema and InvalidSchemaError from a $ref-rea… |
+| 2026-10-17 01:24:10 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 01:25:16 | agent | coder-agent | ✅ complete · remediation · 66.4s · $1.1573 |
+| 2026-10-17 01:25:39 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:25:39 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-17 01:26:56 | agent | tester-agent | ✅ warn · 76.7s · $0.7924 |
+| 2026-10-17 01:26:56 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 5 new, 0 persistent, 0 resolved |
+| 2026-10-17 01:26:56 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 01:27:28 | agent | release-agent | ✅ warn · 31.5s · $0.0794 |
+| 2026-10-17 01:27:29 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 01:27:29 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
