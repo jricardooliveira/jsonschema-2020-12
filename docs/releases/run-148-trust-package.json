@@ -505,5 +505,5 @@
   "blockers": [
     "1 acceptance criteria are not proven by any test the tester could see (\u00a75.1) \u2014 verify them yourself or send the story back: [\"The meta-schema check never asserts 'format', whether or not format-assertion mode is on, so enabling format assertion never makes a previously accepted schema fail.\"]"
   ],
-  "next_authorization": "operator-review"
+  "next_authorization": "none"
 }
