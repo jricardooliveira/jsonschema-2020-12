@@ -3,22 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #162 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 13:41:56 UTC · **Stopped:** 2026-10-17 13:52:18 UTC
+- **Run:** #162 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 13:41:56 UTC · **Stopped:** 2026-10-17 13:53:31 UTC
 - **Story spend:** ~$3.34 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 162` to accept, or `factory reject 162 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-162-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Low: strict custom meta-schema tests do not check error type or message, only verify error/no-error (tester noted as low severity)
-  >   ◦ Release-agent note: Low: docs section on Compile could be clearer that 'includes the built-in meta-schema' refers to lazy one-time cached build, not per-call overhead (tester noted as low severity)
-  >   ◦ Release-agent note: Tester overall verdict is 'warn' but found no blocking problems; these are minor notes for reviewer attention, not ship blockers
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -55,8 +50,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 13:50:54 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 2 new, 0 persistent, 0 resolved |
 | 2026-10-17 13:50:54 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 13:52:17 | agent | release-agent | ✅ warn · 82.7s · $0.1036 |
-| 2026-10-17 13:52:18 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 13:52:18 | run | run waiting_human | ⏸️ |
+| 2026-10-17 13:52:18 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 13:53:31 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 13:53:31 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
