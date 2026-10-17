@@ -176,7 +176,9 @@ func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, [
 		tn.Valid, tn.Errors = ok, child.units
 		c.Tree.Children = append(c.Tree.Children, tn)
 	}
-	return ok, child.units, err
+	units := child.units
+	poison(child) // test binaries only: a retained child context now panics
+	return ok, units, err
 }
 
 // CompileFunc turns a keyword's schema value into compiled data. The result
