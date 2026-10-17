@@ -1,6 +1,7 @@
 package jsonschema
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/perfdata"
@@ -17,6 +18,33 @@ const (
 	allocLimitErrors      = 528000  // measured: 480018
 	allocLimitErrorsBasic = 534700  // measured: 486042
 )
+
+// Total-bytes limits: the runtime.MemStats TotalAlloc delta of one operation
+// (every byte requested, even if freed at once), averaged over bytesRuns runs
+// after a warm-up, plus about 10% headroom.
+const (
+	bytesRuns        = 3
+	bytesLimitMedium = 39400000  // measured: 35785669
+	bytesLimitLarge  = 405900000 // measured: 368958280
+	bytesLimitErrors = 32200000  // measured: 29282834
+)
+
+func checkBytes(t *testing.T, limit uint64, op func()) {
+	t.Helper()
+	skipUnderRace(t)
+	op() // warm-up
+	var a, b runtime.MemStats
+	runtime.ReadMemStats(&a)
+	for i := 0; i < bytesRuns; i++ {
+		op()
+	}
+	runtime.ReadMemStats(&b)
+	got := (b.TotalAlloc - a.TotalAlloc) / bytesRuns
+	t.Logf("bytes %d, limit %d", got, limit)
+	if got > limit {
+		t.Errorf("bytes %d exceed limit %d", got, limit)
+	}
+}
 
 func skipUnderRace(t *testing.T) {
 	t.Helper()
@@ -88,15 +116,21 @@ func TestAllocsValidateSmall(t *testing.T) {
 }
 
 func TestAllocsValidate0_5MB(t *testing.T) {
-	checkAllocs(t, 3, allocLimitMedium, allocValidate(t, perfdata.ValidOrder(perfdata.MediumItems), true, false))
+	op := allocValidate(t, perfdata.ValidOrder(perfdata.MediumItems), true, false)
+	checkAllocs(t, 3, allocLimitMedium, op)
+	checkBytes(t, bytesLimitMedium, op)
 }
 
 func TestAllocsValidate5_5MB(t *testing.T) {
-	checkAllocs(t, 2, allocLimitLarge, allocValidate(t, perfdata.ValidOrder(perfdata.LargeItems), true, false))
+	op := allocValidate(t, perfdata.ValidOrder(perfdata.LargeItems), true, false)
+	checkAllocs(t, 2, allocLimitLarge, op)
+	checkBytes(t, bytesLimitLarge, op)
 }
 
 func TestAllocsValidateErrors(t *testing.T) {
-	checkAllocs(t, 3, allocLimitErrors, allocValidate(t, perfdata.ErrorOrder(), false, false))
+	op := allocValidate(t, perfdata.ErrorOrder(), false, false)
+	checkAllocs(t, 3, allocLimitErrors, op)
+	checkBytes(t, bytesLimitErrors, op)
 }
 
 func TestAllocsValidateErrorsBasic(t *testing.T) {
