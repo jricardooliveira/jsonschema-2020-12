@@ -54,8 +54,9 @@ func quoted(s string) bool {
 func emailDomain(d string, host func(string) bool) bool {
 	if len(d) > 2 && d[0] == '[' && d[len(d)-1] == ']' {
 		in := d[1 : len(d)-1]
-		if v6, ok := strings.CutPrefix(in, "IPv6:"); ok {
-			return validIPv6(v6)
+		// The "IPv6:" tag is an ABNF literal, so case-insensitive (RFC 5234 2.3).
+		if len(in) >= 5 && strings.EqualFold(in[:5], "IPv6:") {
+			return validIPv6(in[5:])
 		}
 		return validIPv4(in)
 	}

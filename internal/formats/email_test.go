@@ -19,5 +19,15 @@ func TestEmail(t *testing.T) {
 		"user@-a.com":                            false,
 		strings.Repeat("a", 65) + "@example.com": false,
 		"a@" + strings.Repeat("a.", 126) + "com": false,
+		// RFC 5321 2.3.11 / 4.1.2: address-literal tag is case-insensitive.
+		"user@[ipv6:::1]": true, "user@[IPV6:::1]": true,
+	})
+	// RFC 5321 4.5.3.1: only the 254-byte whole-address cap fails here; the
+	// local part (64) and domain (190, under 253) are each within limits.
+	local := strings.Repeat("a", 64)
+	dom := strings.Repeat("b", 63) + "." + strings.Repeat("c", 63) + "."
+	table(t, "email", map[string]bool{
+		local + "@" + dom + strings.Repeat("d", 61): true,  // 254 bytes
+		local + "@" + dom + strings.Repeat("d", 62): false, // 255 bytes
 	})
 }
