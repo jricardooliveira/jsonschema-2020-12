@@ -3,37 +3,19 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #152 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-17 01:41:14 UTC · **Stopped:** 2026-10-17 01:51:10 UTC
-- **Story spend:** ~$3.26 of $35.00 (estimated at API list prices)
+- **Run:** #152 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-17 01:41:14 UTC · **Stopped:** 2026-10-17 02:17:35 UTC
+- **Story spend:** ~$13.24 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-2-architect: `factory approve 152` to accept, or `factory reject 152 "<your answers>"` to send it back.
+The operator decides at gate-question: `factory approve 152` to accept, or `factory reject 152 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-2-architect**:
-  > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
-  >   • Public functions now return a top-level *jsonschema.LimitError for every exceeded limit, instead of a *jsonvalue.LimitError wrapped in 'schema:', 'document:' or 'registry:' text.
-  >   • Internal limit names change: 'schema file bytes' becomes 'input size', 'total registry bytes' becomes 'registry size', and 'evaluation depth' becomes 'nesting depth', which carries the depth that was set.
-  >   • An oversize pattern becomes a LimitError ('pattern size'), where it was a plain schema error with different wording.
-  >   • CLI stderr for every limit becomes 'limit exceeded: <limit> <value> (raise with --<flag>)', replacing '<limit> exceeds limit <n> ...'. parse_errors_test.go is updated.
-  >   • Registry.MaxFileBytes = 0 now follows Options.MaxInputBytes. The default value is unchanged (64 MiB).
-  >   • Evaluation step counts rise, because steps are now charged per keyword and in proportion to the bytes compared or matched. A caller who set a low custom MaxSteps may hit it sooner.
-  >   • Every exceeded limit now comes back from Compile, CompileWithOptions, CompileWithRegistry, Validate and Result.Output as a top-level *jsonschema.LimitError, not a wrapped internal error.
-  >   • Limit names change: 'schema file bytes' becomes 'input size', 'total registry bytes' becomes 'registry size', and 'evaluation depth' becomes 'nesting depth' (carrying the configured depth).
-  >   • An oversize pattern becomes a LimitError ('pattern size') instead of a plain schema error.
-  >   • The CLI stderr line for every limit becomes 'limit exceeded: <limit> <value> (raise with --<flag>)', and number-cap errors lose their line and column.
-  >   • Registry.MaxFileBytes = 0 now follows the resolved Options.MaxInputBytes (same 64 MiB default).
-  >   • Step counts rise because charging is now per keyword and scaled by bytes, so a caller with a low custom MaxSteps may hit the cap sooner.
-  >   • A pure $ref/$dynamicRef cycle now matches errors.As for LimitError through LoopError.Unwrap.
-  >   → Approve these breaking changes?
-  >
-  > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • security: Work-step charging has gaps against operator decision 5 ('charged by all keywords'). The design charges one step per keyword in the dispatch, plus proportional charges only for uniqueItems, enum, const, contains, patternProperties, pattern, minLength and maxLength. Other keywords loop over schema-sized or instance-sized data. They are dependentRequired, dependentSchemas, the required name list, and every `format` checker in assertion mode, including `format: regex` on an instance-supplied string. A crafted 64 MiB schema can reference such a keyword many times through fan-out ($ref inside allOf or anyOf). Each hop costs one step but a long loop. A human should settle whether one dispatch step per keyword is enough, or whether each of these loops must charge in proportion. The rules below require proportional charging.
-  >   • security: The pure-cycle LimitError produced through LoopError.Unwrap does not say which Value it carries. The binding rule is that it must be the configured MaxRefChain, and the design does not contradict it. The rule is kept.
-  >   → Approve the design with these boundary risks, or reject with the fix?
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: The boundary rules require per-entry charging in required, dependentRequired and dependentSchemas. Their files are not in modules_affected: the validation package's required.go and dependentrequired.go, and the applicator package's dependentschemas.go. Right now their loops grow with the size of the schema list but cost only one step per keyword, so a reused large required list is not charged in proportion to its work. Not granted automatically: internal/keywords/validation/required.go (not in the approved design and not a test); internal/keywords/validation/dependentrequired.go (not in the approved design and not a test); internal/keywords/applicator/dependentschemas.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: internal/keywords/validation/required.go, internal/keywords/validation/dependentrequired.go, internal/keywords/applicator/dependentschemas.go
 
 ## Trail
 
@@ -57,8 +39,35 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 01:50:06 | agent | architect-agent | ✅ pass · 113.0s · $0.8433 |
 | 2026-10-17 01:50:07 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security) |
 | 2026-10-17 01:51:10 | agent | boundary-agent | ✅ warn · 63.2s · $0.2823 |
-| 2026-10-17 01:51:10 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-17 01:51:10 | run | run waiting_human | ⏸️ |
+| 2026-10-17 01:51:10 | gate | gate-2-architect | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 01:51:57 | boss | authorize coder-agent:T1 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 01:53:29 | agent | coder-agent | ✅ complete · T1 · 90.6s · $0.6480 |
+| 2026-10-17 01:53:54 | gate | gate-build | ✅ [T1] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:53:55 | boss | authorize coder-agent:T2 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 01:55:32 | agent | coder-agent | ✅ complete · T2 · 96.9s · $0.7636 |
+| 2026-10-17 01:57:10 | gate | gate-build | ❌ [T2] go_build:pass, go_vet:pass, go_test:pass, go_race:pass, task_tests:fail |
+| 2026-10-17 01:57:10 | boss | authorize coder-agent:T2 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 01:58:44 | agent | coder-agent | ✅ complete · T2 · 93.4s · $1.3944 |
+| 2026-10-17 01:59:06 | gate | gate-build | ✅ [T2] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:59:06 | boss | authorize coder-agent:T3 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 02:01:12 | agent | coder-agent | ✅ complete · T3 · 124.7s · $0.7763 |
+| 2026-10-17 02:02:51 | gate | gate-build | ✅ [T3] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 02:02:51 | boss | authorize coder-agent:T4 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 02:04:52 | agent | coder-agent | ✅ complete · T4 · 120.9s · $0.9123 |
+| 2026-10-17 02:06:31 | gate | gate-build | ✅ [T4] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 02:06:31 | boss | authorize coder-agent:T5 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 02:08:24 | agent | coder-agent | ✅ complete · T5 · 112.7s · $0.7842 |
+| 2026-10-17 02:08:58 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 02:08:58 | boss | authorize coder-agent:T6 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 02:09:40 | agent | coder-agent | ✅ complete · T6 · 41.6s · $0.5916 |
+| 2026-10-17 02:09:48 | gate | gate-build | ✅ [T6] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 02:09:48 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 02:10:58 | agent | tester-agent | ❌ fail · 69.4s · $1.0206 |
+| 2026-10-17 02:10:58 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ['AC6 / boundary rule (proportional step charging): the architecture and boundary rules require ChargeBytes/Charge in uniqueitems.go, enum.go, const.go, c… |
+| 2026-10-17 02:10:58 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 9 finding(s) |
+| 2026-10-17 02:17:35 | agent | coder-agent | ✅ scope-request · remediation · 395.3s · $3.0962 |
+| 2026-10-17 02:17:35 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-17 02:17:35 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
