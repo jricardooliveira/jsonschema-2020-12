@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "c5b70515a867459a012754e0dd29aa48038ce39b",
+    "commit": "a1bf67dd401afa3a7613bdae53344729d927fb8c",
     "base_commit": "42f6d69d4b3487814124f06edf40c4efef976ca7"
   },
   "tests": {
@@ -124,13 +124,13 @@
       {
         "path": "docs/formats.md",
         "change": "added",
-        "additions": 57,
+        "additions": 59,
         "deletions": 0
       },
       {
         "path": "formatassertion_test.go",
         "change": "added",
-        "additions": 100,
+        "additions": 166,
         "deletions": 0
       },
       {
@@ -184,13 +184,13 @@
       {
         "path": "internal/formats/email.go",
         "change": "added",
-        "additions": 96,
+        "additions": 120,
         "deletions": 0
       },
       {
         "path": "internal/formats/email_test.go",
         "change": "added",
-        "additions": 33,
+        "additions": 37,
         "deletions": 0
       },
       {
@@ -202,19 +202,19 @@
       {
         "path": "internal/formats/hostname_test.go",
         "change": "added",
-        "additions": 18,
+        "additions": 25,
         "deletions": 0
       },
       {
         "path": "internal/formats/idnemail.go",
         "change": "added",
-        "additions": 38,
+        "additions": 39,
         "deletions": 0
       },
       {
         "path": "internal/formats/idnemail_test.go",
         "change": "added",
-        "additions": 14,
+        "additions": 40,
         "deletions": 0
       },
       {
@@ -226,7 +226,7 @@
       {
         "path": "internal/formats/idnhostname_test.go",
         "change": "added",
-        "additions": 19,
+        "additions": 34,
         "deletions": 0
       },
       {
@@ -362,23 +362,23 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-9392f68c2a3d45daa3454c55f105fc37/docs/architecture/adr/ADR-018-format-assertion-mode-dates-email-hostnames-ip-and.md",
-    "summary": "Story 195 can go ahead: all 17 acceptance criteria are covered and nothing blocks. The mode is fixed at compile time. It is on when the caller's option is set or when the resource's own story-190 voca"
+    "summary": "All previous findings are resolved. The hostname 253-byte total limit and the idn-hostname and idn-email length limits now have boundary tests. idn-email rejects stray ASCII punctuation in a non-ASCII"
   },
   "security_boundary": {
     "overall": "pass",
-    "highest_severity": "medium",
+    "highest_severity": "none",
     "breaking_changes": [],
     "findings": [
-      "None blocking. Format errors carry only the locations and a fixed message with the format name from the schema, never the instance value. Every check is hand-written, single-pass and linear, with no regexp and no net/netip/mail parsers. Each check is charged with ctx.ChargeBytes(len(s)) before it runs, and TestFormatAssertionChargesSteps shows this. The registry is written only from init(). The only fail-open paths are the specified ones: an unknown or deferred format, a non-string instance, or a non-string format value."
+      "No insecure default found. Format assertion is off by default (the option's zero value is false and the CLI flag defaults to off). The only ways a check is skipped are the specified ones: unknown or deferred formats, a missing check, and non-string instances. Checks return a plain bool, with no error or recover path. The error message names only the format from the schema, never the instance value. Meta-schema compilation forces assertion off (noFormat). The format registry is written only from init(). Each check is charged to the step budget with ChargeBytes before it runs, and TestFormatAssertionChargesSteps proves it."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 8.507743,
-    "tokens_in": 7392266,
-    "tokens_out": 101020
+    "usd": 12.697256,
+    "tokens_in": 9954233,
+    "tokens_out": 132544
   },
   "assumptions": [
     {
@@ -472,6 +472,30 @@
     {
       "task": "remediation",
       "text": "The test of the whole-address limit uses a 254-byte valid case next to the 255-byte failing case, so it shows exactly where the limit sits. Only the email check changed; idn-email gets the same case-insensitive tag for free because it calls the same domain function."
+    },
+    {
+      "task": "remediation",
+      "text": "The forced-off branch can only change the result when a meta-schema is itself governed by a meta-schema that requires format-assertion. MetaChecks always passes the caller option as false, so turning the option on cannot reach this branch. That is why the F1 test uses a chain of two custom meta-schemas."
+    },
+    {
+      "task": "remediation",
+      "text": "For an embedded resource to be annotation-only inside a root that requires format-assertion, it has to declare 2020-12 in its own $schema. A resource without $schema takes its parent's vocabulary set, as vocabulary_apply.go does today."
+    },
+    {
+      "task": "remediation",
+      "text": "The new length tests passed as soon as I wrote them, because the length checks already existed. I couldn't run a mutation check (the guard blocks sed -i and cp), so I checked by reasoning that in each failing case only the cap under test is broken."
+    },
+    {
+      "task": "remediation",
+      "text": "A quoted local part with non-ASCII characters is now rejected for idn-email, because '\"' is not atext. The code comment and docs/formats.md say so."
+    },
+    {
+      "task": "remediation",
+      "text": "The tag of a general address literal is not checked against the IANA registry; the docs say so."
+    },
+    {
+      "task": "remediation",
+      "text": "Every edited file is one of this story's own files; no test from an earlier story was changed."
     }
   ],
   "blockers": [],
