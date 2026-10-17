@@ -3,19 +3,21 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #147 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-16 23:53:10 UTC · **Stopped:** 2026-10-17 00:03:00 UTC
-- **Story spend:** ~$4.48 of $35.00 (estimated at API list prices)
+- **Run:** #147 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-16 23:53:10 UTC · **Stopped:** 2026-10-17 00:09:08 UTC
+- **Story spend:** ~$6.79 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 147` to accept, or `factory reject 147 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 147` to accept, or `factory reject 147 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: F1 and F2 need compile-time data that only compile.go and refs.go can produce (a resource dynamic-anchor table and an absolute location per node), plus a new AbsoluteKeywordLocation field on keywords.Unit and on basic.go's error unit. None of these files is in this story's scope. Not granted automatically: internal/compile/compile.go (not in the approved design and not a test); internal/compile/refs.go (not in the approved design and not a test); internal/keywords/registry.go (not in the approved design and not a test); internal/output/basic.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: internal/compile/compile.go, internal/compile/refs.go, internal/keywords/registry.go, internal/output/basic.go
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: Fragment encoding (low hardening note): absoluteKeywordLocation fragments are built from JSON Pointers without additional percent-encoding. While RFC 3986 allows unescaped '/' and '~' in fragments, property names containing literal '%' would not be percent-encoded (e.g., '#/foo%bar' instead of '#/foo%25bar'). This is unlikely in practice and does not affect correctness; mentioned for future hardening review.
+  >   ◦ Security note (low): low: Resource.AbsoluteLocation in internal/compile/compile.go joins the URI and the raw JSON Pointer as the fragment without percent-encoding it. A schema key with a space, '%', '#' or similar characters gives an absoluteKeywordLocation that is not a valid URI-reference. This is not an injection risk (the value comes from the schema, never from the instance), but tools that parse the report could misread it.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -57,8 +59,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:01:32 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ["AC2 (outermost matching resource): DynamicScope.Outermost in internal/eval/dynamicscope.go only matches schema nodes that were entered AND carry the $dy… |
 | 2026-10-17 00:01:32 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 7 finding(s) |
 | 2026-10-17 00:03:00 | agent | coder-agent | ✅ scope-request · remediation · 87.3s · $1.2482 |
-| 2026-10-17 00:03:00 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:03:00 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:03:00 | gate | gate-question | ❌ REJECTED: yes, grant internal/compile/compile.go, internal/compile/refs.go, internal/keywords/registry.go and internal/output/basic.go for this run (no other story is running). Keep the additions minimal: the per-reso… |
+| 2026-10-17 00:03:20 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 3 finding(s) |
+| 2026-10-17 00:07:09 | agent | coder-agent | ✅ complete · remediation · 229.0s · $1.6085 |
+| 2026-10-17 00:07:15 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 00:07:15 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 00:07:56 | agent | tester-agent | ✅ warn · 40.2s · $0.6081 |
+| 2026-10-17 00:07:56 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 1 new, 0 persistent, 3 resolved |
+| 2026-10-17 00:07:56 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 00:09:08 | agent | release-agent | ✅ pass · 71.6s · $0.1007 |
+| 2026-10-17 00:09:08 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 00:09:08 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
