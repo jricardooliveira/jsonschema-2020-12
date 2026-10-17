@@ -402,6 +402,90 @@ the shared set.
   check no longer collects annotations.
 - No allocation-limit test was added or changed by this story.
 
+## Story 203 (compact exact number storage): before and after
+
+Same machine, Go version and method as above (Apple M3 Max, 16 logical CPUs,
+macOS arm64, go1.27.2), `-count=5`, median of 5, one run of the command below
+on the finished code. Change is after against before; negative is better.
+
+- **Before**: the "Story 202 after" figures above. That is the code just
+  before this story, measured on the same machine earlier in the same round.
+  It was not re-run in this session: the session may only touch its own
+  worktree, so the old tree could not be built next to the new one.
+- **After**: the finished code (tasks T1 to T4 of this story).
+
+Command:
+
+    go test -run '^$' -bench . -benchmem -count=5 . ./internal/jsonvalue ./cmd/jsonschema
+
+### Library (package root)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CompileOrder | 125,328 → 135,561 (+8.2%, see note) | 209,407 → 209,327 (noise) | 2,489 → 2,482 (noise) |
+| ValidateSmall | 29,123 → 29,408 (noise) | 42,643 → 41,682 (−2.3%) | 829 → 785 (−5.3%) |
+| Validate0_5MB | 26,792,761 → 26,166,658 (−2.3%) | 36,742,889 → 35,783,468 (−2.6%) | 700,087 → 660,084 (−5.7%) |
+| Validate5_5MB | 254,783,750 → 254,773,354 (0%) | 377,118,316 → 368,958,882 (−2.2%) | 7,000,109 → 6,600,105 (−5.7%) |
+| ValidateErrors | 20,477,864 → 20,142,337 (−1.6%) | 29,849,586 → 29,283,690 (−1.9%) | 500,051 → 480,050 (−4.0%) |
+| ValidateErrorsBasic | 21,140,034 → 20,653,792 (−2.3%) | 31,834,696 → 31,270,281 (−1.8%) | 506,076 → 486,079 (−4.0%) |
+
+Note on CompileOrder: it compiles a schema, which holds few numbers; B/op and
+allocs/op are unchanged. The ns/op difference is a single-digit-percent
+spread between sessions (its five runs here were 132,173 to 138,533), inside
+the 10% rule.
+
+### Decoded document (package internal/jsonvalue)
+
+| Benchmark | ns/op before → after | retained-B before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|---|
+| RetainedHeap/0.5MB | 5,976,054 → 6,042,609 (noise) | 4,340,752 → 4,340,755 (no change) | 6,282,026 → 6,282,058 | 170,198 → 170,198 |
+| RetainedHeap/5.5MB | 61,137,884 → 61,699,884 (noise) | 44,924,641 → 44,924,637 (no change) | 67,382,576 → 67,382,575 | 1,715,811 → 1,715,811 |
+
+The retained-heap metric and the decode allocation counts did not change.
+The number representation this story describes (inline mantissa, `big.Int`
+only for wide mantissas) is already what the decoder built when these
+figures were taken, so the decoded document costs the same to hold. The
+saving in this story therefore shows in validation allocations (equality,
+comparison and `multipleOf` no longer allocate on the fast path), not in
+retained heap. The acceptance line "lower retained heap" is **not met** by
+these measurements; this is recorded as measured, not hidden.
+
+### CLI, in process (package cmd/jsonschema)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CLI/0.5MB | 39,090,659 → 38,847,625 (−0.6%) | 51,001,696 → 50,044,121 (−1.9%) | 962,762 → 922,754 (−4.2%) |
+| CLI/5.5MB | 351,065,708 → 361,231,319 (+2.9%, noise) | 507,413,272 → 499,253,986 (−1.6%) | 9,602,792 → 9,202,788 (−4.2%) |
+| CLI/Errors | 21,834,825 → 23,375,042 (+7.1%, see note) | 33,187,324 → 32,621,601 (−1.7%) | 508,685 → 488,677 (−3.9%) |
+| CLI/Verbose0.5MB | 82,405,022 → 85,953,968 (+4.3%) | 130,269,925 → 129,629,954 (−0.5%) | 1,912,909 → 1,882,893 (−1.6%) |
+
+Note on CLI/Errors: the story 202 "before" run (21.8 ms) is faster than the
+story 200 "after" run of the same code path (23.9 ms), so +7.1% is mostly the
+spread between sessions. It is under the 10% limit.
+
+### CLI peak memory
+
+Not measured in this session. The 0.5 MB, 5.5 MB and 0.33 MB documents are
+generated in test code and are not committed, and the session could not write
+them to disk or run a before binary outside its worktree. To record it by
+hand, on the operator's machine, write the documents from `internal/perfdata`
+to files, build `./cmd/jsonschema` at the commit before this story and at the
+finished one, and run each with `/usr/bin/time -l` (maximum resident set
+size). The in-process allocated bytes above (CLI rows) are the available
+stand-in. This is for information only and does not decide the story.
+
+### Acceptance check
+
+- allocs/op is lower on every document scenario (library 4.0% to 5.7%, CLI
+  1.6% to 4.2%); B/op is lower on every document scenario (0.5% to 2.6%).
+  No scenario's allocs/op or B/op rose beyond a few allocations of noise
+  (CompileOrder).
+- No scenario is more than 10% slower (largest: CLI/Errors +7.1%, a
+  session spread).
+- Retained heap is unchanged, not lower (see above).
+- CLI peak memory: not measured (see above).
+- No allocation-limit test was added or changed.
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a
