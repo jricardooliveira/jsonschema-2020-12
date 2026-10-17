@@ -3,21 +3,24 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #148 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-17 00:11:06 UTC · **Stopped:** 2026-10-17 00:30:33 UTC
-- **Story spend:** ~$6.44 of $35.00 (estimated at API list prices)
+- **Run:** #148 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-17 00:11:06 UTC · **Stopped:** 2026-10-17 00:37:32 UTC
+- **Story spend:** ~$9.61 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 148` to accept, or `factory reject 148 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 148` to accept, or `factory reject 148 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: Two findings need files outside this task's write scope:
-  > - F4: registry_options.go, where Registry.load builds the index and adds the supplied files. The fix is for load to take a starting index that jsonschema.go fills with ext.AddBuiltins() first (or for load to call AddBuiltins itself right after registry.Build). Then the 'Built-ins last' block in compileChecked goes, and a test shows that a supplied file equal to a built-in leaves the embedded copy indexed (Source == built-in) and a different one is refused.
-  > - F2: testdata/validation/maxItems.json and testdata/validation/minItems.json. Delete the groups 'negative maxItems cannot be met', 'fractional minItems rounds up in effect' and 'negative minItems always met'. They are already moved into testdata/metaschema/invalid_schemas.json as explicit invalid-schema cases. Not granted automatically: registry_options.go (not in the approved design and not a test); testdata/validation/maxItems.json (not in the approved design and not a test); testdata/validation/minItems.json (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: registry_options.go, testdata/validation/maxItems.json, testdata/validation/minItems.json
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
+  >   • 1 acceptance criteria are not proven by any test the tester could see (§5.1) — verify them yourself or send the story back: ["The meta-schema check never asserts 'format', whether or not format-assertion mode is on, so enabling format assertion never makes a previously accepted schema fail."]
+  >   ◦ Release-agent note: Acceptance criterion 7 (meta-schema check never asserts format, whether format-assertion mode is on or off) is not proven by any test, because format-assertion mode does not exist. The implementation intends to force format off (architecture notes say so), and the code calls eval.EvaluateFull without a visible format parameter, but this needs verification in story 195.
+  >   ◦ Release-agent note: Two removed test cases (negative minItems, fractional minItems) are now schema errors instead of validation results. This is correct behaviour — they belong in metaschema_test.go. However, the spec_test.go runner now skips the entire metaschema subdirectory to avoid running them twice; ensure this does not hide any other test case changes.
+  >   ◦ Release-agent note: Built-in meta-schemas and the root meta-schema are recompiled on every Compile call (see metaCheck in jsonschema.go). This is correct but not optimal for repeated compilations with the same registry. A future optimization could cache compiled meta-schemas.
+  >   ◦ Security note (low): The meta-check is fail-closed: MetaChecks returns any error from ResolveMetaSchema, CompileWithRegistry or the evaluator, and metaCheck wraps non-ISE errors as 'schema: ...'. Builtins() returns its load error rather than skipping. The chain is bounded by maxMetaChain=32 with a seen set. Embedded meta-schemas are read only through go:embed, and custom ones only from the supplied index. The unsupported and chain errors are constant strings that never echo the declared '$schema'. InvalidSchemaError holds only the source label, the instance pointer and the keyword name.
+  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -59,8 +62,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:24:12 | gate | gate-release | ❌ REJECTED: Fix these, nothing else: (F1) any failure of a reached registry schema or custom meta-schema in compileChecked is reported as InvalidSchemaError naming the file/URI and location, never quoting schema or inst… |
 | 2026-10-17 00:25:24 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
 | 2026-10-17 00:30:33 | agent | coder-agent | ✅ scope-request · remediation · 307.8s · $2.3341 |
-| 2026-10-17 00:30:33 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:30:33 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:30:33 | gate | gate-question | ❌ REJECTED: yes, grant registry_options.go, testdata/validation/maxItems.json and testdata/validation/minItems.json for this run (negative/fractional minItems/maxItems are invalid schemas in 2020-12 and belong in the ex… |
+| 2026-10-17 00:30:54 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (3 finding(s)) |
+| 2026-10-17 00:35:39 | agent | coder-agent | ✅ complete · remediation · 283.6s · $2.3221 |
+| 2026-10-17 00:35:54 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 00:35:55 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-17 00:36:44 | agent | tester-agent | ✅ warn · 49.4s · $0.7442 |
+| 2026-10-17 00:36:44 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 10; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 00:36:44 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 00:37:31 | agent | release-agent | ✅ warn · 46.5s · $0.1008 |
+| 2026-10-17 00:37:32 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 00:37:32 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
