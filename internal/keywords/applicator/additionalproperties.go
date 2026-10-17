@@ -65,8 +65,9 @@ func evalAdditionalProperties(ctx *keywords.EvalContext, compiled any, instance 
 	}
 	c := compiled.(*compiledAdditional)
 	valid := true
+	var buf memberNamesBuf
 	var applied []string
-	for _, k := range sortedKeys(obj) {
+	for _, k := range sortedMemberNames(obj, &buf) {
 		if err := step(ctx); err != nil {
 			return false, err
 		}
@@ -76,6 +77,9 @@ func evalAdditionalProperties(ctx *keywords.EvalContext, compiled any, instance 
 		}
 		if covered {
 			continue
+		}
+		if applied == nil {
+			applied = make([]string, 0, len(obj))
 		}
 		applied = append(applied, k)
 		ok, err := evalMember(ctx, c.node, obj, k)
