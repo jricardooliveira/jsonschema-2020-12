@@ -14,9 +14,21 @@ type DynamicScope struct {
 	entries []*compile.Node
 }
 
-// push adds n and returns the function that removes it again.
-func (s *DynamicScope) push(n *compile.Node) func() {
+// enter adds n. Entries are left strictly last-in first-out by exit; the
+// evaluation path uses this pair, with no closure.
+func (s *DynamicScope) enter(n *compile.Node) {
 	s.entries = append(s.entries, n)
+}
+
+// exit removes the innermost entry added by enter.
+func (s *DynamicScope) exit() {
+	s.entries = s.entries[:len(s.entries)-1]
+}
+
+// push is the compatibility entry point: it adds n and returns the function
+// that removes it again. Evaluation itself uses enter and exit.
+func (s *DynamicScope) push(n *compile.Node) func() {
+	s.enter(n)
 	k := len(s.entries) - 1
 	return func() { s.entries = s.entries[:k] }
 }

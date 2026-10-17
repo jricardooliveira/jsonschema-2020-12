@@ -1,7 +1,6 @@
 package eval
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -43,12 +42,16 @@ type frame struct {
 	inst string
 }
 
-// pathFrame is one schema node on the active evaluation path.
+// pathFrame is one schema node on the active evaluation path. See
+// pathstack.go for its validity invariant.
 type pathFrame struct {
 	static, dynamic string // node location in the schema / along the evaluation path
 	kw              string // name of the keyword being evaluated in this node
 	kwDynamic       string // its location along the evaluation path
 	viaRef          bool   // the path to this node crossed $ref or $dynamicRef
+	jump            bool   // entering this node counted one reference jump
+	key             frame  // the active-set key of this node
+	loc             lazyLoc
 }
 
 // callState is the per-call Items record plus the guard's active path. It
@@ -57,67 +60,27 @@ type pathFrame struct {
 type callState struct {
 	*EvaluatedItems
 	active map[frame]struct{}
-	path   []*pathFrame
+	frames []*pathFrame // path frames indexed by depth, reused (pathstack.go)
+	depth  int          // nodes currently entered
 	scope  DynamicScope
 	refs   int // $ref/$dynamicRef jumps on the current path
 	// per-call caps: reference jumps and path depth (4 x the nesting depth)
 	maxRefChain, maxPath int
 }
 
-// enterNode marks (n, instance location) active, pushes n on the evaluation
-// path and returns the frame plus the function that undoes both when the
-// node exits. Each entry counts one evaluation step. Re-entry is a
-// *LoopError; a path deeper than MaxEvalDepth or more steps than the call's
-// cap is a *jsonvalue.LimitError.
+// enterNode is the closure-returning entry point: it enters n and returns the
+// frame plus the function that leaves it. Evaluation itself uses
+// callState.enter and exit directly, without the closure.
 func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), error) {
-	st, ok := ctx.Items.(*callState)
-	if !ok {
-		rec, isRec := ctx.Items.(*EvaluatedItems)
-		if !isRec { // fail closed: never evaluate without the guard
-			return nil, nil, errors.New("internal error: evaluation state missing")
-		}
-		// First frame of a call: wrap the record (same pointer, so callers
-		// that kept it still see every annotation).
-		st = &callState{EvaluatedItems: rec, active: map[frame]struct{}{}, maxRefChain: DefaultMaxRefChain, maxPath: MaxEvalDepth}
-		ctx.Items = st
-	}
-	// Every node entry, including through $ref, is one evaluation step, so
-	// exponential branching ends with the "evaluation steps" LimitError.
-	if err := st.Step(); err != nil {
+	st, err := stateOf(ctx)
+	if err != nil {
 		return nil, nil, err
 	}
-	if len(st.path) >= st.maxPath {
-		return nil, nil, &jsonvalue.LimitError{Limit: "nesting depth", Max: st.maxPath / 4}
+	pf, err := st.enter(ctx, n)
+	if err != nil {
+		return nil, nil, err
 	}
-	f := frame{n, ctx.InstanceLocation}
-	if _, dup := st.active[f]; dup {
-		return nil, nil, &LoopError{SchemaLocation: n.Location, InstanceLocation: ctx.InstanceLocation, refMax: st.maxRefChain}
-	}
-	pf := &pathFrame{static: n.Location, dynamic: n.Location}
-	jump := false
-	if k := len(st.path); k > 0 {
-		parent := st.path[k-1]
-		pf.dynamic = dynamicLocation(parent, n.Location)
-		jump = parent.kw == "$ref" || parent.kw == "$dynamicRef"
-		pf.viaRef = parent.viaRef || jump
-	}
-	if jump {
-		if st.refs >= st.maxRefChain {
-			return nil, nil, &jsonvalue.LimitError{Limit: "reference chain", Max: st.maxRefChain}
-		}
-		st.refs++
-	}
-	st.active[f] = struct{}{}
-	st.path = append(st.path, pf)
-	popScope := st.scope.push(n)
-	return pf, func() {
-		popScope()
-		if jump {
-			st.refs--
-		}
-		delete(st.active, f)
-		st.path = st.path[:len(st.path)-1]
-	}, nil
+	return pf, func() { st.exit(pf) }, nil
 }
 
 // dynamicLocation is the evaluation-path location of a node with static
