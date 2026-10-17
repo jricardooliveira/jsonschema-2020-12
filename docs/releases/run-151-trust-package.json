@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "c73d0b552e0aa1b2483441749e1770a9f8b8981e",
+    "commit": "0d3574491d2dfd7e349eb9bd0fcb5dbfa7e949ce",
     "base_commit": "aeedd56a65d7535a591e4293b7c6d16f4b6d9955"
   },
   "tests": {
@@ -137,7 +137,7 @@
       {
         "path": "internal/compile/vocabulary_errors.go",
         "change": "added",
-        "additions": 40,
+        "additions": 44,
         "deletions": 0
       },
       {
@@ -288,7 +288,7 @@
       {
         "path": "vocabulary_test.go",
         "change": "added",
-        "additions": 127,
+        "additions": 199,
         "deletions": 0
       }
     ],
@@ -317,7 +317,7 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-52385f9f502f4a698b91713f52839157/docs/architecture/adr/ADR-013-honour-vocabulary-from-embedded-and-registry-meta.md",
-    "summary": "The implementation follows the ADR and the boundary rules. ParseVocabulary fails closed: the 'all vocabularies active' default applies only when '$vocabulary' is absent. The recognised set is exactly "
+    "summary": "I recommend warn, not fail: all 12 acceptance criteria have tests, and the build, vet, test and -race gates pass. Every criterion has tests that would fail if the behaviour broke, including through th"
   },
   "security_boundary": {
     "overall": "pass",
@@ -327,16 +327,16 @@
       "Basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. This is declared and intended. Tests that expected them must be updated in the same change, not skipped."
     ],
     "findings": [
-      "F5 (low): UnknownVocabularyError puts the unknown vocabulary URI into its message at full length. The boundary rule asks for quoted text to be bounded. The URI comes from the schema, not the instance, so no instance value can leak; the input-size cap limits it, but bound() is not applied here as it is for malformed entries."
+      "No insecure default found. ParseVocabulary fails closed: every malformed, core or unknown-required path returns an error, and only an absent '$vocabulary' means all vocabularies are active. The recognised set is the fixed list of eight standard URIs. The $schema chain is bounded by maxMetaChain and seen-set cycle detection. Meta-schemas are resolved only from the ext index (embedded plus caller registry), so nothing is fetched or read from disk. Error text carries URIs, a regex-derived draft name and an entry key bounded to 80 bytes, never instance values."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 5.891464,
-    "tokens_in": 6353435,
-    "tokens_out": 75051
+    "usd": 8.0649,
+    "tokens_in": 8339488,
+    "tokens_out": 92043
   },
   "assumptions": [
     {
@@ -438,6 +438,14 @@
     {
       "task": "remediation",
       "text": "Only the vocabulary_test.go change touches an existing test file. It adds one message assertion and removes nothing."
+    },
+    {
+      "task": "remediation",
+      "text": "The http 2020-12 case is spotted inside UnsupportedSchemaError.Error() by Draft == \"2020-12\", the value otherDraft returns for that URI. The draft-07 message is unchanged, so metaschema_cli_test.go and schema_keyword.json still pass."
+    },
+    {
+      "task": "remediation",
+      "text": "The new tests go in vocabulary_test.go, which is in scope, rather than vocabulary_apply_test.go, which is outside the reserved file list."
     }
   ],
   "blockers": [],
