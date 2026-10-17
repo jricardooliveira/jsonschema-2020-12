@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "9e4bee355484d762416e7c59b009cb25c7fd48b4",
+    "commit": "c73d0b552e0aa1b2483441749e1770a9f8b8981e",
     "base_commit": "aeedd56a65d7535a591e4293b7c6d16f4b6d9955"
   },
   "tests": {
@@ -119,8 +119,8 @@
       {
         "path": "internal/compile/refs.go",
         "change": "modified",
-        "additions": 11,
-        "deletions": 3
+        "additions": 12,
+        "deletions": 4
       },
       {
         "path": "internal/compile/vocabulary.go",
@@ -143,7 +143,7 @@
       {
         "path": "internal/compile/vocabulary_test.go",
         "change": "added",
-        "additions": 84,
+        "additions": 87,
         "deletions": 0
       },
       {
@@ -274,6 +274,18 @@
         "deletions": 0
       },
       {
+        "path": "vocabulary_race_test.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary_ref_test.go",
+        "change": "added",
+        "additions": 45,
+        "deletions": 0
+      },
+      {
         "path": "vocabulary_test.go",
         "change": "added",
         "additions": 127,
@@ -305,7 +317,7 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-52385f9f502f4a698b91713f52839157/docs/architecture/adr/ADR-013-honour-vocabulary-from-embedded-and-registry-meta.md",
-    "summary": "The implementation meets the story. $vocabulary is parsed fail-closed in ParseVocabulary. The recognised set is exactly the eight standard 2020-12 vocabularies, and a unit test checks that all eight a"
+    "summary": "The implementation follows the ADR and the boundary rules. ParseVocabulary fails closed: the 'all vocabularies active' default applies only when '$vocabulary' is absent. The recognised set is exactly "
   },
   "security_boundary": {
     "overall": "pass",
@@ -315,16 +327,16 @@
       "Basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. This is declared and intended. Tests that expected them must be updated in the same change, not skipped."
     ],
     "findings": [
-      "F1 (medium): errors from an externally referenced registry resource that declares its own '$schema' lose their type. They pass through the existing refs.go line 212 wrap, fmt.Errorf(\"...: %v\", err). Examples are UnknownVocabularyError and CoreVocabularyError. The CLI still exits 2, so the check still fails closed, but errors.As cannot see the type, which falls short of AC2's library contract for that path. No test covers a $ref-reached resource with its own vocabulary set."
+      "F5 (low): UnknownVocabularyError puts the unknown vocabulary URI into its message at full length. The boundary rule asks for quoted text to be bounded. The URI comes from the schema, not the instance, so no instance value can leak; the input-size cap limits it, but bound() is not applied here as it is for malformed entries."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 3.862315,
-    "tokens_in": 4764645,
-    "tokens_out": 58920
+    "usd": 5.891464,
+    "tokens_in": 6353435,
+    "tokens_out": 75051
   },
   "assumptions": [
     {
@@ -414,6 +426,18 @@
     {
       "task": "T5",
       "text": "The malformed-$vocabulary case checks only that the error names malformed.json, because the meta-schema check of the supplied meta-schema itself reports it first. The MalformedVocabularyError path is covered by the unit tests in internal/compile."
+    },
+    {
+      "task": "remediation",
+      "text": "I tested the exact F3 message at the internal/compile level (ParseVocabulary). Through the library, malformed.json fails the official meta-schema check first and comes back as InvalidSchemaError, which is still exit 2. So MalformedVocabularyError cannot be reached that way for this file."
+    },
+    {
+      "task": "remediation",
+      "text": "I did not add a separate CLI test for the $ref-reached case. The CLI already gives exit 2 for every compile error, and the wrapped message is unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "Only the vocabulary_test.go change touches an existing test file. It adds one message assertion and removes nothing."
     }
   ],
   "blockers": [],
