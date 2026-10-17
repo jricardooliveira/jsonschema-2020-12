@@ -1,7 +1,7 @@
 # PLAN #23: Record evaluated properties and items only when something can use the record
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #159, 2026-10-17 12:09 UTC)
 - Design: see `ADR-023-*.md` under `docs/architecture/adr/`
 
 ## Files that change

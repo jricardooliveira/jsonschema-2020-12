@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #23
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #159, 2026-10-17 12:09 UTC)
 
 ## Decision
 The load-time decision is one immutable boolean on the compiled Schema. It is computed by a new static analysis in internal/compile/evaluated_need.go, which walks subschemas and $ref targets and treats every registry resource holding a $dynamicAnchor that a $dynamicRef in reach could resolve to as reachable. That makes it cautious, so the analysis can only add recording and never remove it wrongly. A visited set makes it terminate on cycles. At the start of each check, eval.go sets a per-call context field 'trackEvaluated' to the Schema's flag OR the needs of the requested shape (detailed or verbose, or a Result view that exposes the record). The recording helpers in evaluated.go and evaluated_items.go return early when that field is false. Keyword files under internal/keywords stay untouched, and no shared state is written after Compile. Limit counters and step charging stay outside the guarded code paths, so limits trigger identically. The crowded files compile.go and eval.go each get only wiring lines. The location.go cleanup is a separate, independent deletion plus a new test file.
