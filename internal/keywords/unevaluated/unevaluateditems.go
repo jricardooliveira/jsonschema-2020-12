@@ -82,7 +82,7 @@ func evalUnevaluatedItems(ctx *keywords.EvalContext, compiled any, instance any)
 	}
 	if valid && applied > 0 {
 		// ponytail: "all items" is one compact entry, not one per index
-		rec.RecordItems(ctx.InstanceLocation, ctx.KeywordLocation)
+		rec.RecordItems(ctx.InstanceLocation, ctx.KeywordLoc())
 		return true, ctx.Annotate(true)
 	}
 	return valid, nil

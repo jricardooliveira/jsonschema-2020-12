@@ -17,6 +17,21 @@ type branch struct {
 	node      any
 }
 
+// branchLoc is the branch's keyword location with the absolute location of
+// the 'if' keyword it was evaluated from.
+type branchLoc struct {
+	loc  string
+	base keywords.Location
+}
+
+func (b branchLoc) String() string { return b.loc }
+func (b branchLoc) Absolute() string {
+	if b.base == nil {
+		return ""
+	}
+	return b.base.Absolute()
+}
+
 // conditional is the compiled 'if': its subschema plus the sibling branches
 // (nil when absent). Each subschema is compiled exactly once, here.
 type conditional struct {
@@ -70,10 +85,10 @@ func evalIf(ctx *keywords.EvalContext, compiled any, instance any) (bool, error)
 		return ok, err
 	}
 	ctx.Keep(units)
-	ifLoc := ctx.KeywordLocation
-	ctx.KeywordLocation = b.loc
+	ifLoc := ctx.Loc
+	ctx.Loc = branchLoc{b.loc, ifLoc}
 	err = ctx.Report(b.name + ": subschema did not match")
-	ctx.KeywordLocation = ifLoc
+	ctx.Loc = ifLoc
 	return false, err
 }
 
