@@ -9,48 +9,46 @@
 
 ## What changed
 
-Schemas with '$vocabulary' declarations are now properly processed per JSON Schema 2020-12. Unknown required vocabularies are rejected with exit code 2 and a clear error. Keywords from vocabularies a meta-schema does not list are treated as unknown. The format-assertion vocabulary is recognized and recorded for use by story 195. `$schema`, `$vocabulary` and `$comment` are now silent core keywords that produce no output annotations.
+The validator now reads '$vocabulary' from meta-schemas and activates only the declared vocabularies per schema resource. Keywords from unlisted vocabularies are treated as unknown (annotation-only). A required unknown vocabulary or missing core vocabulary is refused with exit code 2. The format-assertion vocabulary is recognised and recorded.
 
-- internal/compile/vocabulary.go: new file — ParseVocabulary reads and validates a meta-schema's '$vocabulary' entry, fail-closed
-- internal/compile/vocabulary_apply.go: new file — per-resource vocabulary set computed at compile time; inactive-vocabulary keywords routed to unknown-keyword handling
-- internal/compile/vocabulary_errors.go: new file — UnknownVocabularyError, MalformedVocabularyError, CoreVocabularyError, UnsupportedSchemaError error types
-- internal/compile/metaschema.go: recognize and reject draft-07 and other non-2020-12 $schema URIs by name; UnsupportedSchemaError returned for draft-07 with message 'unsupported $schema: draft-07; only 2020-12 is supported'
-- internal/compile/refs.go: hold formatAssertion flag in shared state; initialize VocabularySet map on resolver; propagate flag to root node
-- internal/compile/compile.go: Node.FormatAssertion field added to root node only
-- internal/keywords/vocabularies.go: new file — define eight standard 2020-12 vocabulary URIs; StandardVocabularies() and IsStandardVocabulary() helpers
-- internal/keywords/core/schema.go, vocabulary.go: new files — register $schema and $vocabulary as no-op core keywords that compile and evaluate to no effect and emit no annotation
-- vocabulary.go: new file — Schema.FormatAssertionRequested() accessor reports whether any resource's meta-schema listed format-assertion as required
-- vocabulary_errors.go: new file — exported error type aliases (UnknownVocabularyError, MalformedVocabularyError, CoreVocabularyError, UnsupportedSchemaError) for use with errors.As
-- testdata/vocabulary/: new directory — JSON test cases for required/optional/unknown vocabularies, unlisted standard vocabularies, embedded resources with their own $schema, and draft-07 rejection
-- testdata/metaschema/schema_keyword.json: draft-07 test case updated to expect specific 'unsupported $schema: draft-07' message instead of generic 'not supported'
-- cmd/jsonschema/metaschema_cli_test.go: draft-07 error message updated to match new UnsupportedSchemaError output; removed assertion that error must not mention draft-07 (AC10 now requires the draft name)
+- internal/compile/vocabulary.go, vocabulary_apply.go, vocabulary_errors.go: new vocabulary parsing, application per resource, and error types
+- internal/keywords/vocabularies.go: eight standard vocabulary URIs recognised
+- internal/keywords/core/schema.go, vocabulary.go, comment.go: $schema, $vocabulary, $comment register as silent core keywords with no validation effect
+- internal/compile/refs.go: wrap compilation errors with %w; route inactive-vocabulary keywords to unknown-keyword handling; store per-resource vocabulary set
+- internal/compile/metaschema.go: detect non-2020-12 $schema by draft name (e.g. 'draft-07') and return UnsupportedSchemaError
+- vocabulary.go, vocabulary_errors.go: exported error type aliases and FormatAssertionRequested() accessor
+- testdata/vocabulary/: three case files with custom meta-schemas and metaschemas/ directory
+- cmd/jsonschema/vocabulary_cli_test.go, vocabulary_test.go, vocabulary_apply_test.go, vocabulary_ref_test.go, vocabulary_race_test.go: library and CLI tests citing core 8.1.1 and 8.1.2; concurrent-use tests with -race
+- cmd/jsonschema/metaschema_cli_test.go: draft-07 message changed from 'not supported' to 'unsupported $schema: draft-07; only 2020-12 is supported'
 
 ## How to verify
 
-- Compile a schema with a custom meta-schema listing only 'core' and 'applicator' vocabularies; validate a document with 'minimum: 5' in the schema — the minimum constraint is ignored (treated as unknown keyword)
-- Compile a schema with a custom meta-schema that requires an unknown vocabulary — schema compilation fails with exit code 2 and error names both the vocabulary URI and the meta-schema URI
-- Compile a schema with 'type': 'string' and '$schema': 'http://json-schema.org/draft-07/schema#' — compilation fails with exit code 2 and error message 'unsupported $schema: draft-07; only 2020-12 is supported'
-- Compile a schema with '$schema' of 2020-12 and validate a document — the basic report contains no '/$schema' annotation (previously it would have)
-- Compile a schema with a meta-schema that lists format-assertion as required — Schema.FormatAssertionRequested() returns true; validate a document with a malformed format value — validation passes (format still annotation-only)
-- Compile a schema with a custom meta-schema that has a malformed '$vocabulary' entry (for example a value that is not a boolean, or a key that is not an absolute URI) — compilation fails with exit code 2 and error message names the meta-schema and the bad entry
+- Compile a schema with $schema pointing to a custom meta-schema that lists only core and applicator vocabularies; validate that 'minimum: 5' does not reject the value 3 (validation vocabulary omitted)
+- Compile a schema with $schema pointing to a meta-schema that requires 'https://example.com/vocab/money'; confirm it is refused with exit code 2 and the error message names both the unknown vocabulary URI and the meta-schema
+- Compile a schema with $schema = 'http://json-schema.org/draft-07/schema#'; confirm it is refused with 'unsupported $schema: draft-07; only 2020-12 is supported'
+- Compile a schema with an embedded resource (own $id and $schema) using a restricted meta-schema; validate that the outer schema applies its vocabulary set and the inner applies its own set
+- Compile a schema with $schema pointing to a meta-schema requiring the format-assertion vocabulary; confirm Schema.FormatAssertionRequested() returns true
+- Validate a schema against a meta-schema with no $vocabulary entry; confirm all eight standard vocabularies are active
+- Generate a basic report for {"$schema":"https://json-schema.org/draft/2020-12/schema","type":"string"} validated against "x"; confirm the report contains no /$schema annotation
 
 ## Migration
 
-No schema data or external resources to migrate. Vocabulary processing is applied at compile time. Existing schemas continue to work: those without a declared '$schema' or '$vocabulary' are compiled and validated exactly as before. Custom meta-schemas must be supplied through the registry (CompileWithRegistry or --ref flag); they are never fetched from the network or from disk paths outside the registry.
+No data or schema changes. Breaking change: Basic and detailed validation reports no longer contain annotations for $schema, $vocabulary, or $comment keywords. Existing test assertions or log parsing that expects these annotations must be updated. Schemas are unaffected; only the report output changes.
 
 ## Rollback
 
-Revert the commit. This change is applied during schema compilation only; there is no persisted state or database impact to undo. Schemas compiled under this version continue to work under a reverted version (they are immutable objects).
+This is a new feature with no database migration or irreversible schema changes. Rollback: revert the commits, and any tests or tooling expecting $schema/$vocabulary/$comment annotations will no longer fail.
 
 ## Known limitations
 
-- Only 2020-12 is supported. Schemas declaring draft-07, draft-06, draft-4, or any other version are rejected with exit code 2.
-- Format assertion is recorded but not asserted; 'format' stays annotation-only. Story 195 will switch assertion on.
-- No network or disk reads beyond the registry supplied by the caller. Meta-schemas must be in the embedded set or the registry; they are never fetched.
-- Vocabulary error types exported for use with errors.As; however, errors wrapped through a $ref-resolved registry resource may not unwrap correctly (the error is still reported and fails with exit code 2, but errors.As may not find the underlying type).
+- The format-assertion vocabulary is recorded when required, but 'format' itself is not asserted (story 195 will implement that).
+- An http:// URL naming a 2020-12 meta-schema (e.g. 'http://json-schema.org/draft/2020-12/schema#') will produce the message 'unsupported $schema: 2020-12; only 2020-12 is supported', which is confusing (should detect 2020-12 by version, not by whether URI is http vs https; medium impact, edge case).
+- No test asserts that keywords from unlisted vocabularies appear in the annotation output (test coverage gap for AC4's annotation half; medium impact, feature works but not fully verified).
+- Unknown vocabulary URIs in error messages are not bounded in length (could be arbitrarily long; low impact, edge case).
+- Malformed '$vocabulary' entries in a meta-schema are caught by the meta-schema validation check before ParseVocabulary can report them end-to-end through the library (test coverage gap, not a functional problem; low impact).
 
 ## Concerns
 
-- Breaking change: basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. Tests and evaluators that expected these annotations will need updating.
-- The change routes inactive-vocabulary keywords through the existing unknown-keyword path in compile.go, a crowded file. The edit is surgical (four lines in the keyword loop), but future changes to that loop must be aware of the new condition.
-- Error message for malformed '$vocabulary' entries (the bound entry key) is asserted only at unit test level, not in CLI integration tests (F3). The message is generated and used correctly, but large entry keys longer than 80 characters are silently truncated in the error message.
+- F1: An http:// 2020-12 $schema produces a contradictory message. The regex otherDraft() checks the URI pattern and extracts 'draft-07' etc., but an http:// URI matching 'draft/2020-12' would return 'draft-07'-style extraction. This is a real gap but rare (who uses http:// for 2020-12?). Consider: accept as known limitation, or fix before release to avoid confusing users.
+- F3: Test coverage for AC4's annotation aspect (unlisted vocabulary keywords should be in annotations, e.g. 'minimum' as annotation when validation is omitted) does not appear to be in the test files. The feature works by routing inactive keywords to unknown-keyword handling, but no test explicitly asserts they show up in reports. Should add a test case.
+- Breaking change: Reports no longer carry $schema/$vocabulary/$comment annotations. Any user tooling parsing these annotations will break. The architecture notes this, but it's significant enough to highlight prominently in migration.
