@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #149 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-17 00:39:55 UTC · **Stopped:** 2026-10-17 00:40:19 UTC
-- **Story spend:** ~$0.17 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 00:39:55 UTC · **Stopped:** 2026-10-17 00:41:19 UTC
+- **Story spend:** ~$0.76 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,15 +15,12 @@ The operator decides at gate-2-architect: `factory approve 149` to accept, or `f
 
 - Waiting for the operator at **gate-2-architect**:
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
-  >   • absoluteKeywordLocation for schema keys with spaces, '%' or non-ASCII characters is now percent-encoded in flag/basic output too
-  >   • absoluteKeywordLocation fragments for schema keys with a space, '%', non-ASCII or other characters not allowed in a URI fragment are now percent-encoded in every output shape, including basic. Output for keys made only of allowed characters is unchanged.
+  >   • absoluteKeywordLocation for schema keys that contain spaces, '%' or non-ASCII characters is now percent-encoded, in flag and basic output too (accepted by the reviewer)
+  >   • absoluteKeywordLocation is now percent-encoded in its fragment, in flag, basic, detailed and verbose output alike. Only schema keys with a space, '%', non-ASCII or other characters not allowed in a URI fragment are affected. The operator accepted this.
   >   → Approve these breaking changes?
   >
   > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • api_contract: The design and acceptance criterion 6 say the existing library option and CLI flag raise DefaultMaxReportBytes, and the design claims cmd/jsonschema/run.go is read-only. ADR #14 says the CLI has no report-bytes flag in story 191 and that story 193 adds it. If the flag does not exist, a CLI user cannot raise the cap for 'verbose', and the T5 test of 'raise the cap' through the CLI cannot be written without editing run.go. The operator should settle whether this story adds the flag or only the library option is claimed here.
-  >   • api_contract: The breaking change to absoluteKeywordLocation (percent-encoded fragment) is declared and justified because the value must be a valid URI. It applies to flag, basic, detailed and verbose alike. Consumers that compare the old unencoded string will see a difference only for keys with a space, '%', non-ASCII or other characters not allowed in a URI fragment.
-  >   • security: Verbose needs passing units that the evaluator may not record today. If internal/eval/units.go starts keeping passing units on every Validate call, memory grows for hostile or large documents on all shapes, including flag, before the report byte cap is ever checked, because the cap only applies at render time. Counting those units against the existing MaxOutputUnits could instead turn a valid result into a limit error (exit 2) for flag and basic. The design does not say which of the two applies, and an operator should settle it.
-  >   • security: Property names listed in annotations (properties, patternProperties, additionalProperties, unevaluatedProperties) can be private. The operator has decided to show names and never values, so this is accepted. It is noted here so the rule below is enforced in tests.
+  >   • security: The design still does not say how verbose gets its passing units. The shape is chosen at render time, after Validate has run, so internal/eval/units.go may have to record passing units on every Validate call. If it does, memory for hostile or large documents grows on flag and basic as well, before the report byte cap is checked, because that cap only applies while rendering. If those units count against MaxOutputUnits, a result that is valid today could become a limit error (exit 2) for flag and basic. The operator's Checkpoint 2 decision settled only the CLI flag question, so a human should decide which of the two applies. The rules below give the safe constraints either way.
   >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
@@ -39,8 +36,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:39:56 | agent | architect-agent | ✅ pass |
 | 2026-10-17 00:39:56 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security, pii) |
 | 2026-10-17 00:40:19 | agent | boundary-agent | ✅ warn · 22.7s · $0.1712 |
-| 2026-10-17 00:40:19 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:40:19 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:40:19 | gate | gate-2-architect | ❌ REJECTED: Keep the design; settle: this story uses only the existing library option for DefaultMaxReportBytes and does NOT add the CLI flag or edit cmd/jsonschema/run.go; the CLI flag and its 'raise the cap through th… |
+| 2026-10-17 00:40:38 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-17 00:41:00 | agent | architect-agent | ✅ pass · 21.4s · $0.4151 |
+| 2026-10-17 00:41:00 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security, pii) |
+| 2026-10-17 00:41:19 | agent | boundary-agent | ✅ warn · 18.1s · $0.1768 |
+| 2026-10-17 00:41:19 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-17 00:41:19 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
