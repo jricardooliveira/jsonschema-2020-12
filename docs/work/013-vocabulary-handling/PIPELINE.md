@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #151 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:27:29 UTC
-- **Story spend:** ~$5.89 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:31:49 UTC
+- **Story spend:** ~$8.06 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,10 +15,10 @@ The operator decides at gate-release: `factory approve 151` to accept, or `facto
 
 - Waiting for the operator at **gate-release**:
   > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: F5 (low): UnknownVocabularyError puts the unknown vocabulary URI into its message at full length. The boundary rule asks for quoted text to be bounded. The URI comes from the schema, not the instance, so no instance value can leak; the input-size cap limits it, but bound() is not applied here as it is for malformed entries.
-  >   ◦ Release-agent note: F1: An http:// 2020-12 $schema produces a contradictory message. The regex otherDraft() checks the URI pattern and extracts 'draft-07' etc., but an http:// URI matching 'draft/2020-12' would return 'draft-07'-style extraction. This is a real gap but rare (who uses http:// for 2020-12?). Consider: accept as known limitation, or fix before release to avoid confusing users.
-  >   ◦ Release-agent note: F3: Test coverage for AC4's annotation aspect (unlisted vocabulary keywords should be in annotations, e.g. 'minimum' as annotation when validation is omitted) does not appear to be in the test files. The feature works by routing inactive keywords to unknown-keyword handling, but no test explicitly asserts they show up in reports. Should add a test case.
-  >   ◦ Release-agent note: Breaking change: Reports no longer carry $schema/$vocabulary/$comment annotations. Any user tooling parsing these annotations will break. The architecture notes this, but it's significant enough to highlight prominently in migration.
+  >   • Security finding (medium) not resolved: No insecure default found. ParseVocabulary fails closed: every malformed, core or unknown-required path returns an error, and only an absent '$vocabulary' means all vocabularies are active. The recognised set is the fixed list of eight standard URIs. The $schema chain is bounded by maxMetaChain and seen-set cycle detection. Meta-schemas are resolved only from the ext index (embedded plus caller registry), so nothing is fetched or read from disk. Error text carries URIs, a regex-derived draft name and an entry key bounded to 80 bytes, never instance values.
+  >   ◦ Release-agent note: Test coverage gap (medium, AC8): the CLI test for a malformed '$vocabulary' entry checks only that the filename appears in the error, not that the entry details are included. The library test in vocabulary_test.go does verify the message format. Recommend: add an explicit CLI case that asserts the full message includes the bad entry (e.g. 'invalid '$vocabulary' entry "value-not-boolean": value is not a boolean')
+  >   ◦ Release-agent note: Two test files outside the originally planned scope were updated: testdata/metaschema/schema_keyword.json and cmd/jsonschema/metaschema_cli_test.go. Both changes are sound (the draft-07 error message must match the new format), but a reviewer should confirm the expected message change does not conflict with story 189's earlier handling.
+  >   ◦ Release-agent note: The malformed-vocabulary code correctly bounds long URIs to 80 bytes via bound(); callers detecting UnknownVocabularyError or MalformedVocabularyError will receive the bounded URI, not the original. This is intentional (keep error messages short and safe), but if an operator later needs the full URI in logs, the implementation would have to be revised.
   >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
@@ -70,8 +70,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 01:26:56 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 5 new, 0 persistent, 0 resolved |
 | 2026-10-17 01:26:56 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 01:27:28 | agent | release-agent | ✅ warn · 31.5s · $0.0794 |
-| 2026-10-17 01:27:29 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 01:27:29 | run | run waiting_human | ⏸️ |
+| 2026-10-17 01:27:29 | gate | gate-release | ❌ REJECTED: Last narrow round, nothing else: (F3) add a test proving AC4: under a custom meta-schema listing only core+applicator, {"minimum":5} does not reject 3 AND '/minimum' appears as an annotation (value 5) in the… |
+| 2026-10-17 01:27:56 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 01:29:16 | agent | coder-agent | ✅ complete · remediation · 78.6s · $1.2012 |
+| 2026-10-17 01:29:46 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:29:46 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-17 01:31:01 | agent | tester-agent | ✅ warn · 74.1s · $0.8815 |
+| 2026-10-17 01:31:01 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 01:31:01 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 01:31:48 | agent | release-agent | ✅ warn · 47.2s · $0.0908 |
+| 2026-10-17 01:31:49 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 01:31:49 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
