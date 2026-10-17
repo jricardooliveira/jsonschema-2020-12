@@ -15,6 +15,7 @@ const BuiltinSource = "built-in meta-schema"
 // meta-schemas under their $id. It is not cached: callers that share the
 // result must treat it as read-only.
 func BuildBuiltinIndex() (*Index, error) {
+	builtinBuilds.Add(1)
 	idx, err := Build(true, "https://registry.invalid/unused")
 	if err != nil {
 		return nil, err
@@ -42,6 +43,14 @@ var (
 	sharedErr  error
 )
 
+// SharedBuiltinIndex returns the process-wide built-in index, built once on
+// first use. It is immutable after the build: callers must never write to it
+// or to its resources, and may share it across goroutines.
+func SharedBuiltinIndex() (*Index, error) {
+	sharedOnce.Do(func() { sharedIdx, sharedErr = BuildBuiltinIndex() })
+	return sharedIdx, sharedErr
+}
+
 // AddBuiltins indexes the embedded meta-schemas under their $id. Call it
 // before adding supplied documents: AddExternal then accepts a supplied file at
 // a built-in address only when it is deep-equal to the embedded one (the
@@ -50,9 +59,8 @@ var (
 // are built once per process and shared read-only; idx itself is only written
 // here, never the shared resources.
 func (idx *Index) AddBuiltins() error {
-	sharedOnce.Do(func() { sharedIdx, sharedErr = BuildBuiltinIndex() })
-	if sharedErr != nil {
-		return sharedErr
+	if _, err := SharedBuiltinIndex(); err != nil {
+		return err
 	}
 	keys := make([]string, 0, len(sharedIdx.Resources))
 	for k, r := range sharedIdx.Resources {
