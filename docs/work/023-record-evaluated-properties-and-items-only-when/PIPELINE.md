@@ -3,25 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #159 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 12:09:09 UTC · **Stopped:** 2026-10-17 12:34:04 UTC
+- **Run:** #159 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 12:09:09 UTC · **Stopped:** 2026-10-17 12:37:47 UTC
 - **Story spend:** ~$6.33 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 159` to accept, or `factory reject 159 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-159-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Existing tests were changed or deleted by this story — check that they were not weakened to make a failing check pass: internal/eval/location_test.go (deleted or renamed: TestLazyLocationEqualsEager, TestLazyLocationParallelRender; assertions 3 → 0)
-  >   ◦ Release-agent note: The skip switch is correctly fail-safe: its zero value is false (recording on), so only EvaluateValidate sets it. Tree and lazy evaluation paths always record, preserving all outputs.
-  >   ◦ Release-agent note: The load-time analysis recurses depth-first over the already-bounded schema and allocates nothing (no heap stack), so CompileOrder allocs/op stays at the baseline.
-  >   ◦ Release-agent note: The old location.go tests for dead nodeLoc/kwLoc types were replaced by lazyloc_test.go, which tests the live lazyLoc implementation through the real evaluator. This is a legitimate test upgrade per AC6 (remove unused types and test lazyLoc); the new test covers all required cases.
-  >   ◦ Release-agent note: Benchmark improvements are primarily in memory (B/op and allocs/op), which was the goal. Speed improvements (ns/op) are within the ±5% noise band and are recorded for reference only.
-  >   ◦ Security note (none): No insecure default. The per-call switch is fail-safe: its zero value means recording stays on, and only EvaluateValidate sets it. NeedsEvaluated answers 'needed' when the registry cannot be listed, and checks every registry resource whenever a reference leaves the document. Step, depth, ref-chain, output-unit, report-byte and annotation accounting stay outside the guarded helpers, and both limit tests show the boundaries are unchanged. scan() now recurses, but only over a schema value that was already decoded under MaxDepth (or an embedded meta-schema), and compile and the meta-schema check already walk it to the same depth. It adds no new stack-exhaustion risk. No instance value reaches any output.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -63,9 +55,10 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 12:33:26 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 8; findings: 0 new, 0 persistent, 8 resolved |
 | 2026-10-17 12:33:26 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 12:34:03 | agent | release-agent | ✅ pass · 36.9s · $0.0792 |
-| 2026-10-17 12:34:04 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 12:34:04 | run | run waiting_human | ⏸️ |
+| 2026-10-17 12:34:04 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 12:37:47 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 12:37:47 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
-- none
+- released NOT READY: the evidence gaps named at Checkpoint 3 were accepted by the operator
