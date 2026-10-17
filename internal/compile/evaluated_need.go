@@ -21,11 +21,11 @@ import (
 func NeedsEvaluated(docs []Doc, ext *registry.Index) bool {
 	external := false
 	for _, d := range docs {
-		found, ext := scan(d.Value)
+		found, e := scan(d.Value)
 		if found {
 			return true
 		}
-		external = external || ext
+		external = external || e
 	}
 	if !external {
 		return false
@@ -41,26 +41,34 @@ func NeedsEvaluated(docs []Doc, ext *registry.Index) bool {
 	return false
 }
 
-// scan walks v with an explicit stack. found: an unevaluated* keyword name
-// occurs; external: a reference leaves its document.
+// scan walks v. found: an unevaluated* keyword name occurs; external: a
+// reference leaves its document.
+// ponytail: plain recursion, so the scan allocates nothing at Compile. Its
+// depth is bounded because every schema value was decoded under MaxDepth
+// (main schema and registry files) or is an embedded meta-schema.
 func scan(v any) (found, external bool) {
-	stack := []any{v}
-	for len(stack) > 0 {
-		cur := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-		switch x := cur.(type) {
-		case map[string]any:
-			for k, val := range x {
-				if k == "unevaluatedProperties" || k == "unevaluatedItems" {
-					return true, external
-				}
-				if s, ok := val.(string); ok && (k == "$ref" || k == "$dynamicRef") && !strings.HasPrefix(s, "#") {
-					external = true
-				}
-				stack = append(stack, val)
+	switch x := v.(type) {
+	case map[string]any:
+		for k, val := range x {
+			if k == "unevaluatedProperties" || k == "unevaluatedItems" {
+				return true, external
 			}
-		case []any:
-			stack = append(stack, x...)
+			if s, ok := val.(string); ok && (k == "$ref" || k == "$dynamicRef") && !strings.HasPrefix(s, "#") {
+				external = true
+			}
+			f, e := scan(val)
+			if f {
+				return true, external
+			}
+			external = external || e
+		}
+	case []any:
+		for _, val := range x {
+			f, e := scan(val)
+			if f {
+				return true, external
+			}
+			external = external || e
 		}
 	}
 	return false, external

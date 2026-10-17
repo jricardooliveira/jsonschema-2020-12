@@ -288,7 +288,7 @@ the record. Change is after against before; negative is better.
 
 | Benchmark | ns/op before → after | MB/s before → after | B/op before → after | allocs/op before → after |
 |---|---|---|---|---|
-| CompileOrder | 667,268 → 684,864 (noise) | – | 696,779 → 696,842 (noise) | 14,072 → 14,075 (+3) |
+| CompileOrder | 667,268 → 682,721 (noise) | – | 696,779 → 696,654 (noise) | 14,072 → 14,072 (0) |
 | ValidateSmall | 30,154 → 28,701 (−4.8%) | 16.32 → 17.14 | 51,208 → 42,641 (−16.7%) | 846 → 829 (−2.0%) |
 | Validate0_5MB | 29,076,265 → 26,535,065 (−8.7%) | 17.80 → 19.47 | 50,724,601 → 36,742,878 (−27.6%) | 710,113 → 700,087 (−1.4%) |
 | Validate5_5MB | 269,257,406 → 253,485,354 (−5.9%) | 20.30 → 21.57 | 524,157,710 → 377,118,288 (−28.1%) | 7,100,145 → 7,000,109 (−1.4%) |
@@ -321,13 +321,16 @@ second pass (the tree) records, as designed.
 - Flag and basic validation of the order documents (library and CLI) have
   lower B/op (about 17% to 28% in the library, 21% to 24% in the CLI for
   flag/basic-style runs) and lower allocs/op (1% to 2%).
-- No validation scenario's allocs/op or B/op rose. The decoded-document
-  figures are unchanged.
-- Exception to report plainly: `CompileOrder` allocs/op is 3 higher
-  (14,072 → 14,075). This is the load-time reachability scan; its B/op change
-  is inside run-to-run spread (about +60 bytes of 697 KB). It is a rise in
-  allocs/op of 0.02% on one scenario, so the criterion "no scenario rises" is
-  met only to within these 3 allocations.
+- No scenario's allocs/op or B/op rose. The decoded-document figures are
+  unchanged.
+- `CompileOrder`: a first version of the load-time reachability scan used a
+  heap stack and cost 3 allocations (14,072 → 14,075). The scan now recurses
+  over the already depth-limited schema value and allocates nothing, so
+  `CompileOrder` is back at 14,072 allocs/op (runs: 14,071 to 14,072) and
+  its B/op is inside run-to-run spread. The `CompileOrder` row and the root
+  and CLI rows were re-measured after that fix (same command, `-count=5`,
+  median); the validation rows matched the figures above to within a few
+  allocations and bytes, so they are kept.
 - ns/op is lower on every validation scenario (about 2% to 11%); the speed
   gain is recorded, not required. Changes within ±5% are noise.
 - No allocation-limit test was added or changed.

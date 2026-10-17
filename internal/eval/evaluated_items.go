@@ -51,7 +51,7 @@ type EvaluatedItems struct {
 	// resets it.
 	steps, maxSteps int
 	// skip turns recording off. The zero value records (fail-safe); only
-	// EvaluateLazy sets it, when no unevaluated* keyword is reachable.
+	// EvaluateValidate sets it, when no unevaluated* keyword is reachable.
 	skip bool
 }
 
