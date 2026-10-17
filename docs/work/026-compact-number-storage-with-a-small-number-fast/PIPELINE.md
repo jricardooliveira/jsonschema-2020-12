@@ -3,20 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #161 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 13:04:22 UTC · **Stopped:** 2026-10-17 13:31:42 UTC
+- **Run:** #161 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 13:04:22 UTC · **Stopped:** 2026-10-17 13:36:27 UTC
 - **Story spend:** ~$7.29 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 161` to accept, or `factory reject 161 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-161-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: **Windows build incompatibility (medium severity)**: cmd/jsonschema tests fail to compile on Windows. The new peakmem_test.go uses syscall.Rusage and syscall.RUSAGE_SELF (Unix only), which do not exist on Windows. This breaks the entire cmd/jsonschema test build when cross-compiling to or testing on Windows. **Fix required**: add `//go:build !windows` to peakmem_test.go or guard the Rusage call with a platform-specific build constraint. The test only runs with a manual `-peakmem` flag, so it can safely skip on Windows. Without this fix, Windows users/CI will see compile errors in the cmd/jsonschema package.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -56,8 +53,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 13:30:48 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 1 new, 0 persistent, 7 resolved |
 | 2026-10-17 13:30:48 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 13:31:42 | agent | release-agent | ✅ warn · 53.6s · $0.1016 |
-| 2026-10-17 13:31:42 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 13:31:42 | run | run waiting_human | ⏸️ |
+| 2026-10-17 13:31:42 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 13:36:27 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 13:36:27 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
