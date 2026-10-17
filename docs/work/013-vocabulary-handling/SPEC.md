@@ -3,7 +3,7 @@
 - Date: 2026-10-17
 - Type: feature
 - Verdict: pass
-- Status: proposed (pending Checkpoint 1 sign-off)
+- Status: passed gate 1 with nothing for the operator to decide (run #151, 2026-10-17 01:06 UTC)
 
 ## Problem
 
