@@ -106,6 +106,52 @@ affected.
 The CLI figures include reading the file and writing the report to
 `io.Discard`, which the library benchmarks do not.
 
+## Story 199 (lazy keyword locations): before
+
+The "before" set for story 199, measured on the code as it stood before any
+change of this story. Same machine and Go version as the baseline above
+(Apple M3 Max, 16 logical CPUs, macOS arm64, go1.27.2). Medians of 10 runs
+(for 10 values, the mean of the 5th and 6th sorted). The "after" set is added
+next to this one when the change is done.
+
+Command (one package at a time, `-count=10`):
+
+    go test -run '^$' -bench . -benchmem -count=10 .
+    go test -run '^$' -bench . -benchmem -count=10 ./internal/jsonvalue
+    go test -run '^$' -bench . -benchmem -count=10 ./cmd/jsonschema
+
+Note: a full-tree run of the same command was going on in the background
+during part of the measurement, so timings may be a little high or noisy
+(`CLI/Errors` shows two clusters, about 35 ms and 37.7 ms). Allocation counts
+and retained heap are not affected.
+
+### Library (package root)
+
+| Benchmark | ns/op | MB/s | B/op | allocs/op |
+|---|---|---|---|---|
+| CompileOrder | 1,041,904 | – | 1,039,896 | 28,410 |
+| ValidateSmall | 53,168 | 9.25 | 75,195 | 1,582 |
+| Validate0_5MB | 49,923,275 | 10.35 | 73,940,908 | 1,423,839 |
+| Validate5_5MB | 454,568,674 | 12.03 | 755,891,277 | 14,183,144 |
+| ValidateErrors | 32,893,218 | 10.12 | 53,849,932 | 844,097 |
+| ValidateErrorsBasic | 34,122,732 | 9.76 | 55,835,666 | 850,122 |
+
+### Decoded document (package internal/jsonvalue)
+
+| Benchmark | ns/op | retained-B | B/op | allocs/op |
+|---|---|---|---|---|
+| RetainedHeap/0.5MB | 6,120,433 | 4,340,755 | 6,282,191 | 170,201 |
+| RetainedHeap/5.5MB | 60,079,201 | 44,924,652 | 67,382,582 | 1,715,811 |
+
+### CLI, in process (package cmd/jsonschema)
+
+| Benchmark | ns/op | MB/s | B/op | allocs/op |
+|---|---|---|---|---|
+| CLI/0.5MB | 59,672,058 | 8.66 | 91,260,846 | 1,502,415 |
+| CLI/5.5MB | 531,462,573 | 10.29 | 909,393,436 | 14,711,730 |
+| CLI/Errors | 36,637,432 | 9.09 | 63,067,414 | 878,656 |
+| CLI/Verbose0.5MB | 125,242,953 | 4.13 | 195,722,282 | 2,956,262 |
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a
