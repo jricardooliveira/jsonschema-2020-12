@@ -53,6 +53,20 @@ func TestDetailedCondensing(t *testing.T) {
 		t.Errorf("secret leaked: %s", s)
 	}
 
+	// Annotations under a failing node are dropped (core 12.4.2), even when
+	// they sit on a passing child.
+	failAnn := &keywords.TreeNode{Valid: false, Children: []*keywords.TreeNode{
+		{Valid: true, KeywordLocation: "/properties/b", InstanceLocation: "/b", Annotations: []keywords.Annotation{
+			{KeywordLocation: "/properties/b/title", InstanceLocation: "/b", Value: "T"}}},
+		{Valid: false, KeywordLocation: "/properties/a", InstanceLocation: "/a",
+			Errors: []keywords.Unit{{KeywordLocation: "/properties/a/type", InstanceLocation: "/a", Error: "wrong type"}}},
+	}}
+	out, err = RenderReport("detailed", Report{Tree: failAnn}, 0)
+	s = string(out)
+	if err != nil || !json.Valid(out) || strings.Contains(s, "annotation") || strings.Contains(s, "/properties/b") || !strings.Contains(s, `"error":"wrong type"`) {
+		t.Errorf("annotated passing child kept under failing node: %s %v", s, err)
+	}
+
 	pass := &keywords.TreeNode{Valid: true, Children: []*keywords.TreeNode{
 		{Valid: true, KeywordLocation: "/properties/b", InstanceLocation: "/b", Annotations: []keywords.Annotation{
 			{KeywordLocation: "/properties/b/title", InstanceLocation: "/b", Value: "T"}}},

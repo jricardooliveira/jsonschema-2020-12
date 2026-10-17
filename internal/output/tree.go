@@ -39,14 +39,15 @@ func hasInfo(n *keywords.TreeNode) bool {
 }
 
 // kept returns the children rendered under n. Verbose keeps all; detailed
-// drops passing children without annotations (core 12.4.2).
+// drops passing children without annotations, and under a failing node it
+// drops every passing child, since annotations there are not kept (core 12.4.2).
 func kept(n *keywords.TreeNode, verbose bool) []*keywords.TreeNode {
 	if verbose {
 		return n.Children
 	}
 	var out []*keywords.TreeNode
 	for _, c := range n.Children {
-		if hasInfo(c) {
+		if !c.Valid || (n.Valid && hasInfo(c)) {
 			out = append(out, c)
 		}
 	}

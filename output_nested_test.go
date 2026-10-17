@@ -56,13 +56,52 @@ func TestNestedShapesSelectableAndSafe(t *testing.T) {
 
 func TestNestedVerboseKeepsPassingDetailedDrops(t *testing.T) {
 	res := nestedResult(t, Options{}, `{"n":1}`)
-	v, _ := res.Output("verbose")
-	d, _ := res.Output("detailed")
-	if !strings.Contains(string(v), `"/n"`) && !strings.Contains(string(v), "/properties/n") {
-		t.Errorf("verbose lacks passing node: %s", v)
+	v, err := res.Output("verbose")
+	if err != nil || !json.Valid(v) {
+		t.Fatalf("verbose: %s %v", v, err)
 	}
-	if strings.Contains(string(d), "/properties/n") {
+	d, err := res.Output("detailed")
+	if err != nil || !json.Valid(d) {
+		t.Fatalf("detailed: %s %v", d, err)
+	}
+	const passN = `"keywordLocation":"/$ref/properties/n","instanceLocation":"/n"`
+	if !strings.Contains(string(v), passN) {
+		t.Errorf("verbose lacks passing node %s: %s", passN, v)
+	}
+	if strings.Contains(string(d), `"keywordLocation":"/$ref/properties/n"`) {
 		t.Errorf("detailed kept passing node: %s", d)
+	}
+}
+
+// Property-name annotations (core 10.3.2) show the matched names, never the
+// values, in both nested shapes.
+func TestNestedPropertyNameAnnotations(t *testing.T) {
+	const secret = "SECRET-VALUE-99"
+	s, err := Compile([]byte(`{"properties":{"name":{}},"patternProperties":{"^p":{}},"additionalProperties":{}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := s.Validate([]byte(`{"name":"` + secret + `1","px":"` + secret + `2","other":"` + secret + `3"}`))
+	if err != nil || !res.Valid() {
+		t.Fatal(res, err)
+	}
+	for _, shape := range []string{"detailed", "verbose"} {
+		out, err := res.Output(shape)
+		if err != nil || !json.Valid(out) {
+			t.Fatalf("%s: %s %v", shape, out, err)
+		}
+		for _, want := range []string{
+			`"keywordLocation":"/properties","instanceLocation":"","annotation":["name"]`,
+			`"keywordLocation":"/patternProperties","instanceLocation":"","annotation":["px"]`,
+			`"keywordLocation":"/additionalProperties","instanceLocation":"","annotation":["other"]`,
+		} {
+			if !strings.Contains(string(out), want) {
+				t.Errorf("%s lacks %s: %s", shape, want, out)
+			}
+		}
+		if strings.Contains(string(out), secret) {
+			t.Errorf("%s leaked value: %s", shape, out)
+		}
 	}
 }
 
