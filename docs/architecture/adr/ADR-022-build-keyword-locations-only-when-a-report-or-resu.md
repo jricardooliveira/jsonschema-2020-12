@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #22
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #157, 2026-10-17 10:54 UTC)
 
 ## Decision
 New code goes in internal/eval/location.go: a small, allocation-light location reference (parent pointer plus segment, and the base URI of the current resource). Strings are rendered only at the points where an error, output unit, annotation or Result entry is created. The crowded file internal/eval/eval.go is touched only to pass the reference instead of the string and to call render at those creation points. internal/eval/units.go and internal/eval/annotations.go render on creation. The compiled schema is not changed, so Compile allocations cannot rise. Per-call memoisation, if any, lives in the evaluation context. Verbose keeps its second pass, which also uses the lazy reference.
