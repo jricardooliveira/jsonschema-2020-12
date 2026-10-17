@@ -56,6 +56,8 @@ Modules the architecture expects to touch:
 - `internal/formats/ecma_unicode_props_test.go`
 - `internal/formats/regex.go`
 - `internal/formats/regex_test.go`
+- `internal/formats/assertion_mode_test.go`
+- `formatassertion_test.go`
 
 ## Order of work
 
@@ -71,20 +73,25 @@ exactly this order:
 
 ## Risks
 
-- The strict ECMA-262 u-flag grammar is large. Annex B leniencies must stay disabled, and named-group and back-reference rules are subtle.
+- The strict ECMA-262 u-flag grammar is large. Annex B leniencies must stay disabled, and named-group and back-reference rules are subtle. A flat non-recursive scan makes the per-alternative duplicate-name rule depend on careful stack-frame bookkeeping.
 - The Unicode property alias list is hand-written. Go's unicode tables may lag behind the Unicode version ECMA-262 references, so some script names may be missing. This is recorded in code.
-- Story 182's translation step may reject constructs that the syntax checker accepts. The regex format must not let that turn a valid pattern into a failure.
+- Story 182's translation step may reject or mishandle constructs that the syntax checker accepts. It is contained by recover and ignored for the verdict, so its run here only proves the step does not crash.
+- formatassertion_test.go (root, outside the reservation) has TestFormatAssertionDeferredAndUnknownPass, which expects these eight formats to pass any string in assertion mode. It breaks once they register. Its list is cut to 'no-such-format' (a one-line edit), and coverage moves to the new internal/formats/assertion_mode_test.go. That new file is also outside the reservation: the in-package test files cannot import the root package because of the import cycle, so an external formats_test file is needed.
 
 Implementation constraints the coder must honor:
 
 - Standard library only; go.mod stays without require lines.
 - Do not use net/url to judge validity: it is lenient (it accepts 'http://exa mple.com').
-- Never edit internal/formats/registry.go, internal/keywords/registry.go, internal/eval/eval.go, jsonschema.go, options.go or cmd/jsonschema/*.
-- Checkers must run in linear or bounded time on hostile strings: no backtracking regexes over the input, and recursion in the ECMA parser is bounded by pattern length or nesting.
+- Never edit internal/formats/registry.go, internal/keywords/registry.go, internal/keywords/formatannotation/format.go, internal/ecmaregex/translate.go, internal/eval/eval.go, jsonschema.go, options.go or cmd/jsonschema/*.
+- The ECMA-262 syntax checker is non-recursive: one forward scan with an explicit heap slice as the group stack and flat class state. It is linear in pattern length and has no depth cap. Named and numbered back-references are resolved after the scan from collected sets.
+- The RFC 3986/3987, RFC 6570, json-pointer and relative-json-pointer checkers are single-pass index scanners with no recursion over input length and no regexp over the input.
+- regex.go calls ecmaregex.Translate only through translateContained (defer/recover; errors and panics are ignored), and only after the syntax check accepted the pattern and len(s) <= ecmaregex.DefaultMaxPatternSize. It never calls regexp.Compile. The verdict comes only from the syntax checker.
+- Step charging stays in formatannotation/format.go (ctx.ChargeBytes(len(s))). Checkers must do a constant number of linear passes, so that charge stays proportional, and must not keep their own counters.
 - Check functions are pure and keep no shared mutable state.
 - Each partly checked format has a comment that says what it misses.
-- Tests ask the code for any defined limit (for example the max prefix length 9999) instead of repeating the number.
+- Tests ask the code for any defined limit (the uri-template max prefix 9999 as a named constant, keywords.BytesPerStep, ecmaregex.DefaultMaxPatternSize) instead of repeating the number.
 - Format errors never quote the instance value.
+- ecma_syntax_test.go tests one million '(' and one million '[' characters: both invalid, fast, no crash. regex_test.go tests translateContained with a panicking and an error-returning translator and shows the verdict is unchanged.
 
 - DB impact: no · API impact: no · Migration needed: no
 
