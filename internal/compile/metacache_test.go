@@ -27,12 +27,14 @@ func TestBuiltinSetBuiltOnce(t *testing.T) {
 			t.Fatal("shared set differs between calls")
 		}
 	}
+	calls := 0
 	for i := 0; i < 5; i++ {
 		ext := &registry.Index{Resources: map[string]*registry.Resource{}}
 		if err := ext.AddBuiltins(); err != nil {
 			t.Fatal(err)
 		}
 		err := MetaChecks([]Doc{{Value: map[string]any{"type": "string"}}}, ext, func(c Check) error {
+			calls++
 			if c.Meta != sets[0].meta {
 				t.Error("meta-check did not reuse the shared compiled meta-schema")
 			}
@@ -42,18 +44,28 @@ func TestBuiltinSetBuiltOnce(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	// A caller resource layered on a copy never reaches the shared index.
+	if calls != 5 { // the callback assertion above must not be vacuous
+		t.Fatalf("meta-check callback ran %d times, want 5", calls)
+	}
+	// A caller resource added to the per-call index and compiled against never
+	// reaches the shared index.
 	set, _ := sharedBuiltin()
 	before := len(set.idx.Resources)
+	const extra = "https://example.invalid/extra"
 	ext := &registry.Index{Resources: map[string]*registry.Resource{}}
 	if err := ext.AddBuiltins(); err != nil {
 		t.Fatal(err)
 	}
-	ext.Resources["https://example.invalid/extra"] = &registry.Resource{}
-	if err := ext.AddBuiltins(); err != nil {
+	if err := ext.AddExternal(map[string]any{"type": "integer"}, extra, "test"); err != nil {
 		t.Fatal(err)
 	}
-	if len(set.idx.Resources) != before {
+	if _, ok := ext.Resources[extra]; !ok {
+		t.Fatal("caller resource missing from the per-call index")
+	}
+	if _, _, err := CompileReached(map[string]any{"$ref": extra}, StdinBaseURI, ext); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := set.idx.Resources[extra]; ok || len(set.idx.Resources) != before {
 		t.Fatal("shared built-in index was written")
 	}
 	if n := builtinBuilds.Load(); n != 1 {
