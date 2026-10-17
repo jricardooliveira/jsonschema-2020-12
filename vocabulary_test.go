@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	jsonschema "github.com/jricardooliveira/jsonschema-2020-12"
@@ -196,4 +197,120 @@ func TestSchemaKeywordSilent(t *testing.T) {
 	if strings.Contains(string(out), "$schema") {
 		t.Errorf("report has a $schema annotation: %s", out)
 	}
+}
+
+const vocabBase = "https://json-schema.org/draft/2020-12/vocab/"
+
+func compileWithMeta(t *testing.T, vocab, schema string) *jsonschema.Schema {
+	t.Helper()
+	p := filepath.Join(t.TempDir(), "meta.json")
+	meta := `{"$id":"https://example.com/meta","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":` + vocab + `}`
+	if err := os.WriteFile(p, []byte(meta), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s, err := jsonschema.CompileWithRegistry([]byte(schema), jsonschema.Options{},
+		jsonschema.Registry{Files: []jsonschema.RegistryFile{{Path: p}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return s
+}
+
+func valid(t *testing.T, s *jsonschema.Schema, doc string) bool {
+	t.Helper()
+	r, err := s.Validate([]byte(doc))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return r.Valid()
+}
+
+// core 8.1.2: keywords of an unlisted vocabulary are unknown; embedded
+// resources use their own meta-schema's set.
+func TestInactiveVocabularyAndEmbeddedResource(t *testing.T) {
+	v := `{"` + vocabBase + `core":true,"` + vocabBase + `applicator":true}`
+	s := compileWithMeta(t, v, `{"$schema":"https://example.com/meta","minimum":5}`)
+	if !valid(t, s, `3`) {
+		t.Error("minimum must be ignored without the validation vocabulary")
+	}
+	if s.FormatAssertionRequested() {
+		t.Error("format assertion not requested")
+	}
+	s = compileWithMeta(t, v, `{"minimum":5,"properties":{"a":{"$id":"https://example.com/in","$schema":"https://example.com/meta","minimum":5}}}`)
+	if valid(t, s, `3`) || !valid(t, s, `{"a":3}`) {
+		t.Error("outer keeps validation, inner does not")
+	}
+}
+
+// core 8.1.2: format-assertion required is recorded.
+func TestFormatAssertionRecorded(t *testing.T) {
+	v := `{"` + vocabBase + `core":true,"` + vocabBase + `format-assertion":true}`
+	if !compileWithMeta(t, v, `{"$schema":"https://example.com/meta"}`).FormatAssertionRequested() {
+		t.Error("format assertion should be recorded")
+	}
+}
+
+// compileRefTo compiles a main schema that only $refs a registry resource
+// whose own '$schema' is given, with the vocabulary meta-schemas supplied.
+func compileRefTo(t *testing.T, schemaURI string) error {
+	t.Helper()
+	p := filepath.Join(t.TempDir(), "ext.json")
+	ext := `{"$id":"https://example.com/ext","$schema":"` + schemaURI + `","type":"string"}`
+	if err := os.WriteFile(p, []byte(ext), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := jsonschema.CompileWithRegistry([]byte(`{"$ref":"https://example.com/ext"}`), jsonschema.Options{},
+		jsonschema.Registry{Files: []jsonschema.RegistryFile{
+			{Path: p},
+			{Path: "testdata/vocabulary/metaschemas/unknown_required.json"},
+		}})
+	return err
+}
+
+// core 8.1.1, 8.1.2: a registry resource reached through $ref is refused with
+// its own error type, not a flattened message.
+func TestRefReachedResourceVocabularyErrors(t *testing.T) {
+	var unk *jsonschema.UnknownVocabularyError
+	err := compileRefTo(t, "https://example.com/meta/unknown-required")
+	if !errors.As(err, &unk) || unk.Vocabulary != "https://example.com/vocab/money" {
+		t.Errorf("unknown vocabulary: %v", err)
+	}
+	if err != nil && !strings.Contains(err.Error(), "meta-schema https://example.com/meta/unknown-required requires unknown vocabulary https://example.com/vocab/money") {
+		t.Errorf("message: %v", err)
+	}
+	var uns *jsonschema.UnsupportedSchemaError
+	if err := compileRefTo(t, "http://json-schema.org/draft-07/schema#"); !errors.As(err, &uns) || uns.Draft != "draft-07" {
+		t.Errorf("unsupported: %v", err)
+	}
+}
+
+// core 8.1.2: vocabulary sets are fixed at Compile and only read during
+// evaluation, so one schema with a restricted-vocabulary meta-schema and an
+// embedded 2020-12 resource gives identical results from many goroutines
+// (run with -race).
+func TestVocabularyConcurrentValidate(t *testing.T) {
+	v := `{"` + vocabBase + `core":true,"` + vocabBase + `applicator":true}`
+	s := compileWithMeta(t, v, `{"$schema":"https://example.com/meta","minimum":5,"properties":{
+		"a":{"$id":"https://example.com/in","$schema":"https://json-schema.org/draft/2020-12/schema","minimum":5}}}`)
+	docs := map[string]bool{`3`: true, `{"a":3}`: false, `{"a":7}`: true}
+	var wg sync.WaitGroup
+	for range 8 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for range 50 {
+				for d, want := range docs {
+					r, err := s.Validate([]byte(d))
+					if err != nil {
+						t.Error(err)
+						return
+					}
+					if r.Valid() != want {
+						t.Errorf("doc %s: valid = %v, want %v", d, r.Valid(), want)
+					}
+				}
+			}
+		}()
+	}
+	wg.Wait()
 }

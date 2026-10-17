@@ -135,7 +135,7 @@ Places where the finished tool differs from the brief, or leaves work behind:
 2. **Partly checked formats.** `idn-hostname`, `idn-email`, the four URI/IRI formats, `uri-template`, `regex` and `uuid` (shape only) do not check everything the brief's "as far as practical" could cover; see the table above.
 3. **Verbose output is only partly produced.** A passing leaf assertion without annotation has no unit, so verbose lists evaluated subschemas and annotations only. For a failing document the detailed and verbose output can be the same. See [output-formats.md](output-formats.md).
 4. **Pointer pages left behind.** `docs/regex-deviations.md`, `docs/formats.md` and `docs/cli-contract.md` were merged into this page and [cli.md](cli.md). Files could not be deleted, so each now holds one line pointing to its new place.
-5. **Stray debug test files** are still present: `dbg_test.go` and `internal/registry/dbg_tmp_test.go`.
-6. **Duplicated spec runners** are still present: `internal/speccases` and `spec_applicator_test.go`.
+5. **A stray debug test file** is still present: `internal/registry/dbg_tmp_test.go`.
+6. **Duplicated spec runners** are still present: `internal/speccases` and `spec_external_test.go` (formerly `spec_applicator_test.go`).
 
 No other difference from the brief is known.
