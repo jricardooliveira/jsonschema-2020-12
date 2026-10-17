@@ -3,23 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #152 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 01:41:14 UTC · **Stopped:** 2026-10-17 02:27:43 UTC
+- **Run:** #152 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 01:41:14 UTC · **Stopped:** 2026-10-17 02:28:31 UTC
 - **Story spend:** ~$18.16 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 152` to accept, or `factory reject 152 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-152-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: internal/limits package is separate from jsonvalue.LimitError (design decision A said reuse that error; actual code uses it and stores constants in internal/limits for closed-set validation). Minimal departure; error type is still shared.
-  >   ◦ Release-agent note: EvalContext.Charge() does nothing without a per-call record (only keywords with context that has Items as callState pay the cost). Cannot be reached in practice because evaluate() installs callState before any keyword runs; safe but opaque.
-  >   ◦ Release-agent note: Breaking change: limit error messages, Registry.MaxFileBytes=0 behavior, pattern size error type. Documented in migration_notes; all existing tests updated by story 193.
-  >   ◦ Security note (low): LOW: EvalContext.Charge (internal/keywords/registry.go) does nothing when ctx.Items is not the per-call record, so it fails open. All public paths go through EvaluateWith, which installs the call state, and keywordStep in eval.go fails closed. So this cannot be reached today. It is hardening only.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -79,8 +73,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 02:26:52 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 2 new, 0 persistent, 3 resolved |
 | 2026-10-17 02:26:52 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 02:27:42 | agent | release-agent | ✅ pass · 49.4s · $0.1233 |
-| 2026-10-17 02:27:43 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 02:27:43 | run | run waiting_human | ⏸️ |
+| 2026-10-17 02:27:43 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 02:28:31 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 02:28:31 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
