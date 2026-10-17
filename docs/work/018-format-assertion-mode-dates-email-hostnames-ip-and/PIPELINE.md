@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #153 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 02:57:33 UTC
-- **Story spend:** ~$6.59 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 03:03:17 UTC
+- **Story spend:** ~$8.51 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,10 +15,10 @@ The operator decides at gate-release: `factory approve 153` to accept, or `facto
 
 - Waiting for the operator at **gate-release**:
   > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: No instance value reaches the output. The error message is a fixed text plus the format name taken from the schema, and a test checks this.; The only paths that pass by default are the ones the story specifies: unknown formats, the not-yet-built formats and a format with no registered check. Check functions return a plain bool and have no error path.; Each format check is charged ChargeBytes(len(s)) before it runs, following ADR-016, and TestFormatAssertionChargesSteps proves this. All checks are hand-written, single-pass and non-recursive, with no regexp or net parsers.; Meta-schema compilation is forced to annotation-only (noFormat), whatever the caller's option or the schema's vocabulary.; The format registry is written only from init(), and the mode is captured in the compiled keyword, so the compiled schema stays immutable.
-  >   ◦ Release-agent note: Email IPv6 literal tag is case-sensitive (medium severity): only uppercase 'IPv6:' in addresses like user@[IPv6:...] is accepted; lowercase 'ipv6:' is rejected. RFC 5321 section 4.1.3 specifies 'IPv6:' in that capitalization, but some mailers may emit lowercase variants, causing valid addresses to fail here.
-  >   ◦ Release-agent note: idn-email rejects quoted local parts when the domain contains non-ASCII (low severity): email '"john doe"@example.com' is valid (delegated to validEmail), but '"john doe"@例え.jp' is invalid because the non-ASCII path applies space/quote character checks to the quoted string. The quoted local part is valid per RFC 5321 even with a non-ASCII domain.
-  >   ◦ Release-agent note: Email 254-byte total limit has no standalone boundary test (low severity): the limit is implemented but coverage is only indirect through other cases. No test verifies the exact boundary (253 bytes valid, 255 invalid, or vice versa).
+  >   • Security finding (medium) not resolved: None blocking. Format errors carry only the locations and a fixed message with the format name from the schema, never the instance value. Every check is hand-written, single-pass and linear, with no regexp and no net/netip/mail parsers. Each check is charged with ctx.ChargeBytes(len(s)) before it runs, and TestFormatAssertionChargesSteps shows this. The registry is written only from init(). The only fail-open paths are the specified ones: an unknown or deferred format, a non-string instance, or a non-string format value.
+  >   ◦ Release-agent note: F1 (medium): The guard forcing meta-schema validation to annotation-only (noFormat=true in metacheck.go) is exercised by formatassertion_test.go::TestFormatAssertionMetaCheckAnnotationOnly, but the test only verifies compile succeeds. It does not fail without the guard; it would pass if the guard were removed and the meta-schema itself did not assert format-assertion on keywords like $id. An explicit test verifying the guard's effect (e.g., mocking or inspecting the compile path) would strengthen assurance that meta-checks stay annotation-only in all modes.
+  >   ◦ Release-agent note: F3 (low): No test covers an embedded resource with a different $schema than the root, which could have a different format-assertion vocabulary flag recorded by story 190. This edge case is not in the acceptance criteria but is a potential interaction point.
+  >   ◦ Release-agent note: F2 (low): IPv6 address literals in email must use the 'IPv6:' prefix per RFC 5321 section 4.1.3; user@[::1] is invalid, user@[IPv6:::1] is valid. This is standard-conformant but differs from some real-world email parsers that tolerate the bare form.
   >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
@@ -73,8 +73,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 02:56:19 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 17; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 02:56:19 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 02:57:33 | agent | release-agent | ✅ warn · 73.4s · $0.1112 |
-| 2026-10-17 02:57:33 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 02:57:33 | run | run waiting_human | ⏸️ |
+| 2026-10-17 02:57:33 | gate | gate-release | ❌ REJECTED: Fix only: (F1) in internal/formats/email.go match the RFC 5321 address-literal tag 'IPv6:' case-insensitively (ABNF literals are case-insensitive), test user@[ipv6:::1] and user@[IPV6:::1] valid; (F3) add a … |
+| 2026-10-17 02:58:15 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 02:59:08 | agent | coder-agent | ✅ complete · remediation · 52.6s · $0.9692 |
+| 2026-10-17 03:00:46 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 03:00:47 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 03:02:15 | agent | tester-agent | ✅ warn · 88.6s · $0.8434 |
+| 2026-10-17 03:02:15 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 17; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 03:02:16 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 03:03:16 | agent | release-agent | ✅ warn · 60.5s · $0.1021 |
+| 2026-10-17 03:03:17 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 03:03:17 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
