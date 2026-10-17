@@ -22,7 +22,22 @@ type Report struct {
 	Valid       bool
 	Units       []keywords.Unit
 	Annotations []keywords.Annotation
+	// Tree is the evaluation tree; set only for shapes registered with
+	// RegisterTreeReport. Nil means "render a minimal root unit".
+	Tree *keywords.TreeNode
 }
+
+// needsTree names the shapes that want Report.Tree. Written by init() only.
+var needsTree = map[string]bool{}
+
+// RegisterTreeReport adds a shape that renders from the evaluation tree.
+func RegisterTreeReport(name string, r ReportRenderer) {
+	RegisterReport(name, r)
+	needsTree[name] = true
+}
+
+// NeedsTree reports whether the named shape renders from Report.Tree.
+func NeedsTree(name string) bool { return needsTree[name] }
 
 // Budget is a byte buffer that refuses to grow past its cap.
 type Budget struct {

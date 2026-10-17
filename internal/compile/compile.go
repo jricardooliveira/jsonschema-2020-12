@@ -47,7 +47,7 @@ func (r *Resource) AbsoluteLocation(loc string) string {
 	if r == nil {
 		return ""
 	}
-	return r.URI + "#" + strings.TrimPrefix(loc, r.Pointer)
+	return r.URI + "#" + encodeFragment(strings.TrimPrefix(loc, r.Pointer))
 }
 
 // Compile compiles a decoded schema value. Unknown keywords are ignored.

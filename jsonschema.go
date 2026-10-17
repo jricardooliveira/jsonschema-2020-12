@@ -30,6 +30,10 @@ type Result struct {
 	units       []keywords.Unit
 	annotations []eval.Annotation
 	maxReport   int
+	// read-only inputs to rebuild the evaluation tree in Output
+	root        *compile.Node
+	inst        any
+	max, maxAnn int
 }
 
 // Valid reports whether the document satisfied the schema.
@@ -139,5 +143,5 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("document: %w", err)
 	}
-	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn}, nil
 }
