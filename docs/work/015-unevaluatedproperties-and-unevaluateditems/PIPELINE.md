@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #150 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 00:39:58 UTC · **Stopped:** 2026-10-17 00:56:00 UTC
+- **Run:** #150 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 00:39:58 UTC · **Stopped:** 2026-10-17 00:56:37 UTC
 - **Story spend:** ~$5.47 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 150` to accept, or `factory reject 150 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-150-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: These keywords depend on story 191 to provide annotation tracking (EvaluatedItems, mark/rollback) and story 191 dropping annotations from failed subschemas. The diff uses the interfaces correctly, but if 191 does not roll back on subschema failure, unevaluated* will over-report covered members. Confirm story 191 is complete and has rollback implemented.
-  >   ◦ Release-agent note: anyOf and oneOf must evaluate all branches to collect complete annotations (per core 10.3). If story 185 short-circuits after the first passing branch, later branches' annotations will be missing. Verify story 185 does not short-circuit.
-  >   ◦ Release-agent note: The $dynamicRef test cases depend on story 188 propagating annotations from dynamically resolved targets; confirm story 188 is in place.
-  >   ◦ Release-agent note: QA noted three low findings (out-of-range mark handling, caps testing gaps, linear scan performance): these are not blocking, but reviewers should know these improvements could be made in follow-up stories (mark validation stricter, output limits tested, indexed lookup on deep nesting).
-  >   ◦ Security note (low): Fail-closed rule (low): both keywords return an error when the evaluated-location record is missing. But EvaluatedItems.since() returns nil when the mark is out of range (internal/eval/eval.go), so an inconsistent Scope is silently read as 'nothing evaluated'. That path never passes wrongly: the document is reported invalid, or the subschema is applied to every property or item. Still, the boundary rule says an inconsistent state should return an error rather than give a result.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -65,8 +58,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:54:56 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 8; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 00:54:56 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 00:55:59 | agent | release-agent | ✅ pass · 62.8s · $0.0900 |
-| 2026-10-17 00:56:00 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:56:00 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:56:00 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 00:56:37 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 00:56:37 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
