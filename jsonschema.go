@@ -116,6 +116,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err := metaCheck(docs, ext, el); err != nil {
 		return nil, err
 	}
+	n.NoUnevaluated = !compile.NeedsEvaluated(docs, ext)
 	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input, el: el}, nil
 }
 
