@@ -3,23 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #165 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 21:46:00 UTC · **Stopped:** 2026-10-17 22:15:27 UTC
+- **Run:** #165 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 21:46:00 UTC · **Stopped:** 2026-10-17 22:19:24 UTC
 - **Story spend:** ~$5.07 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 165` to accept, or `factory reject 165 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-165-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Timing verdicts are held for the operator's decision: the before and after time medians are 1,010,834 ns vs 781,500–861,959 ns (showing savings), but several other benchmarks show up to +6.5 % jitter. All numbers are recorded in docs/benchmarks/r3-211-firstload.md and the operator re-measures them interleaved at Checkpoint 3 on a quiet machine.
-  >   ◦ Release-agent note: The shared built-in index is immutable after SharedBuiltinIndex() returns: callers must never write to it or its resources, and may safely share it across goroutines. This invariant is documented in the code and tested by go test -race.
-  >   ◦ Release-agent note: The allocation limit of 9,520 depends on the measured count of 8,653 plus ~10% headroom. If a later change adds allocations to the first Compile, the test will fail and guard against silent regression.
-  >   ◦ Release-agent note: The counter test and allocation limit test both run in fresh processes (one entry point each per run), which adds ~10 ms per test but is necessary to measure at true program start before any other test code executes.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -62,8 +56,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 22:14:50 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 7; findings: 1 new, 0 persistent, 5 resolved |
 | 2026-10-17 22:14:50 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 22:15:26 | agent | release-agent | ✅ pass · 35.8s · $0.0695 |
-| 2026-10-17 22:15:27 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 22:15:27 | run | run waiting_human | ⏸️ |
+| 2026-10-17 22:15:27 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 22:19:24 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 22:19:24 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
