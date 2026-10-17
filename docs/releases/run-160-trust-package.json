@@ -259,5 +259,5 @@
   "blockers": [
     "1 acceptance criteria were never assessed by the tester (\u00a75.1): ['The shared built-in result and every compiled Schema are immutable after they are built and safe for concurrent use. A new test that runs many concurrent Compile and Validate calls from separate goroutines, including the very first Compile in the process, passes under go test -race.']"
   ],
-  "next_authorization": "operator-review"
+  "next_authorization": "none"
 }
