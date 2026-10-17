@@ -1,7 +1,7 @@
 # PLAN #34: Build the built-in meta-schema index once per process
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #165, 2026-10-17 21:46 UTC)
 - Design: see `ADR-034-*.md` under `docs/architecture/adr/`
 
 ## Files that change

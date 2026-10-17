@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #34
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #165, 2026-10-17 21:46 UTC)
 
 ## Decision
 The change is small and lives entirely in #211's claimed area (internal/registry/*, internal/compile/metacache.go).
