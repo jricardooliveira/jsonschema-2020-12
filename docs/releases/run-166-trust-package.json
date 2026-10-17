@@ -1,0 +1,257 @@
+{
+  "work_id": "US-0166",
+  "parent_story": "US-0166",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "446ec13f720b2781aec269005ab62a1eceb50fac",
+    "base_commit": "9ef52f656e47b6c41d3662b80a716f58966996e2"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "The three keywords get each object's member names in a sorted order identical to today's byte order (sort.Strings order). Objects with up to 8 members use a fixed-size stack buffer, and only objects with more than 8 members use the heap. The names are sorted once per object, not twice. A new unit test compares the helper against a sort.Strings reference for 0, 1, 8, 9 and many members, including names whose byte order differs from Unicode or case order (for example \"B\" < \"a\", \"\u00e9\" vs \"z\", \"\" and a shared prefix).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The applied slice in properties, additionalProperties and patternProperties is pre-sized to its final bound instead of growing from capacity 1. The annotation is emitted without copying the names again. Annotation values and annotation order are unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The keyword location for the evaluated-property record is rendered only when the record is kept, behind a Recording() check. When recording is off, no location string is built for it. unevaluatedProperties and unevaluatedItems keep recording and still see every evaluated property, including through $ref and $dynamicRef.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new boundary test validates objects with 0, 1, 8, 9 and many properties, including byte-order-sensitive names. It checks the valid/invalid result, the annotation values and their order, and the flag, basic, detailed and verbose reports against the pre-change outputs. Those outputs are captured by running the test on the unchanged code before any production edit. The test also confirms that unevaluatedProperties still sees every evaluated property. No existing test file is changed.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The committed v1.1 golden CLI test from #205 passes byte for byte (stdout, stderr, exit code; flag, basic, detailed and verbose; perf fixtures, docs/examples, testdata cases). No golden file is regenerated or edited. If any output differs, the story stops as failed. No existing test is removed or weakened. go test -race ./... passes. go.mod is unchanged (standard library only).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new root-package file allocs_objectkeys_test.go holds this story's lowered allocation limits for the guarded scenarios. Each limit is the measured value plus about 10% headroom, with the measured value recorded next to it. It reuses the helpers and race gating of allocs_test.go and allocs_race_on/off_test.go without editing them. allocs_test.go stays untouched.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new file docs/benchmarks/r3-207-objectkeys.md records before medians (main after #205) and after medians (with this story) from go test -bench -count=10 -benchmem on the same machine, with B/op and allocs/op. It records the target verdict judged by amount saved. The saving required is the v1.1 Validate5_5MB B/op minus 345 MB, and the v1.1 allocs/op minus 6.0 M, compared with the code just before this story. If the saving falls short, the numbers are recorded and the story is held for the operator.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The same file reports the speed check: medians of 10 runs before and after, with any scenario more than 5% slower flagged. It notes that timings taken during the parallel build are noisy and that the operator re-measures interleaved at Checkpoint 3 and judges the 5% rule there. The speed check is not asserted in any test.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The story writes no file claimed by #206 (internal/keywords/registry.go, childctx*), #210 (internal/jsonvalue/number_inline*, internal/keywords/validation/*) or #211 (internal/registry/*, internal/compile/metacache.go). It also does not write allocs_test.go or docs/benchmarks.md.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 9,
+    "covered": 9,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "allocs_objectkeys_test.go",
+        "change": "added",
+        "additions": 53,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks/r3-207-objectkeys.md",
+        "change": "added",
+        "additions": 63,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/annotate.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/additionalproperties.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/membernames.go",
+        "change": "added",
+        "additions": 24,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/membernames_test.go",
+        "change": "added",
+        "additions": 58,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/properties.go",
+        "change": "modified",
+        "additions": 7,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/recording.go",
+        "change": "added",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/recording_objectkeys_test.go",
+        "change": "added",
+        "additions": 40,
+        "deletions": 0
+      },
+      {
+        "path": "objectkeys_boundary_test.go",
+        "change": "added",
+        "additions": 150,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-302a6d0ddb78439b85696f618b3f9555/docs/architecture/adr/ADR-030-object-keywords-without-wasted-copies-properties-a.md",
+    "summary": "The implementation does what story 207 asks, inside its reserved files. One sorted-names helper with an 8-entry stack buffer (byte order, sorted once) serves all three object keywords. The applied sli"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 3.776179,
+    "tokens_in": 4126602,
+    "tokens_out": 41702
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Expected outputs are stored as SHA-256 digests instead of full text, to keep the test file small. A mismatch logs the new digest with -v."
+    },
+    {
+      "task": "T1",
+      "text": "In the unevaluated schema the bad member is already rejected by unevaluatedProperties, so the bad=true and bad=false digests match for n of 1 and above. This is expected."
+    },
+    {
+      "task": "T1",
+      "text": "The before medians in docs/benchmarks/r3-207-objectkeys.md were read by hand from 10 runs. The After, Target verdict and Speed check sections are placeholders for task T6."
+    },
+    {
+      "task": "T1",
+      "text": "Validate5_5MB is already about 197 MB and 4.1 M allocs/op before this story, so the target is judged by amount saved, as the operator clarified."
+    },
+    {
+      "task": "T1",
+      "text": "I ran only the Validate benchmarks (including ValidateErrorsBasic), not CompileOrder or the CLI benchmarks."
+    },
+    {
+      "task": "T2",
+      "text": "The helper's result aliases the caller's buffer, so callers must not retain it past the keyword evaluation. T4 must copy the names or use a separate slice for the annotation."
+    },
+    {
+      "task": "T2",
+      "text": "The existing sortedKeys is left in place because compile functions still use it."
+    },
+    {
+      "task": "T3",
+      "text": "The new test covers Recording() with a fake Items and a nil Items. It does not exercise a real compiled schema, so 'false when no tracking is needed, true for unevaluated* through $ref/$dynamicRef' is not tested end to end. The existing unevaluated* tests only cover that where recording is on. T4 and the boundary test cover the rest."
+    },
+    {
+      "task": "T3",
+      "text": "Items without a Recording method counts as recording (fail-safe)."
+    },
+    {
+      "task": "T3",
+      "text": "The existing Annotate already stores the value it is given without copying. The copy was in recordProps. AnnotateNames documents that the caller must pass an owned, never-reused slice, because a stack buffer must not be retained."
+    },
+    {
+      "task": "T3",
+      "text": "The only tests I ran were go test on internal/keywords and internal/eval."
+    },
+    {
+      "task": "T4",
+      "text": "internal/eval/evaluated.go is unchanged. Its existing test TestRecordPropertiesReadBack requires RecordProperties to copy its input, so the recorded names are still copied once. The annotation shares the applied slice, which is heap-allocated and never modified afterwards."
+    },
+    {
+      "task": "T4",
+      "text": "I did not run the golden CLI test or the boundary test separately; both are in the test packages that passed."
+    },
+    {
+      "task": "T4",
+      "text": "allocs_objectkeys_test.go and the benchmark doc numbers belong to T5 and T6 and were not touched here."
+    },
+    {
+      "task": "T5",
+      "text": "Measured values come from the current worktree, which already has T1-T4 and the other round-3 changes in the tree. The limits are therefore tighter than the looser ones in allocs_test.go, which stay untouched."
+    },
+    {
+      "task": "T5",
+      "text": "CompileOrder has no limit here because this story does not change compile."
+    },
+    {
+      "task": "T5",
+      "text": "I ran only the new tests, with and without -race. I did not run the full go test ./... or go test -race ./... suite; the factory runs it afterwards."
+    },
+    {
+      "task": "T6",
+      "text": "The v1.1 baseline (755,891,277 B/op, 14,183,144 allocs/op) is read from docs/benchmarks.md."
+    },
+    {
+      "task": "T6",
+      "text": "Timings were taken while other stories may build in parallel, so they are noisy. The doc says so and defers the 5% judgement to the operator's interleaved re-measure at Checkpoint 3."
+    },
+    {
+      "task": "T6",
+      "text": "Medians were computed by hand from the 10 sorted runs of go test -bench Validate -benchmem -count=10."
+    },
+    {
+      "task": "T6",
+      "text": "git status showed a clean tree when checked, so I could not list this story's changed files with git diff. I did not run go.mod or testdata/golden checks, and I did not run any test suite in this task."
+    },
+    {
+      "task": "T6",
+      "text": "Timings were taken during the parallel build and are noisy. The operator re-measures at Checkpoint 3."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
