@@ -20,7 +20,7 @@ func init() {
 // itemLog reads the per-call item annotations (an *eval.EvaluatedItems). It
 // uses plain types: importing eval here would make an import cycle.
 type itemLog interface {
-	CoveredItems(instLoc string) (all bool, prefix int, indices []int)
+	CoveredItems(mark int, instLoc string) (all bool, prefix int, indices []int, err error)
 }
 
 func compileUnevaluatedItems(ctx *keywords.CompileContext, value any) (any, error) {
@@ -45,7 +45,11 @@ func evalUnevaluatedItems(ctx *keywords.EvalContext, compiled any, instance any)
 		// fail closed: without the record we cannot tell what is covered
 		return false, errors.New("unevaluatedItems: evaluated-item record unavailable")
 	}
-	all, prefix, indices := log.CoveredItems(ctx.InstanceLocation)
+	// only this schema object's own record counts (core 11.2)
+	all, prefix, indices, err := log.CoveredItems(ctx.Scope, ctx.InstanceLocation)
+	if err != nil {
+		return false, err
+	}
 	if all {
 		return true, nil // nothing left to apply to; already recorded as covered
 	}

@@ -57,6 +57,42 @@
     ]
   },
   {
+    "spec": "2020-12 core, sections 11.3 and 7.7: only adjacent keywords and their subschemas count, never a sibling allOf branch",
+    "description": "sibling allOf branch",
+    "schema": {"allOf": [{"properties": {"a": {}}}, {"unevaluatedProperties": false}]},
+    "tests": [
+      {"description": "a is unevaluated in the second branch", "data": {"a": 1}, "valid": false},
+      {"description": "empty", "data": {}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.3: properties adjacent to unevaluatedProperties in one schema object count",
+    "description": "same schema object inside allOf",
+    "schema": {"allOf": [{"properties": {"a": {}}, "unevaluatedProperties": false}]},
+    "tests": [
+      {"description": "a covered", "data": {"a": 1}, "valid": true},
+      {"description": "b uncovered", "data": {"b": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 7.7: a parent's adjacent keywords are not visible in a nested schema object",
+    "description": "nested allOf",
+    "schema": {"properties": {"a": {}}, "allOf": [{"allOf": [{"unevaluatedProperties": false}]}]},
+    "tests": [
+      {"description": "a unevaluated deep inside", "data": {"a": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 10.2.1.4: a failing not contributes nothing either",
+    "description": "failing not",
+    "schema": {"not": {"properties": {"a": true}, "required": ["a"]}, "unevaluatedProperties": false},
+    "tests": [
+      {"description": "not fails", "data": {"a": 1}, "valid": false},
+      {"description": "not passes, extra property", "data": {"b": 1}, "valid": false},
+      {"description": "empty", "data": {}, "valid": true}
+    ]
+  },
+  {
     "spec": "2020-12 core, sections 11.3 and 7.7.1: the passing oneOf branch counts",
     "description": "oneOf",
     "schema": {"oneOf": [{"properties": {"a": true}, "required": ["a"]}, {"properties": {"b": true}, "required": ["b"]}], "unevaluatedProperties": false},

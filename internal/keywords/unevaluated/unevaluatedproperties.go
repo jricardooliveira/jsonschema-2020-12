@@ -24,7 +24,7 @@ func init() {
 // *eval.EvaluatedItems); failed branches are already rolled back from it.
 type propLog interface {
 	RecordProperties(instLoc, kwLoc string, names []string)
-	PropertiesAt(instLoc string) map[string][]string
+	CoveredProperties(mark int, instLoc string) (map[string]bool, error)
 }
 
 func compileUnevaluatedProperties(ctx *keywords.CompileContext, value any) (any, error) {
@@ -48,11 +48,10 @@ func evalUnevaluatedProperties(ctx *keywords.EvalContext, compiled any, instance
 		// fail closed: without the record we cannot tell what is covered
 		return false, errors.New("unevaluatedProperties: evaluated-property record unavailable")
 	}
-	covered := map[string]bool{}
-	for _, names := range log.PropertiesAt(ctx.InstanceLocation) {
-		for _, n := range names {
-			covered[n] = true
-		}
+	// only this schema object's own record counts (core 11.3)
+	covered, err := log.CoveredProperties(ctx.Scope, ctx.InstanceLocation)
+	if err != nil {
+		return false, err
 	}
 	var applied []string
 	for k := range obj {

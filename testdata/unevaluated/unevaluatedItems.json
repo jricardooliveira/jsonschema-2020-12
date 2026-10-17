@@ -56,6 +56,41 @@
     ]
   },
   {
+    "spec": "2020-12 core, sections 11.2 and 7.7: only adjacent keywords and their subschemas count, never a sibling allOf branch",
+    "description": "sibling allOf branch",
+    "schema": {"allOf": [{"prefixItems": [true]}, {"unevaluatedItems": false}]},
+    "tests": [
+      {"description": "item 0 is unevaluated in the second branch", "data": [1], "valid": false},
+      {"description": "empty", "data": [], "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.2: prefixItems adjacent to unevaluatedItems in one schema object count",
+    "description": "same schema object inside allOf",
+    "schema": {"allOf": [{"prefixItems": [true], "unevaluatedItems": false}]},
+    "tests": [
+      {"description": "covered", "data": [1], "valid": true},
+      {"description": "second uncovered", "data": [1, 2], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 7.7: a parent's adjacent keywords are not visible in a nested schema object",
+    "description": "nested allOf",
+    "schema": {"items": true, "allOf": [{"allOf": [{"unevaluatedItems": false}]}]},
+    "tests": [
+      {"description": "unevaluated deep inside", "data": [1], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 10.2.1.4: a failing not contributes nothing either",
+    "description": "failing not",
+    "schema": {"not": {"prefixItems": [true], "minItems": 1}, "unevaluatedItems": false},
+    "tests": [
+      {"description": "not fails", "data": [1], "valid": false},
+      {"description": "empty", "data": [], "valid": true}
+    ]
+  },
+  {
     "spec": "2020-12 core, section 11.2: the passing oneOf branch counts",
     "description": "oneOf",
     "schema": {"oneOf": [{"prefixItems": [true], "maxItems": 1}, {"prefixItems": [true, true], "minItems": 2}], "unevaluatedItems": false},
