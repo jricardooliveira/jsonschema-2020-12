@@ -128,7 +128,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 // asserted here, whatever the options say.
 func metaCheck(docs []compile.Doc, ext *registry.Index, el eval.Limits) error {
 	err := compile.MetaChecks(docs, ext, func(c compile.Check) error {
-		ev, err := eval.EvaluateWith(c.Meta, c.Doc.Value, el, false)
+		ev, err := eval.EvaluateNoAnnotations(c.Meta, c.Doc.Value, el)
 		if err != nil {
 			return err
 		}
