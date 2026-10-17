@@ -14,7 +14,7 @@
 | 10 | Schema registry for external references | released | [010-schema-registry-for-external-references/](010-schema-registry-for-external-references/) | 145 |
 | 11 | Dynamic references | released | [011-dynamic-references/](011-dynamic-references/) | 146, 147 |
 | 12 | Embedded meta-schemas and schema validation | released | [012-embedded-meta-schemas-and-schema-validation/](012-embedded-meta-schemas-and-schema-validation/) | 148 |
-| 13 | $vocabulary handling | to do |  |  |
+| 13 | $vocabulary handling | released | [013-vocabulary-handling/](013-vocabulary-handling/) | 151 |
 | 14 | Annotation collection | released | [014-annotation-collection/](014-annotation-collection/) | 144 |
 | 15 | unevaluatedProperties and unevaluatedItems | released | [015-unevaluatedproperties-and-unevaluateditems/](015-unevaluatedproperties-and-unevaluateditems/) | 150 |
 | 16 | Limits against hostile input | to do |  |  |
@@ -71,7 +71,7 @@
    Embed the official 2020-12 meta-schema and all of its vocabulary meta-schemas, under base https://json-schema.org/draft/2020-12/schema, in the binary so they work offline. Honour '$schema'. Before checking any document, validate every loaded schema against its meta-schema. A schema that fails is an invalid-schema error with exit code 2, never 'invalid'. This story depends on dynamic references: the official meta-schemas reach every subschema through "$dynamicRef": "#meta", so validation against them is incomplete without $dynamicRef. Only 2020-12 is supported. Write tests that use valid and invalid schemas, run through both the library and the CLI.
    Why: Placed after dynamic references so meta-schema validation is complete, and before $vocabulary, which reads these meta-schemas.
 
-13. **$vocabulary handling** — to do
+13. **$vocabulary handling** — released
    Add '$vocabulary' support as 2020-12 core describes. When a schema's meta-schema declares vocabularies, the validator processes them. A required vocabulary it does not know is an error with exit code 2. An optional unknown vocabulary is ignored. The format-assertion vocabulary is recognised so a later story can honour it. Use the embedded meta-schemas and custom meta-schemas supplied through the registry. Write spec-derived tests for required, optional and unknown vocabularies.
    Why: Builds directly on the embedded meta-schemas and prepares the hook that format assertion needs.
 
