@@ -302,7 +302,8 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 	}
 	for _, name := range names {
 		kw, ok := keywords.Lookup(name)
-		if !ok || !vocab.allows(kw) {
+		// 'format' also belongs to the format-assertion vocabulary (validation 7.2.2).
+		if !ok || !(vocab.allows(kw) || (name == "format" && vocab != nil && vocab.FormatAssertion)) {
 			// Unknown or inactive-vocabulary keywords are annotated (core 6.5, 8.1.2).
 			n.Items = append(n.Items, Item{keywords.AnnotateOnly(name, ""), s[name], loc + "/" + escape.Replace(name)})
 			continue
