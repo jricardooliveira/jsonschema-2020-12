@@ -2,7 +2,9 @@ package compile
 
 import (
 	"errors"
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/neoface/jsonschema/internal/keywords"
 )
@@ -14,6 +16,17 @@ const (
 	vFA   = keywords.VocabFormatAssertion
 	meta  = "https://example.com/my-meta"
 )
+
+// core 8.1.2: a quoted entry is cut on a rune boundary, never mid-character.
+func TestBoundRuneAware(t *testing.T) {
+	got := bound("a" + strings.Repeat("é", maxEntryQuote))
+	if !utf8.ValidString(got) || utf8.RuneCountInString(got) != maxEntryQuote+len("...") {
+		t.Errorf("bound = %q", got)
+	}
+	if s := strings.Repeat("é", maxEntryQuote); bound(s) != s {
+		t.Errorf("short entry changed: %q", bound(s))
+	}
+}
 
 // 2020-12 core 8.1.2.
 func TestParseVocabulary(t *testing.T) {

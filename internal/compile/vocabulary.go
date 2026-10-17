@@ -20,9 +20,10 @@ func (s *VocabularySet) Active(uri string) bool { return s.active[uri] }
 
 const maxEntryQuote = 80
 
+// bound keeps at most maxEntryQuote runes of s, cutting on a rune boundary.
 func bound(s string) string {
-	if len(s) > maxEntryQuote {
-		return s[:maxEntryQuote] + "..."
+	if r := []rune(s); len(r) > maxEntryQuote {
+		return string(r[:maxEntryQuote]) + "..."
 	}
 	return s
 }
