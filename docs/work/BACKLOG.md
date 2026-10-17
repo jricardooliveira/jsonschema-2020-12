@@ -20,7 +20,7 @@
 | 16 | Limits against hostile input | released | [016-limits-against-hostile-input/](016-limits-against-hostile-input/) | 152 |
 | 17 | Detailed and verbose output | released | [017-detailed-and-verbose-output/](017-detailed-and-verbose-output/) | 149 |
 | 18 | Format assertion: mode, dates, email, hostnames, IP and UUID | released | [018-format-assertion-mode-dates-email-hostnames-ip-and/](018-format-assertion-mode-dates-email-hostnames-ip-and/) | 153 |
-| 19 | Format assertion: URI, IRI, templates, pointers and regex | to do |  |  |
+| 19 | Format assertion: URI, IRI, templates, pointers and regex | released | [019-format-assertion-uri-iri-templates-pointers-and/](019-format-assertion-uri-iri-templates-pointers-and/) | 154 |
 | 20 | User documentation: CLI contract and scope | to do |  |  |
 
 1. **Walking skeleton** — released
@@ -95,7 +95,7 @@
    Add the optional format-assertion mode. It is enabled by an opt-in library option, by a CLI flag, or when a meta-schema declares the format-assertion vocabulary as required. In this mode, 'format' fails validation when the value does not match. Default behaviour stays annotation-only, and unknown formats are never an error. Implement these format checks from the 2020-12 validation spec, as far as practical, using only the standard library: date-time, date, time, duration, email, idn-email, hostname, idn-hostname, ipv4, ipv6 and uuid. Give format checks one registration point so each check lives in its own file. idn-hostname and idn-email get basic checks only, and the code records what they miss. Write positive and negative tests for each format and for each way of turning the mode on.
    Why: Adds the optional assertion mode with the first half of the formats, sized to fit alongside the shared format registration point.
 
-19. **Format assertion: URI, IRI, templates, pointers and regex** — to do
+19. **Format assertion: URI, IRI, templates, pointers and regex** — released
    In the optional format-assertion mode, add the remaining 2020-12 format checks as new files registered through the format registration point: uri, uri-reference, iri, iri-reference, uri-template, json-pointer, relative-json-pointer and regex. The regex format uses the existing ECMA-262-to-RE2 translation step. Use only the standard library and check each format as far as practical. Any format that is only partly checked is recorded in the code. Outside assertion mode these formats stay annotations only. Write positive and negative tests for each format.
    Why: Completes the formats in separate files that plug into the existing registration point.
 
