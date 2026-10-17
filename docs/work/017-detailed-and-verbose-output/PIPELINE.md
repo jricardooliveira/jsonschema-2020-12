@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #149 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-17 00:39:55 UTC · **Stopped:** 2026-10-17 00:41:19 UTC
-- **Story spend:** ~$0.76 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 00:39:55 UTC · **Stopped:** 2026-10-17 00:43:09 UTC
+- **Story spend:** ~$1.63 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -16,12 +16,8 @@ The operator decides at gate-2-architect: `factory approve 149` to accept, or `f
 - Waiting for the operator at **gate-2-architect**:
   > ⚠️ BREAKING CHANGES detected — these will affect existing API consumers:
   >   • absoluteKeywordLocation for schema keys that contain spaces, '%' or non-ASCII characters is now percent-encoded, in flag and basic output too (accepted by the reviewer)
-  >   • absoluteKeywordLocation is now percent-encoded in its fragment, in flag, basic, detailed and verbose output alike. Only schema keys with a space, '%', non-ASCII or other characters not allowed in a URI fragment are affected. The operator accepted this.
+  >   • absoluteKeywordLocation is now percent-encoded in its fragment for schema keys with spaces, '%' or non-ASCII characters, in flag, basic, detailed and verbose output. The operator accepted this at Checkpoint 2.
   >   → Approve these breaking changes?
-  >
-  > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • security: The design still does not say how verbose gets its passing units. The shape is chosen at render time, after Validate has run, so internal/eval/units.go may have to record passing units on every Validate call. If it does, memory for hostile or large documents grows on flag and basic as well, before the report byte cap is checked, because that cap only applies while rendering. If those units count against MaxOutputUnits, a result that is valid today could become a limit error (exit 2) for flag and basic. The operator's Checkpoint 2 decision settled only the CLI flag question, so a human should decide which of the two applies. The rules below give the safe constraints either way.
-  >   → Approve the design with these boundary risks, or reject with the fix?
 
 ## Trail
 
@@ -41,8 +37,13 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:41:00 | agent | architect-agent | ✅ pass · 21.4s · $0.4151 |
 | 2026-10-17 00:41:00 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security, pii) |
 | 2026-10-17 00:41:19 | agent | boundary-agent | ✅ warn · 18.1s · $0.1768 |
-| 2026-10-17 00:41:19 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:41:19 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:41:19 | gate | gate-2-architect | ❌ REJECTED: Settle: detailed and verbose are rendered from the per-subschema evaluation tree that story 191 already keeps (results, errors, kept annotations, passing parts inside failing evaluations). Do NOT record any … |
+| 2026-10-17 00:41:39 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-17 00:42:52 | agent | architect-agent | ✅ pass · 72.0s · $0.6812 |
+| 2026-10-17 00:42:52 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it changes an API; it declares breaking changes; it touches sensitive areas (security, pii) |
+| 2026-10-17 00:43:09 | agent | boundary-agent | ✅ pass · 16.7s · $0.1827 |
+| 2026-10-17 00:43:09 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
+| 2026-10-17 00:43:09 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
