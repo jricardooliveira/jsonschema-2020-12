@@ -87,6 +87,11 @@ func (c *EvalContext) Annotate(value any) error {
 	return nil
 }
 
+// AnnotateNames is Annotate for a member-name list. It does not copy: the
+// caller must pass a slice it will never modify or reuse afterwards (never a
+// stack buffer or a slice that is later appended to).
+func (c *EvalContext) AnnotateNames(names []string) error { return c.Annotate(names) }
+
 // Annotations returns the annotations kept so far, in evaluation order.
 func (c *EvalContext) Annotations() []Annotation { return c.col.list }
 
