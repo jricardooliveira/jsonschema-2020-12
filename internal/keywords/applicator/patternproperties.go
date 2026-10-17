@@ -69,12 +69,12 @@ func evalPatternProperties(ctx *keywords.EvalContext, compiled any, instance any
 	valid := true
 	var applied []string
 	for _, k := range sortedKeys(obj) {
-		if err := step(ctx); err != nil {
+		if err := ctx.ChargeBytes(len(k)); err != nil {
 			return false, err
 		}
 		matched := false
 		for _, p := range compiled.([]patternEntry) {
-			if err := step(ctx); err != nil {
+			if err := ctx.ChargeBytes(len(k)); err != nil { // each RE2 match is linear in k
 				return false, err
 			}
 			if !p.re.MatchString(k) {

@@ -2,6 +2,7 @@
 package eval
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/neoface/jsonschema/internal/compile"
@@ -55,7 +56,7 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 			if it.Keyword.AfterSiblings != (pass == 1) {
 				continue
 			}
-			if err := ctx.Items.(*callState).Step(); err != nil { // one step per keyword
+			if err := keywordStep(ctx); err != nil { // one step per keyword
 				return false, err
 			}
 			ok, err := evalItem(ctx, pf, abs, it, instance)
@@ -68,6 +69,16 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 		}
 	}
 	return valid, nil
+}
+
+// keywordStep counts one step in the call state enterNode installed; a
+// missing state is an error (fail closed), never a panic or a free pass.
+func keywordStep(ctx *keywords.EvalContext) error {
+	st, ok := ctx.Items.(*callState)
+	if !ok {
+		return errors.New("internal error: evaluation state missing")
+	}
+	return st.Step()
 }
 
 // CoveredItems summarises the item annotations recorded at instLoc since

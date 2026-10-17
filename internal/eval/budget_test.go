@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/neoface/jsonschema/internal/compile"
 	"github.com/neoface/jsonschema/internal/eval"
 	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/neoface/jsonschema/internal/keywords"
 	_ "github.com/neoface/jsonschema/internal/keywords/all"
 )
 
@@ -107,6 +109,85 @@ func TestExponentialBlowUpHitsSteps(t *testing.T) {
 	_, err := eval.EvaluateWith(budgetNode(t, b.String()), budgetDoc(t, `1`), lim, false)
 	if name, max := limitName(err); name != "evaluation steps" || max != lim.MaxSteps {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// runHostile evaluates schema against doc with maxSteps and requires an
+// evaluation-steps limit within a generous time bound; the same pair passes
+// at the default.
+func runHostile(t *testing.T, schema, doc string, maxSteps int) {
+	t.Helper()
+	n, d := budgetNode(t, schema), budgetDoc(t, doc)
+	lim := eval.DefaultLimits()
+	lim.MaxSteps = maxSteps
+	start := time.Now()
+	_, err := eval.EvaluateWith(n, d, lim, false)
+	if name, max := limitName(err); name != "evaluation steps" || max != maxSteps {
+		t.Fatalf("want evaluation steps %d, got %v", maxSteps, err)
+	}
+	if el := time.Since(start); el > 10*time.Second {
+		t.Fatalf("took %v", el)
+	}
+	if ev, err := eval.EvaluateWith(n, d, eval.DefaultLimits(), false); err != nil || !ev.Valid {
+		t.Fatalf("default: %v %v", ev.Valid, err)
+	}
+}
+
+// uniqueItems is charged by the bytes it fingerprints, not once per element:
+// the cap sits above a per-element count and below the byte-scaled one.
+func TestHostileUniqueItemsHitsSteps(t *testing.T) {
+	const n, size = 200, 100 * keywords.BytesPerStep
+	items := make([]string, n)
+	for i := range items {
+		items[i] = fmt.Sprintf(`"%0*d"`, size, i) // distinct, size bytes each
+	}
+	maxSteps := 10*n + 50 // > n plus base steps, < n*size/BytesPerStep
+	if maxSteps >= n*size/keywords.BytesPerStep {
+		t.Fatal("bad test sizes")
+	}
+	runHostile(t, `{"uniqueItems":true}`, "["+strings.Join(items, ",")+"]", maxSteps)
+}
+
+// patternProperties x properties: each (key, pattern) match is charged by
+// the key length.
+func TestHostilePatternPropertiesHitsSteps(t *testing.T) {
+	const k, p, l = 50, 10, 100 * keywords.BytesPerStep
+	pats := make([]string, p)
+	for i := range pats {
+		pats[i] = fmt.Sprintf(`"^x%d":{"type":"string"}`, i) // never matches the keys
+	}
+	keys := make([]string, k)
+	for i := range keys {
+		keys[i] = fmt.Sprintf(`"%0*d":1`, l, i)
+	}
+	schema := `{"properties":{"a":true,"b":true},"patternProperties":{` + strings.Join(pats, ",") + `}}`
+	pairs := k * p
+	maxSteps := 2*(k+pairs) + 100 // > the plain count, < pairs*l/BytesPerStep
+	if maxSteps >= pairs*l/keywords.BytesPerStep {
+		t.Fatal("bad test sizes")
+	}
+	runHostile(t, schema, "{"+strings.Join(keys, ",")+"}", maxSteps)
+}
+
+// A large ordinary document checked by several keywords per element is not
+// stopped at the default limits.
+func TestLargeOrdinaryDocumentWithinDefaults(t *testing.T) {
+	const n = 100_000
+	var b strings.Builder
+	b.WriteString("[")
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			b.WriteString(",")
+		}
+		fmt.Fprintf(&b, `{"id":%d,"name":"item","tags":["a","b"]}`, i)
+	}
+	b.WriteString("]")
+	schema := `{"type":"array","uniqueItems":true,"items":{"type":"object","required":["id","name"],` +
+		`"properties":{"id":{"type":"integer","minimum":0},"name":{"type":"string","minLength":1,"maxLength":50,"pattern":"^[a-z]+$"},` +
+		`"tags":{"items":{"enum":["a","b","c"]},"contains":{"const":"a"}}}}}`
+	ev, err := eval.EvaluateWith(budgetNode(t, schema), budgetDoc(t, b.String()), eval.DefaultLimits(), false)
+	if err != nil || !ev.Valid {
+		t.Fatalf("%v %v", ev.Valid, err)
 	}
 }
 

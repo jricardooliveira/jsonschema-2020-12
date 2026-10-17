@@ -44,7 +44,13 @@ func compilePattern(ctx *keywords.CompileContext, value any) (any, error) {
 func evalPattern(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
 	s, ok := instance.(string)
 	p := compiled.(*compiledPattern)
-	if !ok || p.re.MatchString(s) {
+	if !ok {
+		return true, nil
+	}
+	if err := ctx.ChargeBytes(len(s)); err != nil { // RE2 matching is linear in s
+		return false, err
+	}
+	if p.re.MatchString(s) {
 		return true, nil
 	}
 	return false, ctx.Report(fmt.Sprintf("does not match pattern %s", p.src))

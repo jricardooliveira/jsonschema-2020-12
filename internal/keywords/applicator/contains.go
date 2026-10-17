@@ -50,6 +50,9 @@ func evalContains(ctx *keywords.EvalContext, compiled any, instance any) (bool, 
 	c := compiled.(*compiledContains)
 	var matches []int
 	for i, el := range arr {
+		if err := ctx.Charge(1); err != nil {
+			return false, err
+		}
 		// Non-matching elements' units are dropped; EvalChild already counted them.
 		ok, _, err := ctx.EvalChild(c.node, el, ctx.InstanceLocation+"/"+strconv.Itoa(i))
 		if err != nil {

@@ -8,20 +8,22 @@ import (
 	"testing"
 )
 
-const raceSchema = `{"type":"object","properties":{"a":{"type":"integer","minimum":0},"list":{"items":{"type":"integer"}}}}`
+const raceSchema = `{"type":"object","properties":{"a":{"type":"integer","minimum":0},"list":{"items":{"type":"integer"}},"t":{"$ref":"#"}}}`
 
-var raceOpts = Options{MaxDepth: 8, MaxSteps: 200, MaxOutputUnits: 5}
+// The caps also apply to the schema's meta-check, so they leave it room.
+var raceOpts = Options{MaxDepth: 40, MaxSteps: 5000, MaxRefChain: 20, MaxOutputUnits: 5}
 
 var raceShapes = []string{"flag", "basic", "detailed", "verbose"}
 
 // raceDocs maps a document to the limit it must hit ("" for none).
 func raceDocs() map[string]Limit {
 	return map[string]Limit{
-		`{"a":1}`:                        "",
-		`{"a":-1}`:                       "",
-		`{"list":[[[[[[[[[[1]]]]]]]]]]}`: LimitDepth,
-		`{"list":[` + strings.Repeat("1,", 500) + `1]}`:   LimitSteps,
-		`{"list":[` + strings.Repeat(`"x",`, 9) + `"x"]}`: LimitOutputUnits,
+		`{"a":1}`:  "",
+		`{"a":-1}`: "",
+		`{"list":` + strings.Repeat("[", 50) + strings.Repeat("]", 50) + `}`: LimitDepth,
+		strings.Repeat(`{"t":`, 25) + `{}` + strings.Repeat("}", 25):         LimitRefChain,
+		`{"list":[` + strings.Repeat("1,", 5000) + `1]}`:                     LimitSteps,
+		`{"list":[` + strings.Repeat(`"x",`, 9) + `"x"]}`:                    LimitOutputUnits,
 	}
 }
 

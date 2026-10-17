@@ -101,33 +101,33 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err != nil {
 		return nil, fmt.Errorf("registry: %w", err)
 	}
+	el := eval.Limits{MaxUnits: max, MaxAnnotations: maxAnn, MaxSteps: rl.steps, MaxRefChain: rl.refChain, MaxDepth: rl.depth}
 	n, docs, err := compile.CompileReachedWith(v, base, ext, rl.pattern)
 	if err != nil {
 		// A keyword rejecting its own value is usually a meta-schema failure
 		// of the main schema or of a supplied one reached before the failure:
 		// report that as InvalidSchemaError naming the failing document. A
 		// limit or '$schema' error from the check is reported as such.
-		if merr := metaCheck(docs, ext, max, maxAnn); merr != nil {
+		if merr := metaCheck(docs, ext, el); merr != nil {
 			return nil, merr
 		}
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	if err := metaCheck(docs, ext, max, maxAnn); err != nil {
+	if err := metaCheck(docs, ext, el); err != nil {
 		return nil, err
 	}
-	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input,
-		el: eval.Limits{MaxUnits: max, MaxAnnotations: maxAnn, MaxSteps: rl.steps, MaxRefChain: rl.refChain, MaxDepth: rl.depth}}, nil
+	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input, el: el}, nil
 }
 
 // metaCheck validates the main schema and every reached supplied schema,
 // and each custom meta-schema on their chains, against their meta-schema
-// (core 8.1.1), under the caller's output-unit and annotation caps. Failing
-// is *InvalidSchemaError naming the failing document; limit errors and any
-// internal error also fail (fail closed). Format is never asserted here,
-// whatever the options say.
-func metaCheck(docs []compile.Doc, ext *registry.Index, max, maxAnn int) error {
+// (core 8.1.1), under the caller's configured caps (each run gets a fresh
+// budget). Failing is *InvalidSchemaError naming the failing document; limit
+// errors and any internal error also fail (fail closed). Format is never
+// asserted here, whatever the options say.
+func metaCheck(docs []compile.Doc, ext *registry.Index, el eval.Limits) error {
 	err := compile.MetaChecks(docs, ext, func(c compile.Check) error {
-		ev, err := eval.EvaluateFull(c.Meta, c.Doc.Value, max, maxAnn)
+		ev, err := eval.EvaluateWith(c.Meta, c.Doc.Value, el, false)
 		if err != nil {
 			return err
 		}
