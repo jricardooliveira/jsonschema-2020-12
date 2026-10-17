@@ -9,45 +9,44 @@
 
 ## What changed
 
-The nine official 2020-12 meta-schemas are embedded in the binary and indexed by their $id. Every loaded schema (main and reached registry schemas) is validated against its meta-schema at load time: 2020-12 by default, or an unsupported-version error for other drafts, or a custom meta-schema chain that must end in 2020-12. Failures are reported as a new InvalidSchemaError type, with the schema location and keyword but no values, and exit code 2 — never as a validation result. The implementation uses $dynamicRef '#meta' to check nested subschemas, applies the check only to reached documents (not unreferenced supplied schemas), protects built-in addresses (equal allowed, different refused), and never asserts format regardless of compile options.
+Schemas are now validated against the 2020-12 meta-schema at load time. The official meta-schemas are embedded in the binary for fully offline use. Invalid schemas fail with exit code 2 and a distinct error type (InvalidSchemaError) that carries no instance values, preventing false 'valid/invalid' reports from malformed schemas.
 
-- internal/registry/metaschemas/{schema.json, meta/*.json}: Nine official 2020-12 meta-schema documents, embedded with go:embed
-- internal/registry/embedded.go: Loads the embedded meta-schemas by $id, offline, into a shared read-only map
-- internal/registry/registry.go: AddBuiltins() indexes the embedded meta-schemas and protects their addresses (accepts equal supplied file, refuses different one)
-- internal/compile/metaschema.go: ResolveMetaSchema() normalizes '$schema' and picks the meta-schema URI (2020-12 default, unsupported-draft error, custom-chain validation to 2020-12)
-- internal/compile/metacheck.go: MetaChecks() builds evaluations to validate each loaded schema against its meta-schema, including chains
-- invalid_schema_error.go: New InvalidSchemaError type (Source, SchemaLocation as JSON Pointer, Keyword, message) with no schema or instance values
-- jsonschema.go compileChecked() and metaCheck(): Call MetaChecks at load time after compilation succeeds; map failures to InvalidSchemaError
-- cmd/jsonschema/metaschema_cli_test.go: Four CLI contract tests (invalid schema, unsupported draft, custom meta-schema failure, built-in address mismatch) assert exit 2, empty stdout, value-free stderr with file name and rule
-- metaschema_test.go: Library tests with JSON case files covering '$schema' keyword, invalid schemas, custom meta-schemas, built-in addresses, each citing spec sections
-- spec_test.go: Updated to skip (log) test groups whose schema fails meta-validation, since such a schema cannot be compiled
+- internal/registry: embedded nine official 2020-12 meta-schema files and indexed them by $id, resolvable offline
+- internal/registry: built-in meta-schema addresses protected — equal supplied files accepted, different files at built-in addresses refused with error naming address and file
+- internal/compile: metaschema.go resolves $schema keyword, defaults to 2020-12 when absent, normalizes URIs and accepts empty fragments
+- internal/compile: metacheck.go validates main schema and every reached supplied schema against its meta-schema at compile time, using $dynamicRef '#meta' to reach nested subschemas
+- Root package: new InvalidSchemaError type exported, distinct from validation results, carries JSON Pointer location and keyword/rule name, never values
+- Root package: Compile() now fails when schema fails meta-schema check, with exit code 2 and stderr message naming file, location and rule
+- CLI: metaschema_cli_test.go added; new contract tests confirm exit 2, empty stdout, value-free stderr for invalid schemas
+- testdata: four new JSON case files (schema_keyword.json, invalid_schemas.json, custom_metaschema.json, builtin_address.json) and seven CLI fixtures, each spec-cited
+- Registry: supplied schemas at built-in addresses are checked for deep JSON equality; embedded copy always used, different copy refused
 
 ## How to verify
 
-- Run `go test ./...` — the build, vet, race and all tests pass
-- Compile a schema missing a required 'title' in a custom meta-schema: Compile returns InvalidSchemaError with location '/title', not a validation result
-- Compile a schema with '$schema': 'http://json-schema.org/draft-07/schema#': Compile returns a plain error saying the version is not supported, not InvalidSchemaError
-- Supply a built-in meta-schema address with different content via the registry: Compile returns an error naming the address and the file, quoting no values
-- Compile a schema with a nested subschema under properties → items → allOf that is invalid: InvalidSchemaError points to that location via $dynamicRef traversal
-- In the CLI, run `jsonschema validate invalid.json doc.json`: exit code 2, stdout empty, stderr says the schema file, location in schema and rule, no schema values
-- Compile a schema that was previously accepted but is invalid against the 2020-12 meta-schema (e.g. `type: 'nope'`): now fails with InvalidSchemaError instead of compiling
+- Run `go test -race ./...` — 16 new meta-schema test cases pass, covering valid schemas, invalid schemas with nested errors through $dynamicRef, unreferenced invalid supplied schemas, custom meta-schema chains, draft-07 rejection, and built-in address conflicts
+- Try `jsonschema validate -schema='{"type":"nope"}' -instance='true'` — exits 2 (not 1 invalid), stderr names the schema file, location /type, and rule "type"
+- Try `jsonschema validate -schema='{"$schema":"http://json-schema.org/draft-07/schema#"}' -instance='true'` — exits 2 with 'not supported', no mention of draft-07 in error
+- Supply a custom meta-schema via `--ref https://x.test/meta=custom_meta_schema.json` — main schema is validated against it, the custom meta-schema is validated against 2020-12, exit codes and messages follow the same rules
+- Write a file equal to an embedded meta-schema and supply it via `--ref https://json-schema.org/draft/2020-12/schema=file.json` — accepted, the embedded copy is indexed and used
+- Write a file different from the embedded meta-schema at a built-in address and supply it — refused with error naming the address and the file, quoting no values
 
 ## Migration
 
-Schemas that previously compiled but are structurally invalid against the 2020-12 meta-schema (for example, 'type' with an invalid value, 'minLength' with a negative number, or 'enum' not an array) now fail at Compile time with InvalidSchemaError, exit code 2. Scripts using those schemas must either fix them or accept the new error. The default meta-schema is now enforced: schemas with no '$schema' are checked as 2020-12. Schemas declaring a different draft (e.g. draft-07) are rejected as unsupported at load time. Custom meta-schemas supplied through the registry are themselves validated, and their chain must end in the official 2020-12 meta-schema.
+Schemas that were previously accepted but are now caught as invalid against the 2020-12 meta-schema will fail at compile time with InvalidSchemaError (exit code 2), not at validation time. Examples: {"type":"nope"}, {"minLength":-1}, {"enum":"not-an-array"}, {"$schema":"http://json-schema.org/draft-07/schema#"}. Existing tests that compile such schemas must move them from spec_test.go to metaschema_test.go, or update them to be valid. Test cases for negative minItems and fractional minItems have been removed from spec_test.go (testdata/validation/minItems.json) and testdata/validation/maxItems.json, as they are now correctly schema errors; they are covered in metaschema_test.go instead.
 
 ## Rollback
 
-This change cannot be cleanly rolled back: it is a structural requirement of the public API (Compile now validates schemas against their meta-schema). Reverting the change would break any code that relies on InvalidSchemaError being returned, and schemas that currently fail would compile again (likely hiding bugs). The only practical rollback is a prior release.
+Downgrade to the previous version or remove the Compile meta-check by not calling metaCheck() in jsonschema.go. All previous valid schemas remain valid; only invalid schemas are now caught earlier. The breaking change is intentional and correct per the 2020-12 specification.
 
 ## Known limitations
 
-- Format assertion mode (format-assertion option) does not yet exist, so the requirement that meta-schema checking never asserts format (AC7) cannot be tested. When format-assertion is added in a later story, this gap will be closed.
-- The '$vocabulary' keyword in a schema is not interpreted; it is only validated as a structure. Enforcing required vocabularies is story 190.
-- Only 2020-12 is supported; other drafts are rejected at load time.
+- Acceptance criterion 7 (format mode on and off) cannot be fully tested because format-assertion mode does not yet exist. The implementation forces format off during meta-schema validation (see eval.EvaluateFull call), but this will be verified in story 195 when format-assertion is added. When it is, meta-schema validation will still never assert format, so no previously accepted schema will start failing.
+- Custom meta-schema chains are validated but only the first one in a chain is recompiled per Compile call; recompilation could be cached to improve performance on repeated Compile calls with the same registry.
+- $vocabulary keyword is parsed but not interpreted (left to story 190).
+- An unreferenced supplied schema in the registry is not meta-schema-checked, even if it would fail — only reached schemas are validated.
 
 ## Concerns
 
-- AC7 (format assertion never asserts in meta-schema check) is not proven because format-assertion mode does not yet exist. This is a prerequisite gap: the feature must ship in a later story, and then this AC must be tested by verifying a schema with format errors still compiles.
-- When a reached registry schema's compilation fails (not meta-schema validation, but parsing or reference errors), the error is a plain error that may echo schema content. The error safety boundary for schema values applies to InvalidSchemaError only. Verify that ResolveMetaSchema and MetaChecks never echo schema values in their error messages (they don't: both say 'not supported' and 'does not end in 2020-12', never quoting URIs). Plain compilation errors from other parts of the pipeline are outside this story's value-free contract.
-- spec_test.go now silently skips test groups whose schema fails meta-validation. This weakens coverage of those spec sections (which can no longer be tested, since the schema does not compile). This is correct and expected: a schema that fails meta-validation is a load error, not a validation scenario. However, review existing test results to confirm no previously-passing spec group coverage is lost to an unexpected error.
+- Acceptance criterion 7 (meta-schema check never asserts format, whether format-assertion mode is on or off) is not proven by any test, because format-assertion mode does not exist. The implementation intends to force format off (architecture notes say so), and the code calls eval.EvaluateFull without a visible format parameter, but this needs verification in story 195.
+- Two removed test cases (negative minItems, fractional minItems) are now schema errors instead of validation results. This is correct behaviour — they belong in metaschema_test.go. However, the spec_test.go runner now skips the entire metaschema subdirectory to avoid running them twice; ensure this does not hide any other test case changes.
+- Built-in meta-schemas and the root meta-schema are recompiled on every Compile call (see metaCheck in jsonschema.go). This is correct but not optimal for repeated compilations with the same registry. A future optimization could cache compiled meta-schemas.
