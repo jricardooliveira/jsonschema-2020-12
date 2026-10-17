@@ -56,7 +56,7 @@ func TestOversizeFilesExitTwo(t *testing.T) {
 	good := writeTemp(t, `true`)
 	big := writeTemp(t, strings.Repeat(" ", maxInputBytes+1))
 	for _, args := range [][]string{{"validate", big, good}, {"validate", good, big}} {
-		if c, out, e := runCLI(t, "", args...); c != 2 || out != "" || !strings.Contains(e, "exceeds limit") {
+		if c, out, e := runCLI(t, "", args...); c != 2 || out != "" || !strings.Contains(e, "limit exceeded: input size") {
 			t.Errorf("%v: code %d out %q err %q", args, c, out, e)
 		}
 	}

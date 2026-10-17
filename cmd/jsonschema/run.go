@@ -8,11 +8,9 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/output"
 )
 
@@ -23,22 +21,20 @@ const (
 	exitError   = 2
 )
 
-// maxInputBytes caps every input (schema file, document file, stdin).
-const maxInputBytes = 64 << 20
-
-// readCapped reads all of r, failing when it holds more than maxInputBytes.
-func readCapped(r io.Reader, name string) ([]byte, error) {
-	data, err := io.ReadAll(io.LimitReader(r, maxInputBytes+1))
+// readCapped reads all of r, failing with a limit error when it holds more
+// than max bytes.
+func readCapped(r io.Reader, name string, max int) ([]byte, error) {
+	data, err := io.ReadAll(io.LimitReader(r, int64(max)+1))
 	if err != nil {
 		return nil, fmt.Errorf("cannot read %s: read failed", name)
 	}
-	if len(data) > maxInputBytes {
-		return nil, fmt.Errorf("cannot read %s: input exceeds limit %d bytes", name, maxInputBytes)
+	if len(data) > max {
+		return nil, &jsonschema.LimitError{Limit: jsonschema.LimitInputSize, Value: max}
 	}
 	return data, nil
 }
 
-func readFile(path string) ([]byte, error) {
+func readFile(path string, max int) ([]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -47,7 +43,7 @@ func readFile(path string) ([]byte, error) {
 		return nil, fmt.Errorf("cannot read %s: read failed", path)
 	}
 	defer f.Close()
-	return readCapped(f, path)
+	return readCapped(f, path, max)
 }
 
 // oneLine keeps stderr to a single line.
@@ -64,37 +60,19 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	flags := flag.NewFlagSet("validate", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
-	badValue := "" // name of the flag whose value failed to parse
-	intFlag := func(name string) *int {
-		p := new(int)
-		flags.Func(name, "", func(s string) error {
-			n, err := strconv.ParseInt(s, 0, strconv.IntSize)
-			if err != nil {
-				badValue = name
-				return err
-			}
-			*p = int(n)
-			return nil
-		})
-		return p
-	}
 	outShort := flags.String("o", "basic", "")
 	outLong := flags.String("output", "", "")
 	baseURI := flags.String("base-uri", "", "")
-	digits := intFlag("max-number-digits")
-	exponent := intFlag("max-number-exponent")
-	maxAnn := intFlag("max-annotations")
+	lf := registerLimitFlags(flags)
 	var refs, refDirs listFlag
 	flags.Var(&refs, "ref", "file: "+refHelp)
 	flags.Var(&refDirs, "ref-dir", "folder, needs a mapping: "+refHelp)
-	regFile := intFlag("max-ref-file-bytes")
-	regTotal := intFlag("max-ref-total-bytes")
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return fail("usage: jsonschema validate [-o flag|basic] <schema-file> [<document-file>|-]...")
 		}
-		if badValue != "" {
-			return fail("invalid value for flag -" + badValue)
+		if lf.bad != "" {
+			return fail("invalid value for flag -" + lf.bad)
 		}
 		// ponytail: the flag package's message holds only the name here, never a value.
 		if name, ok := strings.CutPrefix(err.Error(), "flag provided but not defined: -"); ok {
@@ -102,15 +80,8 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		return fail("invalid arguments")
 	}
-	badFlag := ""
-	flags.Visit(func(f *flag.Flag) {
-		if (f.Name == "max-number-digits" && *digits <= 0) || (f.Name == "max-number-exponent" && *exponent <= 0) || (f.Name == "max-annotations" && *maxAnn <= 0) ||
-			(f.Name == "max-ref-file-bytes" && *regFile <= 0) || (f.Name == "max-ref-total-bytes" && *regTotal <= 0) {
-			badFlag = f.Name
-		}
-	})
-	if badFlag != "" {
-		return fail("flag -" + badFlag + " must be greater than 0")
+	if bad := lf.notPositive(flags); bad != "" {
+		return fail("flag -" + bad + " must be greater than 0")
 	}
 	shape := *outShort
 	if *outLong != "" {
@@ -123,7 +94,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(rest) == 0 {
 		return fail("missing schema argument")
 	}
-	reg := jsonschema.Registry{MaxFileBytes: *regFile, MaxTotalBytes: *regTotal}
+	reg := jsonschema.Registry{MaxFileBytes: *lf.vals["max-ref-file-bytes"], MaxTotalBytes: *lf.vals["max-ref-total-bytes"]}
 	for _, v := range refs {
 		u, p, _, err := parseRef(v)
 		if err != nil {
@@ -138,13 +109,16 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		reg.Dirs = append(reg.Dirs, jsonschema.RegistryDir{BaseURI: u, Path: p})
 	}
-	schemaData, err := readFile(rest[0])
+	inCap := lf.inputCap()
+	schemaData, err := readFile(rest[0], inCap)
 	if err != nil {
-		return fail(err.Error())
+		return fail(limitLine(err, false))
 	}
-	s, err := jsonschema.CompileWithRegistry(schemaData, jsonschema.Options{MaxNumberDigits: *digits, MaxNumberExponent: *exponent, MaxAnnotations: *maxAnn, BaseURI: *baseURI, SchemaPath: rest[0]}, reg)
+	opts := lf.options()
+	opts.BaseURI, opts.SchemaPath = *baseURI, rest[0]
+	s, err := jsonschema.CompileWithRegistry(schemaData, opts, reg)
 	if err != nil {
-		return fail(err.Error())
+		return fail(limitLine(err, true))
 	}
 	docs := rest[1:]
 	if len(docs) == 0 {
@@ -155,9 +129,9 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		var data []byte
 		var err error
 		if path == "-" {
-			data, err = readCapped(stdin, "stdin")
+			data, err = readCapped(stdin, "stdin", inCap)
 		} else {
-			data, err = readFile(path)
+			data, err = readFile(path, inCap)
 		}
 		if err != nil {
 			return nil, exitError, err
@@ -168,8 +142,8 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		out, err := res.Output(shape)
 		if err != nil {
-			var le *jsonvalue.LimitError
-			if errors.As(err, &le) { // limit name and max only, no content
+			var le *jsonschema.LimitError
+			if errors.As(err, &le) { // limit name and value only, no content
 				return nil, exitError, le
 			}
 			return nil, exitError, errors.New("cannot render result")
@@ -186,7 +160,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(docs) == 1 {
 		out, c, err := check(docs[0])
 		if err != nil {
-			return fail(err.Error())
+			return fail(limitLine(err, false))
 		}
 		if !write(out) {
 			return fail("cannot write result")
@@ -205,7 +179,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 			line, merr = json.Marshal(struct {
 				Document string `json:"document"`
 				Error    string `json:"error"`
-			}{d, oneLine(err.Error())})
+			}{d, oneLine(limitLine(err, false))})
 		} else {
 			line, merr = json.Marshal(struct {
 				Document string          `json:"document"`

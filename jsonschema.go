@@ -23,6 +23,7 @@ type Schema struct {
 	// maxReport is the rendered-report byte cap.
 	maxReport int
 	maxInput  int // per-input byte cap
+	el        eval.Limits
 }
 
 // Result is the outcome of one Validate call.
@@ -35,6 +36,7 @@ type Result struct {
 	root        *compile.Node
 	inst        any
 	max, maxAnn int
+	el          eval.Limits
 }
 
 // Valid reports whether the document satisfied the schema.
@@ -113,7 +115,8 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err := metaCheck(docs, ext, max, maxAnn); err != nil {
 		return nil, err
 	}
-	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input}, nil
+	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input,
+		el: eval.Limits{MaxUnits: max, MaxAnnotations: maxAnn, MaxSteps: rl.steps, MaxRefChain: rl.refChain, MaxDepth: rl.depth}}, nil
 }
 
 // metaCheck validates the main schema and every reached supplied schema,
@@ -155,9 +158,9 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	ev, err := eval.EvaluateFull(s.root, v, s.max, s.maxAnn)
+	ev, err := eval.EvaluateWith(s.root, v, s.el, false)
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn, el: s.el}, nil
 }

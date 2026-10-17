@@ -15,7 +15,7 @@ func (r Result) Output(shape string) ([]byte, error) {
 	rep := output.Report{Valid: r.valid, Units: r.units, Annotations: r.annotations}
 	if output.NeedsTree(shape) && r.root != nil {
 		// The tree is rebuilt per call, never cached, so a Result stays immutable.
-		ev, err := eval.EvaluateTree(r.root, r.inst, r.max, r.maxAnn)
+		ev, err := eval.EvaluateWith(r.root, r.inst, r.el, true)
 		if err != nil {
 			return nil, asLimit(err)
 		}
