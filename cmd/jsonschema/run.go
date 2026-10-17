@@ -63,6 +63,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	outShort := flags.String("o", "basic", "")
 	outLong := flags.String("output", "", "")
 	baseURI := flags.String("base-uri", "", "")
+	formatAssert := flags.Bool("format-assertion", false, "")
 	lf := registerLimitFlags(flags)
 	var refs, refDirs listFlag
 	flags.Var(&refs, "ref", "file: "+refHelp)
@@ -116,6 +117,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 	opts := lf.options()
 	opts.BaseURI, opts.SchemaPath = *baseURI, rest[0]
+	opts.FormatAssertion = *formatAssert
 	s, err := jsonschema.CompileWithRegistry(schemaData, opts, reg)
 	if err != nil {
 		return fail(limitLine(err, true))

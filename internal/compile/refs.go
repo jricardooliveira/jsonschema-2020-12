@@ -79,7 +79,10 @@ type shared struct {
 	todo      []pendingRes // resources whose Dynamic table is not filled yet
 	// formatAssertion: some resource's meta-schema requires format-assertion.
 	formatAssertion bool
-	maxPattern      int // pattern source cap in bytes; 0 means the default
+	// formatOpt is the caller's option; noFormat forces assertion off
+	// (meta-schema checks).
+	formatOpt, noFormat bool
+	maxPattern          int // pattern source cap in bytes; 0 means the default
 }
 
 type pendingRef struct {
@@ -155,7 +158,13 @@ func CompileReached(doc any, baseURI string, ext *registry.Index) (*Node, []Doc,
 // CompileReachedWith is CompileReached with a cap on pattern source size in
 // bytes; 0 means the default.
 func CompileReachedWith(doc any, baseURI string, ext *registry.Index, maxPattern int) (*Node, []Doc, error) {
-	r, root, err := compileDocumentWith(doc, baseURI, ext, maxPattern)
+	return CompileReachedFormat(doc, baseURI, ext, maxPattern, false)
+}
+
+// CompileReachedFormat is CompileReachedWith that also turns format assertion
+// on for every resource when formatAssert is true.
+func CompileReachedFormat(doc any, baseURI string, ext *registry.Index, maxPattern int, formatAssert bool) (*Node, []Doc, error) {
+	r, root, err := compileDocumentOpts(doc, baseURI, ext, maxPattern, formatAssert, false)
 	docs := []Doc{{Value: doc}}
 	if r != nil {
 		for _, o := range r.sh.all[1:] {
@@ -175,11 +184,15 @@ func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *
 }
 
 func compileDocumentWith(doc any, baseURI string, ext *registry.Index, maxPattern int) (*resolver, *Node, error) {
+	return compileDocumentOpts(doc, baseURI, ext, maxPattern, false, false)
+}
+
+func compileDocumentOpts(doc any, baseURI string, ext *registry.Index, maxPattern int, formatOpt, noFormat bool) (*resolver, *Node, error) {
 	idx, err := registry.Build(doc, baseURI)
 	if err != nil {
 		return nil, nil, err
 	}
-	sh := &shared{main: idx, ext: ext, byOwner: map[*registry.Owner]*resolver{}, maxPattern: maxPattern}
+	sh := &shared{main: idx, ext: ext, byOwner: map[*registry.Owner]*resolver{}, maxPattern: maxPattern, formatOpt: formatOpt, noFormat: noFormat}
 	r := sh.add(doc, idx.Bases, idx.Resources)
 	root, err := r.compile(doc, "")
 	if err != nil {
@@ -289,7 +302,8 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 	}
 	for _, name := range names {
 		kw, ok := keywords.Lookup(name)
-		if !ok || !vocab.allows(kw) {
+		// 'format' also belongs to the format-assertion vocabulary (validation 7.2.2).
+		if !ok || !(vocab.allows(kw) || (name == "format" && vocab != nil && vocab.FormatAssertion)) {
 			// Unknown or inactive-vocabulary keywords are annotated (core 6.5, 8.1.2).
 			n.Items = append(n.Items, Item{keywords.AnnotateOnly(name, ""), s[name], loc + "/" + escape.Replace(name)})
 			continue
@@ -298,6 +312,7 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 		ctx := &keywords.CompileContext{
 			Location:        kwLoc,
 			MaxPatternBytes: r.sh.maxPattern,
+			FormatAssert:    !r.sh.noFormat && (r.sh.formatOpt || (vocab != nil && vocab.FormatAssertion)),
 			Siblings:        s,
 			Sub:             func(v any, rel string) (any, error) { return at(v, kwLoc+rel) },
 			CompileAt:       at,

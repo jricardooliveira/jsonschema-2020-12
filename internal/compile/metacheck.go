@@ -48,7 +48,8 @@ func MetaChecks(docs []Doc, ext *registry.Index, run func(Check) error) error {
 			cur = Doc{Value: r.Doc, Source: r.Source}
 		}
 		for i := len(chain) - 1; i >= 0; i-- {
-			n, err := CompileWithRegistry(map[string]any{"$ref": chain[i].meta}, StdinBaseURI, ext)
+			// Format assertion is forced off: meta-checks never assert format.
+			_, n, err := compileDocumentOpts(map[string]any{"$ref": chain[i].meta}, StdinBaseURI, ext, 0, false, true)
 			if err != nil {
 				return err
 			}

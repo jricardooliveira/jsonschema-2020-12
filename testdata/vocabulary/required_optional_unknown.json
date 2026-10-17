@@ -6,6 +6,6 @@
  {"name":"core vocabulary missing is refused","spec":"core 8.1.2","meta":"no_core.json","schema":{"$schema":"https://example.com/meta/no-core"},"want":"error","errorContains":"core vocabulary"},
  {"name":"core vocabulary optional is refused","spec":"core 8.1.2","meta":"optional_core.json","schema":{"$schema":"https://example.com/meta/optional-core"},"want":"error","errorContains":"core vocabulary"},
  {"name":"malformed $vocabulary entry is refused","spec":"core 8.1.2","meta":"malformed.json","schema":{"$schema":"https://example.com/meta/malformed"},"want":"error","errorContains":"malformed.json: invalid against its meta-schema at \"/$vocabulary/https:~1~1json-schema.org~1draft~12020-12~1vocab~1validation\": rule \"type\" failed"},
- {"name":"format-assertion required is recorded","spec":"core 8.1.2","meta":"format_assertion_required.json","schema":{"$schema":"https://example.com/meta/format-assertion","format":"email"},"want":"ok","formatAssertion":true,"docs":[{"doc":"not-an-email","valid":true}]},
+ {"name":"format-assertion required is recorded","spec":"core 8.1.2","meta":"format_assertion_required.json","schema":{"$schema":"https://example.com/meta/format-assertion","format":"email"},"want":"ok","formatAssertion":true,"docs":[{"doc":"not-an-email","valid":false},{"doc":"a@example.com","valid":true}]},
  {"name":"draft-07 $schema is refused","spec":"core 8.1.1","schema":{"$schema":"http://json-schema.org/draft-07/schema#"},"want":"error","errorContains":"unsupported $schema: draft-07; only 2020-12 is supported"}
 ]
