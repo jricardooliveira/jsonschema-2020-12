@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #158 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-17 11:34:09 UTC · **Stopped:** 2026-10-17 11:37:41 UTC
-- **Story spend:** ~$0.96 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 11:34:09 UTC · **Stopped:** 2026-10-17 11:41:42 UTC
+- **Story spend:** ~$1.74 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,8 +14,8 @@ The operator decides at gate-question: `factory approve 158` to accept, or `fact
 ## Blockers
 
 - Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: output.go line 15 must use r.sortedAnnotations() instead of r.annotations, or Output renders from the lazy holder with no build error. This is a one-line change. Not granted automatically: output.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: output.go
+  > The coder asks for files the approved design does not name: The annotation recorder is in internal/keywords/annotate.go, outside this task's files. Annotate must be able to count an annotation without appending it, and eval.go cannot do that from outside the keywords package. Not granted automatically: internal/keywords/annotate.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: internal/keywords/annotate.go
 
 ## Trail
 
@@ -36,8 +36,14 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 11:36:40 | gate | gate-build | ✅ [T1] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
 | 2026-10-17 11:36:40 | boss | authorize coder-agent:T2 | ✅ gate-2-architect passed |
 | 2026-10-17 11:37:41 | agent | coder-agent | ✅ scope-request · T2 · 60.3s · $0.4575 |
-| 2026-10-17 11:37:41 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-17 11:37:41 | run | run waiting_human | ⏸️ |
+| 2026-10-17 11:37:41 | gate | gate-question | ❌ REJECTED: yes: output.go granted for this run, only the one-line change so Output renders from the same sorted annotations as the Result (no other change; output stays byte-identical). |
+| 2026-10-17 11:38:12 | boss | authorize coder-agent:T2 | ✅ gate-2-architect passed |
+| 2026-10-17 11:39:30 | agent | coder-agent | ✅ complete · T2 · 77.5s · $0.4197 |
+| 2026-10-17 11:41:03 | gate | gate-build | ✅ [T2] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 11:41:04 | boss | authorize coder-agent:T3 | ✅ gate-2-architect passed |
+| 2026-10-17 11:41:42 | agent | coder-agent | ✅ scope-request · T3 · 37.8s · $0.3682 |
+| 2026-10-17 11:41:42 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-17 11:41:42 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
