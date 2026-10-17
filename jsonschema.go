@@ -3,6 +3,7 @@
 package jsonschema
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/neoface/jsonschema/internal/compile"
@@ -83,6 +84,12 @@ func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	}
 	n, docs, err := compile.CompileReached(v, base, ext)
 	if err != nil {
+		// A keyword rejecting its own value is usually a meta-schema failure:
+		// report that as InvalidSchemaError when the main schema fails its check.
+		var ise *InvalidSchemaError
+		if merr := metaCheck([]compile.Doc{{Value: v}}, ext, max); errors.As(merr, &ise) {
+			return nil, merr
+		}
 		return nil, fmt.Errorf("schema: %w", err)
 	}
 	if err := metaCheck(docs, ext, max); err != nil {

@@ -26,6 +26,9 @@ func TestSpecCases(t *testing.T) {
 		t.Fatalf("no testdata files: %v", err)
 	}
 	for _, f := range files {
+		if filepath.Base(filepath.Dir(f)) == "metaschema" {
+			continue // own case shape and runner: metaschema_test.go
+		}
 		raw, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatal(err)

@@ -1,0 +1,4 @@
+[
+ {"name":"equal copy at a built-in address is accepted","spec":"core 8.1.1, 8.2.1","schema":{"type":"string"},"registry":[{"uri":"https://json-schema.org/draft/2020-12/meta/validation","copyOf":"internal/registry/metaschemas/meta/validation.json"}],"want":"ok"},
+ {"name":"different content at a built-in address is refused","spec":"core 8.1.1, 8.2.1","schema":{"type":"string"},"registry":[{"uri":"https://json-schema.org/draft/2020-12/schema","doc":{"$id":"https://json-schema.org/draft/2020-12/schema","type":"string"}}],"want":"error","errorContains":"https://json-schema.org/draft/2020-12/schema"}
+]
