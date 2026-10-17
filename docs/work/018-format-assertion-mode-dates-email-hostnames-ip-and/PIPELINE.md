@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #153 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 02:51:38 UTC
-- **Story spend:** ~$4.58 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 02:57:33 UTC
+- **Story spend:** ~$6.59 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -15,9 +15,10 @@ The operator decides at gate-release: `factory approve 153` to accept, or `facto
 
 - Waiting for the operator at **gate-release**:
   > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: F2 (low): The boundary rule says each format check must be charged to the per-call budget. format.go does call ctx.ChargeBytes(len(s)) before the check, but no test drives a huge string or a low MaxSteps through a format to prove that the limit gives an 'evaluation steps' error rather than running on. A safety branch with no test.
-  >   ◦ Release-agent note: Duration validator violates RFC 3339 appendix A strict grammar: accepts P1Y3D and PT1H5S, which should fail because units must appear in order (Y before M before D, H before M before S). The implementation allows skipping units, passing false positives. This is a medium-severity correctness gap: users expecting RFC-compliant duration validation will get incorrect results. The acceptance criteria explicitly require RFC 3339 compliance.
-  >   ◦ Release-agent note: Two lower-risk test gaps: (1) no test proves format validation charges bytes to the step budget (ChargeBytes is called but not asserted), and (2) no test covers embedded resources with a different $schema and format-assertion vocabulary setting.
+  >   • Security finding (medium) not resolved: No instance value reaches the output. The error message is a fixed text plus the format name taken from the schema, and a test checks this.; The only paths that pass by default are the ones the story specifies: unknown formats, the not-yet-built formats and a format with no registered check. Check functions return a plain bool and have no error path.; Each format check is charged ChargeBytes(len(s)) before it runs, following ADR-016, and TestFormatAssertionChargesSteps proves this. All checks are hand-written, single-pass and non-recursive, with no regexp or net parsers.; Meta-schema compilation is forced to annotation-only (noFormat), whatever the caller's option or the schema's vocabulary.; The format registry is written only from init(), and the mode is captured in the compiled keyword, so the compiled schema stays immutable.
+  >   ◦ Release-agent note: Email IPv6 literal tag is case-sensitive (medium severity): only uppercase 'IPv6:' in addresses like user@[IPv6:...] is accepted; lowercase 'ipv6:' is rejected. RFC 5321 section 4.1.3 specifies 'IPv6:' in that capitalization, but some mailers may emit lowercase variants, causing valid addresses to fail here.
+  >   ◦ Release-agent note: idn-email rejects quoted local parts when the domain contains non-ASCII (low severity): email '"john doe"@example.com' is valid (delegated to validEmail), but '"john doe"@例え.jp' is invalid because the non-ASCII path applies space/quote character checks to the quoted string. The quoted local part is valid per RFC 5321 even with a non-ASCII domain.
+  >   ◦ Release-agent note: Email 254-byte total limit has no standalone boundary test (low severity): the limit is implemented but coverage is only indirect through other cases. No test verifies the exact boundary (253 bytes valid, 255 invalid, or vice versa).
   >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
@@ -63,8 +64,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 02:50:39 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 17; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 02:50:39 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 02:51:37 | agent | release-agent | ✅ warn · 57.6s · $0.1029 |
-| 2026-10-17 02:51:38 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 02:51:38 | run | run waiting_human | ⏸️ |
+| 2026-10-17 02:51:38 | gate | gate-release | ❌ REJECTED: Fix only: (F1) internal/formats/duration.go must follow the RFC 3339 Appendix A ABNF exactly: dur-year = 1*DIGIT "Y" [dur-month]; dur-month = 1*DIGIT "M" [dur-day]; dur-day = 1*DIGIT "D"; dur-hour = 1*DIGIT … |
+| 2026-10-17 02:51:59 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 02:54:50 | agent | coder-agent | ✅ complete · remediation · 170.3s · $1.1846 |
+| 2026-10-17 02:55:13 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 02:55:14 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 02:56:19 | agent | tester-agent | ✅ warn · 65.5s · $0.7173 |
+| 2026-10-17 02:56:19 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 17; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 02:56:19 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 02:57:33 | agent | release-agent | ✅ warn · 73.4s · $0.1112 |
+| 2026-10-17 02:57:33 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 02:57:33 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
