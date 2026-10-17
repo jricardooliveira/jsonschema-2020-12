@@ -118,6 +118,33 @@ In-repo benchmarks (`go test -run '^$' -bench . -benchmem`) on an Apple M3 Max w
   `multipleOf` still allocates on each evaluation. The retained size of decoded documents
   dropped only 8–11%.
 
+## Conformance
+
+| Candidate | Required (draft2020-12) | Optional | Optional `format/*` (assertion on) | Run by |
+|---|---|---|---|---|
+| v1 · `09d8ec2` · tag `evaluation-candidate` | **1,302 / 1,302** | — | — | the external evaluator (reported) |
+| v1 · `09d8ec2` | **1,302 / 1,302** | 146 / 162 | 820 / 890 | post-experiment check |
+| v1.1 · `f35d9e4` · tag `performance-round-2` | **1,302 / 1,302** | 146 / 162 | 820 / 890 | post-experiment check |
+
+- The post-experiment check used the official [JSON-Schema-Test-Suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite) at commit `55719286` (2026-10-14), `tests/draft2020-12`, through the library API.
+  - The suite's `remotes/` were served through the offline registry as `http://localhost:1234/`.
+  - Optional `format/*` ran with format assertion on.
+  - A schema that fails to compile counted every test in its group as failed.
+- It ran after both rounds and outside the Factory. Nothing from it was given back to the Factory.
+- v1 and v1.1 fail exactly the same optional cases:
+
+| Optional file | Passed |
+|---|---|
+| `cross-draft` | 0 / 1 |
+| `dependencies-compatibility` | 22 / 36 |
+| `format-assertion` | 3 / 4 |
+| `format/hostname` | 41 / 64 |
+| `format/idn-email` | 22 / 24 |
+| `format/idn-hostname` | 55 / 98 |
+| `format/uri-template` | 46 / 48 |
+
+The public suite may have been in the models' training data. The Factory never accessed or ran it during the experiment.
+
 ---
 
 ## Product README (written by the Factory)

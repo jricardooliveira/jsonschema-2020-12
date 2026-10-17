@@ -11,7 +11,7 @@ import (
 
 // Documents with fast-path and big-path numbers: one below each limit's
 // threshold the CLI exits 2 and names the limit; at the threshold it does
-// not exit 2. The thresholds are the ones number_limits_regression_test.go
+// not exit 2. The thresholds are the ones limits_test.go (root)
 // pins in the library for the same schemas and documents.
 func TestNumberDocsLimitExitCode(t *testing.T) {
 	const nums = `1,1.5,9223372036854775807,9223372036854775808,12345678901234567890.5,1e2`

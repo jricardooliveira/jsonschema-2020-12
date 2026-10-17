@@ -74,7 +74,7 @@ func TestNestedReportOverCapCLI(t *testing.T) {
 }
 
 // Flag and basic CLI output and exit codes for a large failing document are
-// the library output pinned by output_unchanged_test.go at the root.
+// the library output pinned by output_test.go at the root.
 func TestFlagBasicCLIUnchanged(t *testing.T) {
 	const schemaText = `{"items":{"properties":{"a":{"type":"string"},"b":{"minimum":0}},"required":["c"]}}`
 	docText := "[" + strings.TrimSuffix(strings.Repeat(`{"a":1,"b":-1},`, 3000), ",") + "]"

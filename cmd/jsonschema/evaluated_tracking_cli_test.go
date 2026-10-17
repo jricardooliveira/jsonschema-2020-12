@@ -9,7 +9,7 @@ import (
 
 // withNote adds an unknown keyword holding the name kw. The load-time scan
 // counts "unevaluatedItems" anywhere, so that variant keeps recording; the
-// "unevaluatedNot" variant skips it (see evaluated_tracking_limits_test.go).
+// "unevaluatedNot" variant skips it (see limits_test.go at the root).
 func withNote(schema, kw string) string {
 	note := `"x-note":{"` + kw + `":true}`
 	if schema == "true" {
