@@ -3,7 +3,7 @@
 - Date: 2026-10-17
 - Type: docs
 - Verdict: pass
-- Status: proposed (pending Checkpoint 1 sign-off)
+- Status: approved by the operator at Checkpoint 1 (run #155, 2026-10-17 05:21 UTC)
 
 ## Problem
 
