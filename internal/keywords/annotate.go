@@ -67,7 +67,7 @@ func (c *EvalContext) Annotate(value any) error {
 		return &jsonvalue.LimitError{Limit: "annotations", Max: col.max}
 	}
 	col.seq++
-	a := Annotation{InstanceLocation: c.InstanceLocation, KeywordLocation: c.KeywordLocation, Keyword: c.Keyword, Value: value, Seq: col.seq}
+	a := Annotation{InstanceLocation: c.InstanceLocation, KeywordLocation: c.KeywordLoc(), Keyword: c.Keyword, Value: value, Seq: col.seq}
 	col.list = append(col.list, a)
 	if c.Tree != nil {
 		c.Tree.Annotations = append(c.Tree.Annotations, a)

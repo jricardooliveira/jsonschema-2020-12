@@ -53,10 +53,10 @@ type Unit struct {
 // child context. Create one with NewEvalContext.
 type EvalContext struct {
 	InstanceLocation string // JSON Pointer of the instance being checked
-	KeywordLocation  string // JSON Pointer of the keyword being evaluated
-	// AbsoluteKeywordLocation of the keyword being evaluated; "" when omitted.
-	AbsoluteKeywordLocation string
-	Keyword                 string // name of the keyword being evaluated
+	// Loc is a cheap reference to the keyword being evaluated; its location
+	// strings are rendered only when a unit or annotation needs them.
+	Loc     Location
+	Keyword string // name of the keyword being evaluated
 	// Tree is the evaluation-tree node of the subschema being evaluated; nil
 	// when the caller builds no tree.
 	Tree *TreeNode
@@ -75,6 +75,21 @@ type EvalContext struct {
 	evalNode func(ctx *EvalContext, node any, instance any) (bool, error)
 }
 
+// Location renders the locations of the keyword being evaluated on demand.
+// Both methods only read immutable data.
+type Location interface {
+	String() string   // keyword location along the evaluation path
+	Absolute() string // absolute keyword location; "" when omitted
+}
+
+// KeywordLoc renders the keyword location of the keyword being evaluated.
+func (c *EvalContext) KeywordLoc() string {
+	if c.Loc == nil {
+		return ""
+	}
+	return c.Loc.String()
+}
+
 // NewEvalContext returns a root context. evalNode evaluates a compiled child
 // schema into the context it is given. max is the output-unit cap.
 func NewEvalContext(max int, evalNode func(ctx *EvalContext, node any, instance any) (bool, error)) *EvalContext {
@@ -89,7 +104,11 @@ func (c *EvalContext) Report(msg string) error {
 	if *c.count > c.max {
 		return &jsonvalue.LimitError{Limit: "output units", Max: c.max}
 	}
-	c.units = append(c.units, Unit{c.InstanceLocation, c.KeywordLocation, msg, c.AbsoluteKeywordLocation})
+	var kw, abs string
+	if c.Loc != nil {
+		kw, abs = c.Loc.String(), c.Loc.Absolute()
+	}
+	c.units = append(c.units, Unit{c.InstanceLocation, kw, msg, abs})
 	return nil
 }
 

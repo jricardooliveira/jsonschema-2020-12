@@ -66,7 +66,7 @@ func evalPrefixItems(ctx *keywords.EvalContext, compiled any, instance any) (boo
 	// Annotations (core 10.3.1.1) only for a keyword that passed and applied.
 	if valid && n > 0 {
 		if rec, ok := ctx.Items.(keywords.ItemRecorder); ok {
-			rec.RecordPrefixItems(ctx.InstanceLocation, ctx.KeywordLocation, n-1, n == len(arr))
+			rec.RecordPrefixItems(ctx.InstanceLocation, ctx.KeywordLoc(), n-1, n == len(arr))
 		}
 		var v any = n - 1
 		if n == len(arr) {
