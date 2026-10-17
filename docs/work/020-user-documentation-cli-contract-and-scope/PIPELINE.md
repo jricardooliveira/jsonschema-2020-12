@@ -3,22 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #155 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 05:21:08 UTC · **Stopped:** 2026-10-17 05:33:12 UTC
+- **Run:** #155 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 05:21:08 UTC · **Stopped:** 2026-10-17 05:33:40 UTC
 - **Story spend:** ~$6.31 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 155` to accept, or `factory reject 155 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-155-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Limit defaults are documented as read from the code, but there is no CI test that parses the docs and compares them to the actual code values. The docs are currently accurate (verified by manual inspection), but a future change to a default value (e.g. story 193's flags or a later story) could drift undetected. This is a low-severity issue because: (1) the flag test catches removed or added flags, (2) defaults are less likely to change than flags, and (3) the concern is noted for future stories. A test that extracts defaults from docs/limits.md and compares them to the actual option and constant values could be added in a follow-up story.
-  >   ◦ Release-agent note: The diff shows docs/limits.md was significantly rewritten (line count ~50 to ~60), but the exact state before this story is not visible. The story depends on stories 178–196, so all limits should be present. Verify that every constant in options.go, numberlimits.go, cmd/jsonschema/limitflags.go and cmd/jsonschema/refflags.go appears in the table.
-  >   ◦ Release-agent note: The docs_examples_test.go parses CLI examples as ```sh and ```json blocks in markdown. If a future page uses a code fence with trailing spaces or unusual formatting, the parser might fail silently (the test would see fewer examples than written). The test checks `if n == 0 { t.Fatal(...) }`, so it will error if no examples are found, but a single formatting error in one block is not caught. Consider a lint pass over the markdown if docs grow much larger.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -67,8 +62,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 05:32:32 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 15; findings: 1 new, 0 persistent, 3 resolved |
 | 2026-10-17 05:32:33 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 05:33:12 | agent | release-agent | ✅ warn · 38.9s · $0.0881 |
-| 2026-10-17 05:33:12 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 05:33:12 | run | run waiting_human | ⏸️ |
+| 2026-10-17 05:33:12 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 05:33:40 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 05:33:40 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
