@@ -70,7 +70,7 @@ func ParseVocabulary(metaSchema string, doc any) (*VocabularySet, error) {
 				set.FormatAssertion = true
 			}
 		} else if obj[k].(bool) {
-			return nil, &UnknownVocabularyError{Vocabulary: k, MetaSchema: metaSchema}
+			return nil, &UnknownVocabularyError{Vocabulary: bound(k), MetaSchema: metaSchema}
 		}
 	}
 	return set, nil

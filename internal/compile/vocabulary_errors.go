@@ -3,6 +3,7 @@ package compile
 import "fmt"
 
 // UnknownVocabularyError: a meta-schema requires a vocabulary that is not recognised.
+// Vocabulary is bounded like MalformedVocabularyError.Entry.
 type UnknownVocabularyError struct{ Vocabulary, MetaSchema string }
 
 func (e *UnknownVocabularyError) Error() string {
@@ -26,6 +27,9 @@ func (e *MalformedVocabularyError) Error() string {
 type UnsupportedSchemaError struct{ Draft string }
 
 func (e *UnsupportedSchemaError) Error() string {
+	if e.Draft == "2020-12" { // the http:// spelling: only https identifies 2020-12
+		return "unsupported $schema: only " + Draft2020 + " is supported"
+	}
 	return fmt.Sprintf("unsupported $schema: %s; only 2020-12 is supported", e.Draft)
 }
 
