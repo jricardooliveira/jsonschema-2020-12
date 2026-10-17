@@ -1,0 +1,285 @@
+{
+  "work_id": "US-0149",
+  "parent_story": "US-0149",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "02a432d32ed2cec0425412a1a4360d8a0064dd3d",
+    "base_commit": "c941ecbfe0a8d2c80baaef4047a442c5009241d9"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "A 'detailed' output shape lives in its own file and registers through the output-format registration point, with no edit to a central list. Both the library and the CLI output-format option can select it.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A 'verbose' output shape lives in its own file and registers through the same registration point. Both the library and the CLI output-format option can select it.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every nested output unit in 'detailed' and 'verbose' has 'valid', 'keywordLocation' and 'instanceLocation', plus 'absoluteKeywordLocation' where one is known. Child units are nested under 'errors' or 'annotations' as the 2020-12 shapes describe. 'verbose' includes every evaluated keyword, including the ones that passed. 'detailed' keeps only the units that carry information, following the 2020-12 condensing rules.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Annotations appear in 'detailed' and 'verbose' wherever the 2020-12 shapes include them. Annotations that list matched property names (properties, patternProperties, additionalProperties, unevaluatedProperties) show the names, treated like instanceLocation, and never show property values. No document value ever appears in either shape. A test proves this with a document whose values are distinctive secret strings.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "With one document, CLI stdout is exactly one 'detailed' or 'verbose' output object and nothing else. With several documents, each line holds the unchanged output object inside its label. The exit codes are unchanged: 0 valid, 1 invalid, 2 error, and the worst result wins.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The existing rendered-report byte cap, DefaultMaxReportBytes, also bounds 'detailed' and 'verbose' output. A report that would exceed it stops with a clear error and exit code 2, never a truncated or silent result. The existing library option and CLI flag raise it. Tests read the cap from the code instead of repeating the number.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "absoluteKeywordLocation is a valid URI in every output shape (basic, detailed and verbose). Characters not allowed in a URI fragment are percent-encoded in the JSON Pointer fragment produced by Resource.AbsoluteLocation. Tests use schema keys that contain a space, '%' and non-ASCII characters.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Code comments in the detailed and verbose files record every part of the 2020-12 shapes that is only partly produced.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 8,
+    "covered": 8,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/abslocation_escape_test.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/output_nested_test.go",
+        "change": "added",
+        "additions": 110,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/fragment.go",
+        "change": "added",
+        "additions": 26,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/fragment_test.go",
+        "change": "added",
+        "additions": 33,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/units_verbose_test.go",
+        "change": "added",
+        "additions": 68,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/detailed.go",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/detailed_test.go",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/nested_limit_test.go",
+        "change": "added",
+        "additions": 78,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/registry.go",
+        "change": "modified",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/tree.go",
+        "change": "added",
+        "additions": 134,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/verbose.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/output/verbose_test.go",
+        "change": "added",
+        "additions": 39,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 1
+      },
+      {
+        "path": "output.go",
+        "change": "modified",
+        "additions": 10,
+        "deletions": 1
+      },
+      {
+        "path": "output_nested_test.go",
+        "change": "added",
+        "additions": 128,
+        "deletions": 0
+      },
+      {
+        "path": "output_unchanged_test.go",
+        "change": "added",
+        "additions": 94,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-ced67f042b7745d183b2ff8a99cdf252/docs/architecture/adr/ADR-017-detailed-and-verbose-output-formats-with-uri-safe.md",
+    "summary": "All earlier findings are resolved. 'detailed' and 'verbose' each live in their own file and register through RegisterTreeReport. Validate still calls EvaluateFull, and the tree is rebuilt on each Outp"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [
+      "absoluteKeywordLocation for schema keys that contain spaces, '%' or non-ASCII characters is now percent-encoded, in flag and basic output too (accepted by the reviewer)",
+      "absoluteKeywordLocation is now percent-encoded in its fragment for schema keys with spaces, '%' or non-ASCII characters, in flag, basic, detailed and verbose output. The operator accepted this at Checkpoint 2."
+    ],
+    "findings": [
+      "No instance values are emitted. tree.go writes only locations, error messages and annotation values, and those values come from the schema or are matched property names. The retained instance is a private Result field that is never rendered. encodeFragment encodes every byte outside pchar, '/' and '?' as %XX and has no unencoded fallback. A limit error from the second evaluation in Output is returned, not swallowed. No insecure defaults were found."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 6.83658,
+    "tokens_in": 5564389,
+    "tokens_out": 68591
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "'~' is unreserved in RFC 3986, so the ~0/~1 escapes pass through unchanged and are never encoded a second time."
+    },
+    {
+      "task": "T1",
+      "text": "The encoder works byte by byte and has no failure path, so there is no error case to test."
+    },
+    {
+      "task": "T1",
+      "text": "The CLI test's $ref uses the already-encoded fragment '#/$defs/a%20b%25%C3%A9', because the schema loader needs a valid URI reference. The reported absoluteKeywordLocation uses the same encoded form."
+    },
+    {
+      "task": "T2",
+      "text": "registry.go was edited because Report.Tree, RegisterTreeReport and NeedsTree are the agreed seam and had to exist for tree.go to compile against them."
+    },
+    {
+      "task": "T2",
+      "text": "The tests register test-only shapes 'test-nested-detailed' and 'test-nested-verbose', so they do not collide with the real detailed and verbose shapes that T3 and T4 register."
+    },
+    {
+      "task": "T2",
+      "text": "The raised-cap test passes a larger maxBytes to RenderReport directly, which is the library path Options.MaxReportBytes feeds. Cap tests use DefaultMaxReportBytes from the code instead of repeating the number."
+    },
+    {
+      "task": "T2",
+      "text": "The root node is never collapsed in detailed."
+    },
+    {
+      "task": "T3",
+      "text": "Secret-value absence is checked only on the failing-tree test, with a hand-built tree that holds no secret. The instance-level secret test with a real document belongs to the T5 contract tests."
+    },
+    {
+      "task": "T4",
+      "text": "Per the approved design, internal/eval/units.go and units_verbose_test.go are not changed: the tree comes from EvaluateTree, so no passing-unit recording is needed."
+    },
+    {
+      "task": "T4",
+      "text": "Report-cap behaviour for verbose is already covered by nested_limit_test.go through the shared renderTree."
+    },
+    {
+      "task": "T4",
+      "text": "The secret-value test is not in this task. Verbose output has no document values, because tree nodes carry only locations, messages and schema-derived annotations."
+    },
+    {
+      "task": "T4",
+      "text": "The approved design says internal/eval/units.go and eval.go must not be edited: verbose gets its passing nodes from eval.EvaluateTree, and only failures are recorded as units. So units.go is unchanged and the new test guards that rule instead of adding passing-unit recording."
+    },
+    {
+      "task": "T4",
+      "text": "The new test passed on its first run because it checks behaviour that already exists and must stay that way. It never failed first, so this was not a red-then-green TDD cycle."
+    },
+    {
+      "task": "T5",
+      "text": "jsonschema.go and output.go were not yet wired to build the evaluation tree, so the shapes could not be reached from the library or CLI. I made the minimal wiring the design calls for. Result keeps the root node, the decoded instance and the unit and annotation caps as private fields. Result.Output calls eval.EvaluateTree when output.NeedsTree(shape) is true and passes the tree in Report.Tree. Nothing is cached and Validate still calls EvaluateFull."
+    },
+    {
+      "task": "T5",
+      "text": "The raised-cap test is library-level through Options.MaxReportBytes, as designed. The CLI has no cap flag in this story."
+    },
+    {
+      "task": "T5",
+      "text": "The CLI over-cap exit-2 case with empty stdout is not covered by a CLI test. The cap error is only tested at library level, and the CLI exit-2 path is covered only by the missing-document and unknown-shape cases."
+    },
+    {
+      "task": "T5",
+      "text": "The CLI tests pass the shape with `-output`, which the CLI accepted."
+    },
+    {
+      "task": "remediation",
+      "text": "The flag and basic hashes in output_unchanged_test.go were computed on the current tree, not on a checkout of c941ecb: this session cannot write outside the worktree, so it could not check out the base commit. `git diff c941ecb` shows that internal/eval, internal/keywords, internal/jsonvalue, flag.go, basic.go, run.go and main.go have no non-test changes since base. Result.Output builds the flag/basic Report exactly as it did at base. The test schema has no key the new fragment encoding would change. So the flag and basic bytes should equal base output, but no run at c941ecb produced these hashes."
+    },
+    {
+      "task": "remediation",
+      "text": "The CLI exit-code check could not go in output_unchanged_test.go, because the root package cannot call cmd/jsonschema's run(). It is in cmd/jsonschema/output_nested_test.go (TestFlagBasicCLIUnchanged) instead."
+    },
+    {
+      "task": "remediation",
+      "text": "In the 'detailed' shape, a failing child under a passing node (for example a failed anyOf branch) is still kept, as before. Only passing children under a failing node are dropped."
+    },
+    {
+      "task": "remediation",
+      "text": "The over-cap CLI test reads the cap from jsonschema.DefaultMaxReportBytes and never repeats the number. Raising the cap is proven only at library level (Options.MaxReportBytes); the CLI flag belongs to story 193."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
