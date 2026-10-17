@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #28
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #163, 2026-10-17 20:25 UTC)
 
 ## Decision
 The golden harness lives in new test files in cmd/jsonschema: golden_cases_test.go enumerates cases, golden_capture_test.go is an opt-in capture behind a test flag that refuses to overwrite, and golden_test.go compares. It builds the CLI once with the Go toolchain into a temp dir and runs it with os/exec from the project folder using relative paths; generated perf documents come from internal/perfdata and are piped via stdin. The golden data is kept in two JSON files under testdata/golden/ (small outputs in full; large outputs and generated documents as size plus SHA-256), each with the provenance header. In internal/eval, a new pathstack.go holds the per-call []pathFrame indexed by depth, with lazyLoc embedded by value, plus enter/exit methods and the documented last-in first-out validity invariant. The stack is owned by the per-call evaluation state, allocated fresh per Validate and never pooled. refguard.go keeps enterNode as a thin wrapper over the stack so refguard_internal_test.go compiles; location.go keeps the lazyLoc type and constructor for lazyloc_test.go; dynamicscope.go adds an explicit exit and keeps push as a wrapper for dynamicscope_test.go. eval.go's evalNode switches to the explicit enter/exit calls; this crowded file is touched only at the call sites. The perf benchmarks and allocs_test.go come from stories 198 and 204.

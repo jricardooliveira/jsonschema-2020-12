@@ -1,7 +1,7 @@
 # PLAN #28: Golden CLI files from v1.1, then reuse evaluation path frames
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #163, 2026-10-17 20:25 UTC)
 - Design: see `ADR-028-*.md` under `docs/architecture/adr/`
 
 ## Files that change
