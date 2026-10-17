@@ -74,7 +74,8 @@ func TestResolveMetaSchema(t *testing.T) {
 		if !errors.Is(err, c.err) || got != c.want {
 			t.Errorf("%s: got %q, %v; want %q, %v", c.name, got, err, c.want, c.err)
 		}
-		if err != nil && strings.Contains(err.Error(), "draft-07") {
+		// The unsupported-draft message names the draft by design (story 190).
+		if err != nil && !errors.Is(err, ErrUnsupportedSchema) && strings.Contains(err.Error(), "draft-07") {
 			t.Errorf("%s: error echoes the declared URI: %v", c.name, err)
 		}
 	}

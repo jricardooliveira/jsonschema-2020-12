@@ -20,6 +20,18 @@ func (e *MalformedVocabularyError) Error() string {
 	return fmt.Sprintf("meta-schema %s: invalid '$vocabulary' entry %q: %s", e.MetaSchema, e.Entry, e.Reason)
 }
 
+// UnsupportedSchemaError: '$schema' names another draft's meta-schema.
+// Draft is the draft name taken from the URI (for example "draft-07").
+// It matches ErrUnsupportedSchema under errors.Is.
+type UnsupportedSchemaError struct{ Draft string }
+
+func (e *UnsupportedSchemaError) Error() string {
+	return fmt.Sprintf("unsupported $schema: %s; only 2020-12 is supported", e.Draft)
+}
+
+// Is makes errors.Is(err, ErrUnsupportedSchema) true.
+func (e *UnsupportedSchemaError) Is(target error) bool { return target == ErrUnsupportedSchema }
+
 // CoreVocabularyError: the core vocabulary is missing or not required.
 type CoreVocabularyError struct{ MetaSchema, Reason string }
 
