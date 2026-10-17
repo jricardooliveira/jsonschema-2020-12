@@ -25,8 +25,11 @@ Declared `$id` values and resolved references get RFC 3986 6.2.2 syntax normaliz
 ## Loops
 - Load time: schemas holding only `$ref` that point at each other are a schema error (exit 2).
 - Evaluation: re-entering the same schema location at the same instance location on the current path is a loop error (exit 2). Recursion that descends into the document (trees, lists) is fine.
-- Backstop: at most 40000 schema nodes (4 × the decoder's nesting limit of 10000) may be nested on one evaluation path. Past that, evaluation stops with an `evaluation depth` limit error (exit 2), never a stack overflow. The bound is fixed for now; a later story makes it configurable.
-- Steps: every schema-node entry, including through `$ref`, counts one evaluation step on the per-call counter (default 100,000,000). `$ref` branches that multiply at each level end with an `evaluation steps` limit error (exit 2), never a hang.
+- Reference chain: at most `--max-ref-chain` / `Options.MaxRefChain` `$ref`/`$dynamicRef` jumps may be on one evaluation path. Past that, evaluation stops with a `reference chain` limit error (exit 2).
+- Backstop: at most 4 × the nesting depth limit (`--max-depth` / `Options.MaxDepth`) schema nodes may be nested on one evaluation path. Past that, evaluation stops with a `nesting depth` limit error (exit 2), never a stack overflow.
+- Steps: every schema-node entry (including through `$ref`) and every keyword evaluated counts on the per-call step counter (`--max-steps` / `Options.MaxSteps`). `$ref` branches that multiply at each level end with an `evaluation steps` limit error (exit 2), never a hang.
+
+Defaults for all of these are in [limits.md](limits.md).
 
 ## Output locations
-`keywordLocation` follows the evaluation path through `$ref` (core 12.3.1): a failure inside a referenced schema reached from `/properties/p/$ref` is reported at `/properties/p/$ref/minLength`, not at the target's own location such as `/$defs/a/minLength`. `absoluteKeywordLocation` is not emitted yet.
+`keywordLocation` follows the evaluation path through `$ref` (core 12.3.1): a failure inside a referenced schema reached from `/properties/p/$ref` is reported at `/properties/p/$ref/minLength`, not at the target's own location such as `/$defs/a/minLength`. `absoluteKeywordLocation` gives the target's own absolute location where it is known; see [output-formats.md](output-formats.md).
