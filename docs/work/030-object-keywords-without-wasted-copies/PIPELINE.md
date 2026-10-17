@@ -3,22 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #166 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 22:13:33 UTC · **Stopped:** 2026-10-17 22:33:05 UTC
+- **Run:** #166 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 22:13:33 UTC · **Stopped:** 2026-10-17 22:36:04 UTC
 - **Story spend:** ~$3.78 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 166` to accept, or `factory reject 166 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-166-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Tester noted (F1) the before baseline in docs/benchmarks/r3-207-objectkeys.md is labelled 'main after #205' but does not match #205's recorded numbers. The saving calculation (32.0 MB vs 23.96 MB required, 700,006 allocs vs 600,096 required) is clear and exceeds targets; the absolute result (164.95 MB B/op and 3.4 M allocs/op) is also well under the 345 MB and 6.0 M limits. Operator should verify the before baseline is correctly measured on main after #205 is integrated.
-  >   ◦ Release-agent note: Tester noted (F2) the target verdict in the benchmark doc attributes the PASS decision to 'the operator' rather than to measured data. The verdict should be re-attributed to the measured saving and absolute values meeting targets.
-  >   ◦ Release-agent note: Tester noted (F3) there is no direct test of Recording() on the real EvaluatedItems returned by eval.Evaluate; recording_objectkeys_test.go tests Recording() on EvalContext and its delegation, but applicator tests (properties_test.go, additionalproperties_test.go, patternproperties_test.go) should be inspected to confirm Recording() is called in the evaluated-location-recording paths. All applicator tests pass unchanged.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -58,8 +53,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 22:31:52 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 9; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 22:31:52 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 22:33:04 | agent | release-agent | ✅ pass · 71.5s · $0.0927 |
-| 2026-10-17 22:33:05 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 22:33:05 | run | run waiting_human | ⏸️ |
+| 2026-10-17 22:33:05 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 22:36:04 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 22:36:04 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
