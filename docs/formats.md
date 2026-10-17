@@ -20,7 +20,7 @@ Checks are hand-written, linear-time and use the standard library only.
 | `date-time` | RFC 3339 5.6; `t`/`z` lowercase allowed; offset required; second 60 only at 23:59:60 UTC after the offset |
 | `date` | RFC 3339 5.6 full-date, real calendar days incl. leap years |
 | `time` | RFC 3339 5.6 full-time, offset required, same leap-second rule |
-| `duration` | RFC 3339 appendix A; `P2W` alone; `P1W3D`, `P`, `PT` fail |
+| `duration` | RFC 3339 appendix A ABNF; `P2W` alone; units chain only to the next one (`P1Y2M3D`, `PT1H2M` pass; `P1Y1D`, `PT1H1S`, `P1W3D`, `P`, `PT` fail) |
 | `email` | RFC 5321 Mailbox: dot-atom or quoted local part (max 64), domain or `[ipv4]` / `[IPv6:...]` literal, max 254 bytes |
 | `idn-email` | partly checked, see below |
 | `hostname` | RFC 1123: labels 1-63 of letters, digits, hyphen, no hyphen at an edge, max 253, trailing dot fails |

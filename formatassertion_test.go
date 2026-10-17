@@ -1,11 +1,14 @@
 package jsonschema_test
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/neoface/jsonschema"
+	"github.com/neoface/jsonschema/internal/keywords"
 )
 
 func faValid(t *testing.T, s *jsonschema.Schema, doc string) bool {
@@ -65,6 +68,24 @@ func TestFormatAssertionDeferredAndUnknownPass(t *testing.T) {
 		}
 		if !faValid(t, s, `"%%% not anything"`) {
 			t.Errorf("format %s must pass", f)
+		}
+	}
+}
+
+// A format check is charged against the per-call step budget (ADR-016 H): a
+// long string under a small MaxSteps is a limit error in the mode, and the
+// same budget is enough without the mode.
+func TestFormatAssertionChargesSteps(t *testing.T) {
+	doc := []byte(`"` + strings.Repeat("a", 1000*keywords.BytesPerStep) + `"`)
+	for _, on := range []bool{false, true} {
+		s, err := jsonschema.CompileWithOptions([]byte(`{"format":"hostname"}`), jsonschema.Options{FormatAssertion: on, MaxSteps: 100})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = s.Validate(doc)
+		var le *jsonschema.LimitError
+		if hit := errors.As(err, &le) && le.Limit == jsonschema.LimitSteps; hit != on {
+			t.Errorf("mode %v: err %v", on, err)
 		}
 	}
 }
