@@ -3,21 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #156 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 10:33:27 UTC · **Stopped:** 2026-10-17 10:46:05 UTC
+- **Run:** #156 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 10:33:27 UTC · **Stopped:** 2026-10-17 10:49:52 UTC
 - **Story spend:** ~$3.14 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 156` to accept, or `factory reject 156 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-156-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: spec_test.go modified outside the declared scope to skip testdata/perf — the change is minimal and necessary (one directory name added to the skip list), and the tester rated it low severity. The perf directory must not be processed as spec test cases.
-  >   ◦ Release-agent note: Baseline timings slightly inflated by concurrent background work at the start of measurement — documented in docs/benchmarks.md and acceptable for a baseline. The operator must rerun on the same machine in stories 199–204 to compare.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -57,8 +53,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 10:45:40 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 10; findings: 2 new, 0 persistent, 0 resolved |
 | 2026-10-17 10:45:40 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 10:46:05 | agent | release-agent | ✅ pass · 24.5s · $0.0631 |
-| 2026-10-17 10:46:05 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 10:46:05 | run | run waiting_human | ⏸️ |
+| 2026-10-17 10:46:05 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 10:49:52 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 10:49:52 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
