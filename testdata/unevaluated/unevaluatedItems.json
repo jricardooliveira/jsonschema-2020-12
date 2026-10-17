@@ -1,0 +1,115 @@
+[
+  {
+    "spec": "2020-12 core, section 11.2: prefixItems evaluates the leading items",
+    "description": "adjacent prefixItems",
+    "schema": {"prefixItems": [true, true], "unevaluatedItems": false},
+    "tests": [
+      {"description": "covered", "data": [1, 2], "valid": true},
+      {"description": "shorter", "data": [1], "valid": true},
+      {"description": "extra", "data": [1, 2, 3], "valid": false},
+      {"description": "non-array ignored", "data": {"a": 1}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.2: items evaluates every remaining item",
+    "description": "adjacent items",
+    "schema": {"items": true, "unevaluatedItems": false},
+    "tests": [
+      {"description": "all covered", "data": [1, 2, 3], "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.2: the unevaluatedItems subschema applies to uncovered items",
+    "description": "subschema applied",
+    "schema": {"prefixItems": [true], "unevaluatedItems": {"type": "integer"}},
+    "tests": [
+      {"description": "integers", "data": ["x", 1, 2], "valid": true},
+      {"description": "string", "data": ["x", 1, "y"], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 10.3.1.3: contains evaluates only matching items",
+    "description": "contains",
+    "schema": {"contains": {"type": "integer"}, "unevaluatedItems": false},
+    "tests": [
+      {"description": "all match", "data": [1, 2], "valid": true},
+      {"description": "non-match uncovered", "data": [1, "x"], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.2: allOf annotations are visible",
+    "description": "allOf",
+    "schema": {"allOf": [{"prefixItems": [true]}, {"prefixItems": [true, true]}], "unevaluatedItems": false},
+    "tests": [
+      {"description": "two covered", "data": [1, 2], "valid": true},
+      {"description": "third uncovered", "data": [1, 2, 3], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 7.7.1: anyOf passing branches count, failed ones do not",
+    "description": "anyOf",
+    "schema": {"anyOf": [{"prefixItems": [true], "minItems": 1}, {"prefixItems": [true, true], "minItems": 3}], "unevaluatedItems": false},
+    "tests": [
+      {"description": "first branch only", "data": [1], "valid": true},
+      {"description": "second fails, covers nothing", "data": [1, 2], "valid": false},
+      {"description": "both pass, third item uncovered", "data": [1, 2, 3], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.2: the passing oneOf branch counts",
+    "description": "oneOf",
+    "schema": {"oneOf": [{"prefixItems": [true], "maxItems": 1}, {"prefixItems": [true, true], "minItems": 2}], "unevaluatedItems": false},
+    "tests": [
+      {"description": "first branch", "data": [1], "valid": true},
+      {"description": "second branch", "data": [1, 2], "valid": true},
+      {"description": "uncovered", "data": [1, 2, 3], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 7.7.1: not contributes no annotations",
+    "description": "not",
+    "schema": {"not": {"not": {"prefixItems": [true]}}, "unevaluatedItems": false},
+    "tests": [
+      {"description": "covered by nothing", "data": [1], "valid": false},
+      {"description": "empty", "data": [], "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 10.2.2: if/then/else; a failed if contributes nothing",
+    "description": "if then else",
+    "schema": {"if": {"prefixItems": [{"const": 1}], "minItems": 1}, "then": {"prefixItems": [true, true]}, "else": {"prefixItems": [true]}, "unevaluatedItems": false},
+    "tests": [
+      {"description": "then covers two", "data": [1, 2], "valid": true},
+      {"description": "else covers one", "data": [2], "valid": true},
+      {"description": "else leaves second", "data": [2, 3], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.2: nested unevaluatedItems that succeeds covers what it examined",
+    "description": "nested unevaluatedItems",
+    "schema": {"allOf": [{"unevaluatedItems": true}], "unevaluatedItems": false},
+    "tests": [
+      {"description": "inner covers all", "data": [1, 2], "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 8.2.3.1: $ref target annotations are visible",
+    "description": "$ref",
+    "schema": {"$ref": "#/$defs/base", "unevaluatedItems": false, "$defs": {"base": {"prefixItems": [true, true]}}},
+    "tests": [
+      {"description": "covered", "data": [1, 2], "valid": true},
+      {"description": "extra", "data": [1, 2, 3], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.2 and 8.2.3.2: an extension through $dynamicRef/$dynamicAnchor adds items",
+    "description": "$dynamicRef extension",
+    "schema": {"$id": "http://x/ext", "$dynamicAnchor": "n", "$ref": "base", "unevaluatedItems": false,
+      "$defs": {"base": {"$id": "base", "$dynamicAnchor": "n", "prefixItems": [true, {"$dynamicRef": "#n"}]}}},
+    "tests": [
+      {"description": "two items", "data": [1, []], "valid": true},
+      {"description": "extra item", "data": [1, [], 3], "valid": false},
+      {"description": "nested extra via dynamic ref", "data": [1, [1, [], 3]], "valid": false}
+    ]
+  }
+]

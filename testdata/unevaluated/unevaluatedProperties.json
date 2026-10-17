@@ -1,0 +1,127 @@
+[
+  {
+    "spec": "2020-12 core, section 11.3: properties, patternProperties and additionalProperties evaluate properties",
+    "description": "adjacent properties and patternProperties",
+    "schema": {"properties": {"a": true}, "patternProperties": {"^p": true}, "unevaluatedProperties": false},
+    "tests": [
+      {"description": "all covered", "data": {"a": 1, "pz": 2}, "valid": true},
+      {"description": "extra rejected", "data": {"a": 1, "b": 2}, "valid": false},
+      {"description": "non-object ignored", "data": [1], "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.3: additionalProperties evaluates every remaining property",
+    "description": "adjacent additionalProperties",
+    "schema": {"properties": {"a": true}, "additionalProperties": true, "unevaluatedProperties": false},
+    "tests": [
+      {"description": "everything covered", "data": {"a": 1, "b": 2}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.3: the unevaluatedProperties subschema applies to uncovered members",
+    "description": "subschema applied",
+    "schema": {"properties": {"a": true}, "unevaluatedProperties": {"type": "integer"}},
+    "tests": [
+      {"description": "integer extra", "data": {"a": "x", "b": 1}, "valid": true},
+      {"description": "string extra", "data": {"a": "x", "b": "y"}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.3: dependentSchemas evaluate properties when they apply",
+    "description": "dependentSchemas",
+    "schema": {"properties": {"a": true}, "dependentSchemas": {"a": {"properties": {"b": true}}}, "unevaluatedProperties": false},
+    "tests": [
+      {"description": "dependency triggered covers b", "data": {"a": 1, "b": 1}, "valid": true},
+      {"description": "b alone is uncovered", "data": {"b": 1}, "valid": false},
+      {"description": "empty", "data": {}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 10.2.1: allOf annotations are visible to unevaluatedProperties",
+    "description": "allOf",
+    "schema": {"allOf": [{"properties": {"a": true}}, {"properties": {"b": true}}], "unevaluatedProperties": false},
+    "tests": [
+      {"description": "both covered", "data": {"a": 1, "b": 1}, "valid": true},
+      {"description": "extra", "data": {"a": 1, "c": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 7.7.1: anyOf passing branches all count, failed ones count for nothing",
+    "description": "anyOf",
+    "schema": {"anyOf": [{"properties": {"a": true}, "required": ["a"]}, {"properties": {"b": true}, "required": ["b"]}], "unevaluatedProperties": false},
+    "tests": [
+      {"description": "first branch", "data": {"a": 1}, "valid": true},
+      {"description": "both branches pass", "data": {"a": 1, "b": 1}, "valid": true},
+      {"description": "extra property", "data": {"a": 1, "c": 1}, "valid": false},
+      {"description": "failed branch covers nothing", "data": {"c": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 7.7.1: the passing oneOf branch counts",
+    "description": "oneOf",
+    "schema": {"oneOf": [{"properties": {"a": true}, "required": ["a"]}, {"properties": {"b": true}, "required": ["b"]}], "unevaluatedProperties": false},
+    "tests": [
+      {"description": "one branch", "data": {"a": 1}, "valid": true},
+      {"description": "leftover property", "data": {"a": 1, "z": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 7.7.1: not contributes no annotations",
+    "description": "not",
+    "schema": {"not": {"not": {"properties": {"a": true}}}, "unevaluatedProperties": false},
+    "tests": [
+      {"description": "double negation covers nothing", "data": {"a": 1}, "valid": false},
+      {"description": "empty object", "data": {}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 10.2.2: if/then/else; a failed if contributes nothing",
+    "description": "if then else",
+    "schema": {"if": {"properties": {"k": {"const": 1}}, "required": ["k"]}, "then": {"properties": {"t": true}}, "else": {"properties": {"e": true}}, "unevaluatedProperties": false},
+    "tests": [
+      {"description": "if passes, k and t covered", "data": {"k": 1, "t": 1}, "valid": true},
+      {"description": "if passes, e not covered", "data": {"k": 1, "e": 1}, "valid": false},
+      {"description": "if fails, e covered by else", "data": {"k": 2, "e": 1}, "valid": false},
+      {"description": "if fails, only else property", "data": {"e": 1}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.3: nested unevaluatedProperties that succeeds covers what it examined",
+    "description": "nested unevaluatedProperties",
+    "schema": {"allOf": [{"unevaluatedProperties": true}], "unevaluatedProperties": false},
+    "tests": [
+      {"description": "inner covers all", "data": {"a": 1}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 11.3: a failing nested unevaluatedProperties rejects the document",
+    "description": "nested unevaluatedProperties false inside allOf",
+    "schema": {"allOf": [{"unevaluatedProperties": false}], "unevaluatedProperties": true},
+    "tests": [
+      {"description": "inner rejects", "data": {"a": 1}, "valid": false},
+      {"description": "empty", "data": {}, "valid": true}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 8.2.3.1: $ref target annotations are visible",
+    "description": "$ref",
+    "schema": {"$ref": "#/$defs/base", "properties": {"b": true}, "unevaluatedProperties": false,
+      "$defs": {"base": {"properties": {"a": true}}}},
+    "tests": [
+      {"description": "ref and local covered", "data": {"a": 1, "b": 1}, "valid": true},
+      {"description": "extra", "data": {"a": 1, "c": 1}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, sections 11.3 and 8.2.3.2: an extension through $dynamicRef/$dynamicAnchor adds properties",
+    "description": "$dynamicRef extension",
+    "schema": {"$id": "http://x/ext", "$dynamicAnchor": "n", "$ref": "base", "properties": {"b": true}, "unevaluatedProperties": false,
+      "$defs": {"base": {"$id": "base", "$dynamicAnchor": "n", "properties": {"a": true, "child": {"$dynamicRef": "#n"}}}}},
+    "tests": [
+      {"description": "a and b covered", "data": {"a": 1, "b": 1}, "valid": true},
+      {"description": "extra at root", "data": {"a": 1, "c": 1}, "valid": false},
+      {"description": "child uses the extension", "data": {"child": {"b": 1}}, "valid": true},
+      {"description": "extra in child", "data": {"child": {"c": 1}}, "valid": false}
+    ]
+  }
+]
