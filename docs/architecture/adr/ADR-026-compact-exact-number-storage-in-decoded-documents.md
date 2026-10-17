@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #26
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #161, 2026-10-17 13:04 UTC)
 
 ## Decision
 The change is confined to jsonvalue.Number's private fields. Number becomes {mant int64, exp int64, big *big.Int (nil on the fast path), original text as today, lazily computed and counted rat}. The representation is canonical. Trailing zeros of the mantissa are folded into the exponent, a big mantissa that fits int64 is demoted to the fast form, and zero has a single form. Equality and hashing can then compare (mant, exp) directly for fast/fast pairs and use big alignment only within the digit cap. Cmp on fast/fast aligns exponents only when the shift stays within int64 decimal digits; otherwise it falls back to the existing capped big alignment, never a large 10^n. IsInteger reduces to exp >= 0 on the canonical form. multipleOf keeps the exact decimal/modular method, and a fast/fast operand pair may take an int64 modular shortcut that is still exact. Everything else (keywords, eval, output, root API) stays untouched because the Go shape of decoded documents is unchanged.

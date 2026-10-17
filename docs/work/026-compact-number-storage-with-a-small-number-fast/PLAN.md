@@ -1,7 +1,7 @@
 # PLAN #26: Compact exact number storage in decoded documents (fix 5)
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #161, 2026-10-17 13:04 UTC)
 - Design: see `ADR-026-*.md` under `docs/architecture/adr/`
 
 ## Files that change
