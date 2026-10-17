@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #151 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:31:49 UTC
-- **Story spend:** ~$8.06 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:37:03 UTC
+- **Story spend:** ~$10.12 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,12 +14,13 @@ The operator decides at gate-release: `factory approve 151` to accept, or `facto
 ## Blockers
 
 - Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: No insecure default found. ParseVocabulary fails closed: every malformed, core or unknown-required path returns an error, and only an absent '$vocabulary' means all vocabularies are active. The recognised set is the fixed list of eight standard URIs. The $schema chain is bounded by maxMetaChain and seen-set cycle detection. Meta-schemas are resolved only from the ext index (embedded plus caller registry), so nothing is fetched or read from disk. Error text carries URIs, a regex-derived draft name and an entry key bounded to 80 bytes, never instance values.
-  >   ◦ Release-agent note: Test coverage gap (medium, AC8): the CLI test for a malformed '$vocabulary' entry checks only that the filename appears in the error, not that the entry details are included. The library test in vocabulary_test.go does verify the message format. Recommend: add an explicit CLI case that asserts the full message includes the bad entry (e.g. 'invalid '$vocabulary' entry "value-not-boolean": value is not a boolean')
-  >   ◦ Release-agent note: Two test files outside the originally planned scope were updated: testdata/metaschema/schema_keyword.json and cmd/jsonschema/metaschema_cli_test.go. Both changes are sound (the draft-07 error message must match the new format), but a reviewer should confirm the expected message change does not conflict with story 189's earlier handling.
-  >   ◦ Release-agent note: The malformed-vocabulary code correctly bounds long URIs to 80 bytes via bound(); callers detecting UnknownVocabularyError or MalformedVocabularyError will receive the bounded URI, not the original. This is intentional (keep error messages short and safe), but if an operator later needs the full URI in logs, the implementation would have to be revised.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: AC 10: The error message for non-2020-12 $schema changed from a generic 'not supported' to a specific 'unsupported $schema: draft-07; only 2020-12 is supported'. This is intentional and helpful, but metaschema_cli_test.go was updated. Verify the new message is acceptable to stakeholders.
+  >   ◦ Release-agent note: AC 11: $schema, $vocabulary and $comment are now silent core keywords with no annotation output. This is a breaking change for any test, tool or workflow that expects these keywords in basic/detailed reports. All existing affected tests (metaschema_cli_test.go, schema_keyword.json) have been updated, but verify no downstream code depends on these annotations.
+  >   ◦ Release-agent note: Vocabulary sets are immutable after Compile. If a custom meta-schema is updated (e.g., removing the validation vocabulary), any schema referencing it must be recompiled to pick up the change. This is correct (immutable compiled schema), but verify alignment with your caching/recompilation strategy.
+  >   ◦ Release-agent note: Tester's two low findings (non-blockers): (1) Unreferenced $defs entries are not validated for vocabulary errors until referenced. (2) One malformed case (relative key) is primarily unit-tested. Both acceptable but worth reviewer awareness.
+  >   ◦ Security note (low): Fails closed as required: every parse problem returns an error with no fallback to 'all vocabularies active', and only a missing '$vocabulary' key activates everything. The recognised set is the fixed eight URIs in internal/keywords/vocabularies.go and is not widened by registry contents. Quoted vocabulary keys go through bound() at 80 runes, and the draft name comes from a fixed regex capture. No instance values reach error messages. No network or disk reads beyond the registry were added.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -79,8 +80,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 01:31:01 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 01:31:01 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 01:31:48 | agent | release-agent | ✅ warn · 47.2s · $0.0908 |
-| 2026-10-17 01:31:49 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 01:31:49 | run | run waiting_human | ⏸️ |
+| 2026-10-17 01:31:49 | gate | gate-release | ❌ REJECTED: Test assertion only, no code change: in testdata/vocabulary/required_optional_unknown.json (and the CLI test) assert that the malformed-vocabulary error names BOTH the meta-schema (file/URI) AND the bad entr… |
+| 2026-10-17 01:32:37 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 01:33:52 | agent | coder-agent | ✅ complete · remediation · 75.4s · $1.1111 |
+| 2026-10-17 01:34:17 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:34:17 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-17 01:35:47 | agent | tester-agent | ✅ warn · 89.9s · $0.8331 |
+| 2026-10-17 01:35:47 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 2 new, 0 persistent, 0 resolved |
+| 2026-10-17 01:35:47 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 01:37:02 | agent | release-agent | ✅ warn · 74.7s · $0.1061 |
+| 2026-10-17 01:37:03 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 01:37:03 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
