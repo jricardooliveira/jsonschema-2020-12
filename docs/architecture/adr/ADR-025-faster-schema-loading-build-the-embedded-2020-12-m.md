@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #25
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #160, 2026-10-17 12:42 UTC)
 
 ## Decision
 New file internal/compile/metacache.go holds an unexported builtinSet. It contains the compiled 2020-12 meta-schema, the compiled vocabulary meta-schemas and an immutable registry index of the embedded resources, and it is built by an unexported buildBuiltin() behind sync.Once on first use. Compile takes the shared set and builds a per-call registry view: caller resources are layered over the shared built-in index (copy-on-write or a two-level lookup) so the shared index is never written. Custom meta-schemas supplied through the registry are still compiled per call, as today, and may $dynamicRef into the shared vocabulary schemas. The meta-schema check in metacheck.go calls evaluation with an annotation-collection-off flag held in the per-call evaluation context (new internal/eval/collect_option.go, a small check in internal/eval/annotations.go). The check therefore still charges evaluation steps and depth exactly as before but never appends or sorts annotations. The first-load benchmark calls buildBuiltin() directly on each iteration, which avoids a reset hook on the sync.Once. compile.go (crowded) is touched only to replace the per-call build with a call to the shared set.
