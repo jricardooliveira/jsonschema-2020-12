@@ -12,17 +12,11 @@ import (
 // 2020-12 meta-schema from scratch, as a one-shot run pays it. Story 202 T2
 // replaces its body with a call to the unexported buildBuiltin.
 func buildBuiltinForBench() (*registry.Index, error) {
-	idx, err := registry.Build(true, "https://registry.invalid/unused")
+	set, err := buildBuiltin()
 	if err != nil {
 		return nil, err
 	}
-	if err := idx.AddBuiltins(); err != nil {
-		return nil, err
-	}
-	if _, _, err := compileDocumentOpts(map[string]any{"$ref": Draft2020}, StdinBaseURI, idx, 0, false, true); err != nil {
-		return nil, err
-	}
-	return idx, nil
+	return set.idx, nil
 }
 
 // BenchmarkFirstLoadOrder times what a one-shot run pays: build the built-in
