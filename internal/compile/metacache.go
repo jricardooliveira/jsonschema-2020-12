@@ -25,10 +25,11 @@ var (
 )
 
 // buildBuiltin builds the set from scratch (the first-load benchmark calls it
-// directly). Meta-checks never assert format, so noFormat is on.
+// directly). The index comes from the registry's shared builder, so the
+// process builds it once. Meta-checks never assert format, so noFormat is on.
 func buildBuiltin() (*builtinSet, error) {
 	builtinBuilds.Add(1)
-	idx, err := registry.BuildBuiltinIndex()
+	idx, err := registry.SharedBuiltinIndex()
 	if err != nil {
 		return nil, err
 	}
