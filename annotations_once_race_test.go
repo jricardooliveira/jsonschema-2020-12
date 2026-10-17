@@ -7,8 +7,10 @@ import (
 )
 
 // TestAnnotationsOnceConcurrent calls Annotations and Output concurrently on
-// one shared Result: the lazy flatten and sort runs once, every caller sees
-// the same answer, and -race finds no data race.
+// one shared Result: the lazy flatten, sort and chunk release (eval.Pending)
+// run once, every caller sees the same answer, and -race finds no data race.
+// That the chunks stay unflattened until the first read and are released
+// inside the Once is checked in internal/eval/annotation_chunks_test.go.
 func TestAnnotationsOnceConcurrent(t *testing.T) {
 	s, err := Compile([]byte(`{"properties":{"a":{"title":"A"},"b":{"title":"B"},"c":{"title":"C"}},"title":"root"}`))
 	if err != nil {

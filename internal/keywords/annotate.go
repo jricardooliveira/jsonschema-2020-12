@@ -96,6 +96,12 @@ func (c *EvalContext) AnnotateNames(names []string) error { return c.Annotate(na
 // new slice (flattened from the chunks).
 func (c *EvalContext) Annotations() []Annotation { return c.col.list.Flatten() }
 
+// AnnotationChunks returns the chunks themselves, in evaluation order, without
+// copying (empty chunks may follow the last entry). Call it only on a root
+// context once its evaluation has ended: the caller then owns the chunks and
+// the context must not record again.
+func (c *EvalContext) AnnotationChunks() [][]Annotation { return c.col.list.chunks }
+
 // AnnotateOnly returns a keyword that always passes and annotates its own
 // schema value. Registered or not, it never fails validation.
 func AnnotateOnly(name, vocabulary string) Keyword {

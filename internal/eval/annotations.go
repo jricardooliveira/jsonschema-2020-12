@@ -26,7 +26,11 @@ type Evaluation struct {
 	Valid       bool
 	Units       []keywords.Unit
 	Annotations []Annotation
-	Tree        *Tree
+	// Pending is set instead of Annotations by a lazy evaluation
+	// (EvaluateLazy, EvaluateValidate): the unflattened chunks, flattened
+	// and sorted on the first Sorted call. Nil unless Valid.
+	Pending *Pending
+	Tree    *Tree
 }
 
 // EvaluateFull evaluates n with explicit output-unit and annotation caps. It
@@ -47,7 +51,8 @@ func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree 
 	return evaluateOpt(n, instance, maxUnits, maxAnnotations, tree, state, false)
 }
 
-// evaluateOpt is evaluate; lazy leaves Annotations unsorted.
+// evaluateOpt is evaluate; lazy leaves the annotations unflattened and
+// unsorted in Pending.
 func evaluateOpt(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree *Tree, state any, lazy bool) (Evaluation, error) {
 	ctx := keywords.NewEvalContext(maxUnits, evalNode)
 	ctx.Items = state
@@ -58,11 +63,11 @@ func evaluateOpt(n *compile.Node, instance any, maxUnits, maxAnnotations int, tr
 		return Evaluation{}, err
 	}
 	ev := Evaluation{Valid: ok, Units: ctx.Units(), Tree: tree}
-	if ok {
-		ev.Annotations = ctx.Annotations()
-		if !lazy {
-			ev.Annotations = SortAnnotations(ev.Annotations)
-		}
+	switch {
+	case ok && lazy:
+		ev.Pending = &Pending{chunks: ctx.AnnotationChunks()}
+	case ok:
+		ev.Annotations = sortInPlace(ctx.Annotations()) // already a fresh copy
 	}
 	if tree != nil {
 		tree.Valid, tree.Errors = ok, ctx.Units()
