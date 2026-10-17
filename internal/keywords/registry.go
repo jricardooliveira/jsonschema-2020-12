@@ -87,6 +87,22 @@ func (c *EvalContext) Report(msg string) error {
 	return nil
 }
 
+// BytesPerStep scales ChargeBytes: one extra evaluation step per this many
+// bytes of work.
+const BytesPerStep = 64
+
+// Charge counts n evaluation steps against the call's step cap; it returns a
+// LimitError once the cap is passed. Without a per-call record it is a no-op.
+func (c *EvalContext) Charge(n int) error {
+	if ch, ok := c.Items.(interface{ Charge(int) error }); ok {
+		return ch.Charge(n)
+	}
+	return nil
+}
+
+// ChargeBytes charges 1 + n/BytesPerStep steps, for work linear in n bytes.
+func (c *EvalContext) ChargeBytes(n int) error { return c.Charge(1 + n/BytesPerStep) }
+
 // Units returns the units reported so far, in order.
 func (c *EvalContext) Units() []Unit { return c.units }
 

@@ -55,6 +55,9 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 			if it.Keyword.AfterSiblings != (pass == 1) {
 				continue
 			}
+			if err := ctx.Items.(*callState).Step(); err != nil { // one step per keyword
+				return false, err
+			}
 			ok, err := evalItem(ctx, pf, abs, it, instance)
 			if err != nil {
 				return false, err

@@ -11,14 +11,19 @@ import (
 // an option and CLI flag and has every keyword count.
 const DefaultMaxEvalSteps = 100_000_000
 
-// Step counts one evaluation step (a member visited, a pattern match attempt
-// or a reported failure). Past the cap it returns a *jsonvalue.LimitError
-// named "evaluation steps".
-func (r *EvaluatedItems) Step() error {
-	r.steps++
-	if r.steps > r.maxSteps {
+// Step counts one evaluation step (a node entered, a keyword evaluated, a
+// member visited or a reported failure).
+func (r *EvaluatedItems) Step() error { return r.Charge(1) }
+
+// Charge counts n evaluation steps. Past the cap it returns a
+// *jsonvalue.LimitError named "evaluation steps". The comparison cannot
+// overflow.
+func (r *EvaluatedItems) Charge(n int) error {
+	if n < 0 || r.steps > r.maxSteps-n {
+		r.steps = r.maxSteps + 1
 		return &jsonvalue.LimitError{Limit: "evaluation steps", Max: r.maxSteps}
 	}
+	r.steps += n
 	return nil
 }
 

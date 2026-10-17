@@ -35,17 +35,20 @@ type Evaluation struct {
 // EvaluateFull evaluates n with explicit output-unit and annotation caps. It
 // builds no evaluation tree; annotations are always collected.
 func EvaluateFull(n *compile.Node, instance any, maxUnits, maxAnnotations int) (Evaluation, error) {
-	return evaluate(n, instance, maxUnits, maxAnnotations, nil)
+	return evaluate(n, instance, maxUnits, maxAnnotations, nil, nil)
 }
 
 // EvaluateTree is EvaluateFull that also returns the per-subschema
 // evaluation tree (for the detailed and verbose shapes).
 func EvaluateTree(n *compile.Node, instance any, maxUnits, maxAnnotations int) (Evaluation, error) {
-	return evaluate(n, instance, maxUnits, maxAnnotations, &Tree{})
+	return evaluate(n, instance, maxUnits, maxAnnotations, &Tree{}, nil)
 }
 
-func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree *Tree) (Evaluation, error) {
+// evaluate runs one call; state, when set, is the per-call record (with its
+// caps) to use instead of a default one.
+func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree *Tree, state any) (Evaluation, error) {
 	ctx := keywords.NewEvalContext(maxUnits, evalNode)
+	ctx.Items = state
 	ctx.SetMaxAnnotations(maxAnnotations)
 	ctx.Tree = tree
 	ok, err := evalNode(ctx, n, instance)

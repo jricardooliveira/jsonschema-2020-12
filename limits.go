@@ -74,7 +74,7 @@ func asLimit(err error) error {
 	// ponytail: registry reads still use their old names and file-naming
 	// messages until the registry task renames them into the closed set.
 	if err != nil && errors.As(err, &le) && closedSet[le.Limit] {
-		return &LimitError{Limit: Limit(le.Limit), Value: le.Max, inner: le}
+		return &LimitError{Limit: Limit(le.Limit), Value: le.Max, inner: err} // keep the whole chain, e.g. a *eval.LoopError
 	}
 	return err
 }
