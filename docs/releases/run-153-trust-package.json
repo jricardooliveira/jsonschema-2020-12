@@ -1,0 +1,467 @@
+{
+  "work_id": "US-0153",
+  "parent_story": "US-0153",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "a62a225cde3b53b848aa306179ccc4283e515034",
+    "base_commit": "42f6d69d4b3487814124f06edf40c4efef976ca7"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Without the mode, 'format' never affects validity. It is still collected as an annotation, exactly as before this story.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A library compile option turns format-assertion mode on for that compiled schema. A string that fails a known format is then invalid. The error reports the instance location and the keyword location, never the value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A CLI flag of 'jsonschema validate' turns the mode on. With the flag, a document with a malformed format value exits 1 and a well-formed one exits 0. Without the flag, both exit 0.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A schema whose meta-schema lists the format-assertion vocabulary as required turns the mode on. The code reads the flag that story 190 recorded and does not parse $vocabulary again. When the vocabulary is listed as optional and the caller did not turn the mode on, format stays annotation-only.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In the mode, unknown formats and the not-yet-built 2020-12 formats (uri, uri-reference, iri, iri-reference, uri-template, json-pointer, relative-json-pointer, regex) always pass and are never an error.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In the mode, format checks apply only to string instances. Every other type passes.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Format checks have one registration point, internal/formats/registry.go. Each check lives in its own file internal/formats/<format>.go and registers itself from init(). No central list or switch is edited to add a format.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "date-time, date and time strictly follow RFC 3339 section 5.6. This covers real calendar days, including leap years, and a required time offset. Second 60 is accepted only when it falls at 23:59:60 UTC after the offset is applied. A lowercase 't' or 'z' is valid.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "duration follows RFC 3339 appendix A. P3D, PT1H30M and P2W pass. P1W3D, P and PT fail.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "email follows the full RFC 5321 address rules. This includes dot-atom and quoted local parts, and domain literals such as user@[192.168.0.1] and user@[IPv6:...]. Each part has a length limit.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "hostname follows RFC 1123. Each label is 1-63 letters, digits or hyphens, with no leading or trailing hyphen. The total length is at most 253. A trailing dot fails.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "idn-hostname and idn-email get basic checks only. These are the overall and per-label length, no leading or trailing hyphen, and no spaces, control characters or stray punctuation. Plain-ASCII input follows the hostname and email rules. Anything that needs the Unicode tables is accepted, and the code records what is not checked.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "ipv4 is a strict dotted-quad (RFC 2673): exactly four decimal parts, each 0-255, with no leading zeros, so 192.168.01.1 fails. ipv6 follows RFC 4291 text forms, including '::' compression and an embedded IPv4 tail. A zone suffix such as fe80::1%eth0 fails.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "uuid checks shape only: 8-4-4-4-12 hexadecimal digits in either case. Any version or variant digit is accepted.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "With the mode on, meta-schema validation of a schema never asserts format. A schema with \"$id\": \"http://example.com/a b\" still compiles with the mode on and with the mode off.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every format has positive and negative tests, and so does each way of turning the mode on. go test -race ./... passes, and go.mod gains no require lines.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/formats.md lists the formats checked so far, what idn-hostname and idn-email do not check, and that the not-yet-built formats pass until a later story adds them.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 17,
+    "covered": 17,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/formatassert_cli_test.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "docs/formats.md",
+        "change": "added",
+        "additions": 57,
+        "deletions": 0
+      },
+      {
+        "path": "formatassertion_test.go",
+        "change": "added",
+        "additions": 79,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacheck.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 19,
+        "deletions": 4
+      },
+      {
+        "path": "internal/formats/date.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/date_test.go",
+        "change": "added",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/datetime.go",
+        "change": "added",
+        "additions": 8,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/datetime_test.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/duration.go",
+        "change": "added",
+        "additions": 55,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/duration_test.go",
+        "change": "added",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/email.go",
+        "change": "added",
+        "additions": 95,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/email_test.go",
+        "change": "added",
+        "additions": 23,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/hostname.go",
+        "change": "added",
+        "additions": 28,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/hostname_test.go",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/idnemail.go",
+        "change": "added",
+        "additions": 38,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/idnemail_test.go",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/idnhostname.go",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/idnhostname_test.go",
+        "change": "added",
+        "additions": 19,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ipv4.go",
+        "change": "added",
+        "additions": 20,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ipv4_test.go",
+        "change": "added",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ipv6.go",
+        "change": "added",
+        "additions": 58,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ipv6_test.go",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/registry.go",
+        "change": "added",
+        "additions": 25,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/time.go",
+        "change": "added",
+        "additions": 46,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/time_test.go",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uuid.go",
+        "change": "added",
+        "additions": 21,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uuid_test.go",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/formatannotation/assert_test.go",
+        "change": "added",
+        "additions": 66,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/formatannotation/format.go",
+        "change": "modified",
+        "additions": 45,
+        "deletions": 4
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/required_optional_unknown.json",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "options.go",
+      "internal/compile/compile.go"
+    ],
+    "design_unplanned": [
+      "internal/compile/refs.go",
+      "internal/keywords/registry.go",
+      "jsonschema.go",
+      "numberlimits.go",
+      "testdata/vocabulary/required_optional_unknown.json"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/compile/refs.go",
+        "granted_by": "operator",
+        "at": "gate-question #1373"
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "granted_by": "operator",
+        "at": "gate-question #1373"
+      },
+      {
+        "path": "jsonschema.go",
+        "granted_by": "operator",
+        "at": "gate-question #1373"
+      },
+      {
+        "path": "numberlimits.go",
+        "granted_by": "operator",
+        "at": "gate-question #1373"
+      },
+      {
+        "path": "testdata/vocabulary/required_optional_unknown.json",
+        "granted_by": "operator",
+        "at": "gate-question #1378"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-9392f68c2a3d45daa3454c55f105fc37/docs/architecture/adr/ADR-018-format-assertion-mode-dates-email-hostnames-ip-and.md",
+    "summary": "The story is implemented as designed. There is one format registry, with each format in its own file registering from init(). The mode is fixed at compile time from the caller option OR the per-resour"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "medium",
+    "breaking_changes": [],
+    "findings": [
+      "F2 (low): The boundary rule says each format check must be charged to the per-call budget. format.go does call ctx.ChargeBytes(len(s)) before the check, but no test drives a huge string or a low MaxSteps through a format to prove that the limit gives an 'evaluation steps' error rather than running on. A safety branch with no test."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.579876,
+    "tokens_in": 5348071,
+    "tokens_out": 65022
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Real schema compilation goes through resolver.compile in internal/compile/refs.go, not compileAt in compile.go. It builds keywords.CompileContext, which is defined in internal/keywords/registry.go. That struct has no field for the assert flag."
+    },
+    {
+      "task": "T1",
+      "text": "The Options struct is in numberlimits.go, not options.go. The option is passed on in jsonschema.go (compileChecked) and in compile.CompileReachedWith (refs.go)."
+    },
+    {
+      "task": "T1",
+      "text": "The vocabulary flag is already recorded per resource in vocabulary_apply.go (vocabFor sets sh.formatAssertion). The compile step can read it with a small accessor there. Reading it per resource needs a change in refs.go."
+    },
+    {
+      "task": "T1",
+      "text": "The failure message is 'value does not match format <name>'. The format name comes from the schema, never from the instance."
+    },
+    {
+      "task": "T1",
+      "text": "The new library option is Options.FormatAssertion (a bool in numberlimits.go). options.go was not changed."
+    },
+    {
+      "task": "T1",
+      "text": "A new function, compile.CompileReachedFormat, carries the option. CompileReachedWith keeps its signature and calls it with false."
+    },
+    {
+      "task": "T1",
+      "text": "The test stub format 'stub-only-x' is registered from the test's init()."
+    },
+    {
+      "task": "T2",
+      "text": "The shared `table` test helper lives in datetime_test.go and later format tests in the same package can reuse it."
+    },
+    {
+      "task": "T2",
+      "text": "Duration seconds do not take a fraction, because the RFC 3339 appendix A grammar does not allow one."
+    },
+    {
+      "task": "T2",
+      "text": "The digits and num helpers live in date.go and time.go reuses them."
+    },
+    {
+      "task": "T4",
+      "text": "ipv6 '::' must stand for at least one group, so at most 7 explicit groups are allowed with '::' (RFC 4291 says 'one or more groups')."
+    },
+    {
+      "task": "T4",
+      "text": "The uuid test also covers the unusual version digits 0 and 9 and the variant digit 0, all accepted by shape."
+    },
+    {
+      "task": "T3",
+      "text": "idn-hostname splits labels on '.' only. Ideographic full stops are not treated as separators."
+    },
+    {
+      "task": "T3",
+      "text": "idn-email with non-ASCII input skips quoted-local parsing. A non-ASCII local part that has a space is rejected, even when quoted."
+    },
+    {
+      "task": "T3",
+      "text": "Email's 254-byte cap covers the whole address, and the local part is capped at 64 bytes including its quotes."
+    },
+    {
+      "task": "T3",
+      "text": "docs/formats.md (T6) is not written in this task."
+    },
+    {
+      "task": "T5",
+      "text": "The refs.go fix changes behaviour on purpose. testdata/vocabulary/required_optional_unknown.json, case 'format-assertion required is recorded', expects 'not-an-email' to be valid with format:email under a meta-schema that requires format-assertion. The story requires it to be invalid. The case fails in TestVocabularyCases (root package) and TestCLIVocabularyCases (cmd/jsonschema)."
+    },
+    {
+      "task": "T5",
+      "text": "internal/compile/refs.go: 'format' is also allowed when the resource's vocabulary set has FormatAssertion (required) true. Without this a required format-assertion vocabulary never reached the format keyword. The vocabulary.go flag already existed and is not re-parsed."
+    },
+    {
+      "task": "T5",
+      "text": "testdata/vocabulary/required_optional_unknown.json: the 'format-assertion required is recorded' case now expects not-an-email to be invalid and a@example.com to be valid. Story 190's interim behaviour (required but not asserted) is replaced by this story's criterion."
+    },
+    {
+      "task": "T6",
+      "text": "Documentation-only task. I did not run any tests or build."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
