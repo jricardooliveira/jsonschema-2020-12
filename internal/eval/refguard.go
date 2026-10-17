@@ -41,6 +41,7 @@ type pathFrame struct {
 	static, dynamic string // node location in the schema / along the evaluation path
 	kw              string // name of the keyword being evaluated in this node
 	kwDynamic       string // its location along the evaluation path
+	viaRef          bool   // the path to this node crossed $ref or $dynamicRef
 }
 
 // callState is the per-call Items record plus the guard's active path. It
@@ -84,7 +85,9 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 	}
 	pf := &pathFrame{static: n.Location, dynamic: n.Location}
 	if k := len(st.path); k > 0 {
-		pf.dynamic = dynamicLocation(st.path[k-1], n.Location)
+		parent := st.path[k-1]
+		pf.dynamic = dynamicLocation(parent, n.Location)
+		pf.viaRef = parent.viaRef || parent.kw == "$ref" || parent.kw == "$dynamicRef"
 	}
 	st.active[f] = struct{}{}
 	st.path = append(st.path, pf)

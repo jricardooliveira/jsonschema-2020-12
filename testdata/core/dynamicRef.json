@@ -12,6 +12,18 @@
     ]
   },
   {
+    "spec": "2020-12 core, section 8.2.3.2: the outermost resource in the dynamic scope holding the anchor anywhere inside it wins, even in a never-evaluated $defs entry",
+    "description": "outer resource's anchor in $defs overrides the inner default",
+    "schema": {"$id": "http://x/root", "$ref": "list",
+      "$defs": {"foo": {"$dynamicAnchor": "T", "type": "string"},
+        "list": {"$id": "list", "type": "array", "items": {"$dynamicRef": "#T"},
+          "$defs": {"d": {"$dynamicAnchor": "T"}}}}},
+    "tests": [
+      {"description": "string items", "data": ["a"], "valid": true},
+      {"description": "number item rejected by the outer anchor", "data": [1], "valid": false}
+    ]
+  },
+  {
     "spec": "2020-12 core, section 8.2.3.2: with no outer anchor, the initial target is used",
     "description": "list used on its own keeps its default",
     "schema": {"$id": "http://x/list", "type": "array", "items": {"$dynamicRef": "#T"},

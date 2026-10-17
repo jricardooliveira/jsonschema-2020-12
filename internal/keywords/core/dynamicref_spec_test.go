@@ -94,6 +94,32 @@ func TestSpecRecursionIntoDocumentIsNotLoop(t *testing.T) {
 	}
 }
 
+// core 8.2.3.2 / 12.3.2: an error reached through $dynamicRef carries the
+// absoluteKeywordLocation of the dynamically resolved target.
+func TestSpecAbsoluteLocationOfDynamicTarget(t *testing.T) {
+	s, err := jsonschema.Compile([]byte(`{"$id":"http://x/root","$ref":"list",
+ "$defs":{"foo":{"$dynamicAnchor":"T","type":"string"},
+  "list":{"$id":"list","type":"array","items":{"$dynamicRef":"#T"},"$defs":{"d":{"$dynamicAnchor":"T"}}}}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := s.Validate([]byte(`[12345]`))
+	if err != nil || r.Valid() {
+		t.Fatalf("valid=%v err=%v", r.Valid(), err)
+	}
+	out, err := r.Output("basic")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"instanceLocation":"/0","keywordLocation":"/$ref/items/$dynamicRef/type","absoluteKeywordLocation":"http://x/root#/$defs/foo/type"`
+	if !strings.Contains(string(out), want) {
+		t.Errorf("want %s in %s", want, out)
+	}
+	if strings.Contains(string(out), "12345") {
+		t.Errorf("instance value leaked: %s", out)
+	}
+}
+
 // core 8.2.3.2 / output 12.3: error location names /$dynamicRef, and the
 // report never quotes the instance value.
 func TestSpecErrorLocationAndNoInstanceValue(t *testing.T) {

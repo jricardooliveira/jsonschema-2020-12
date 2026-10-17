@@ -76,6 +76,7 @@ type shared struct {
 	byOwner   map[*registry.Owner]*resolver
 	all       []*resolver
 	pending   []pendingRef
+	todo      []pendingRes // resources whose Dynamic table is not filled yet
 }
 
 type pendingRef struct {
@@ -83,10 +84,60 @@ type pendingRef struct {
 	ref *core.Ref
 }
 
-func (sh *shared) add(doc any, bases map[string]string) *resolver {
-	r := &resolver{sh: sh, doc: doc, bases: bases, memo: map[string]*Node{}}
+type pendingRes struct {
+	r    *resolver
+	res  *registry.Resource
+	info *Resource
+}
+
+func (sh *shared) add(doc any, bases map[string]string, resources map[string]*registry.Resource) *resolver {
+	r := &resolver{sh: sh, doc: doc, bases: bases, resources: resources, memo: map[string]*Node{}, infos: map[string]*Resource{}}
 	sh.all = append(sh.all, r)
 	return r
+}
+
+// info returns the compiled resource holding schema location loc, creating
+// it on first use. Its Dynamic table is filled later by fill, so compiling
+// an anchor never re-enters a node that is still being compiled.
+func (r *resolver) info(loc string) *Resource {
+	base := r.baseAt(loc)
+	if in, ok := r.infos[base]; ok {
+		return in
+	}
+	res := r.resources[base]
+	if res == nil {
+		r.infos[base] = nil
+		return nil
+	}
+	in := &Resource{URI: res.URI, Pointer: res.Pointer, Dynamic: map[string]*Node{}}
+	r.infos[base] = in
+	r.sh.todo = append(r.sh.todo, pendingRes{r, res, in})
+	return in
+}
+
+// fill compiles every $dynamicAnchor subschema of p's resource into its table.
+func (p pendingRes) fill() error {
+	names := make([]string, 0, len(p.res.Anchors))
+	for name := range p.res.Anchors {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		if !p.res.HasDynamicAnchor(name) {
+			continue
+		}
+		ptr := p.res.Anchors[name]
+		v, ok := navigate(p.r.doc, splitPtr(ptr))
+		if !ok {
+			continue
+		}
+		n, err := p.r.compile(v, ptr)
+		if err != nil {
+			return err
+		}
+		p.info.Dynamic[name] = n
+	}
+	return nil
 }
 
 func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *Node, error) {
@@ -95,7 +146,7 @@ func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *
 		return nil, nil, err
 	}
 	sh := &shared{main: idx, ext: ext, byOwner: map[*registry.Owner]*resolver{}}
-	r := sh.add(doc, idx.Bases)
+	r := sh.add(doc, idx.Bases, idx.Resources)
 	root, err := r.compile(doc, "")
 	if err != nil {
 		return nil, nil, err
@@ -117,9 +168,18 @@ func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *
 		}
 	}
 	// Compiling a target appends the $refs it holds; every node is memoized,
-	// so the order targets are reached never causes a recompile.
-	for i := 0; i < len(sh.pending); i++ {
+	// so the order targets are reached never causes a recompile. Filling a
+	// resource's dynamic-anchor table may add references and resources too.
+	for i, j := 0, 0; i < len(sh.pending) || j < len(sh.todo); {
+		if j < len(sh.todo) {
+			if err := sh.todo[j].fill(); err != nil {
+				return nil, nil, err
+			}
+			j++
+			continue
+		}
 		p := sh.pending[i]
+		i++
 		l, err := p.r.locate(p.ref)
 		if err != nil {
 			return nil, nil, err
@@ -142,12 +202,14 @@ type located struct {
 }
 
 type resolver struct {
-	sh    *shared
-	doc   any
-	bases map[string]string // schema pointer -> base URI in effect there
-	memo  map[string]*Node  // schema pointer -> compiled node
-	nodes []*Node
-	refs  []*core.Ref
+	sh        *shared
+	doc       any
+	bases     map[string]string             // schema pointer -> base URI in effect there
+	resources map[string]*registry.Resource // base URI -> indexed resource
+	infos     map[string]*Resource          // base URI -> compiled resource (nil: not indexed)
+	memo      map[string]*Node              // schema pointer -> compiled node
+	nodes     []*Node
+	refs      []*core.Ref
 }
 
 // compile is compileAt with the memo consulted at every node it visits, so
@@ -166,6 +228,7 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 		if err != nil {
 			return nil, err
 		}
+		n.Resource = r.info(loc)
 		r.memo[loc] = n
 		r.nodes = append(r.nodes, n)
 		return n, nil
@@ -175,7 +238,7 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 		names = append(names, name)
 	}
 	sort.Strings(names)
-	n := &Node{Location: loc}
+	n := &Node{Location: loc, Resource: r.info(loc)}
 	at := func(v any, at string) (any, error) {
 		c, err := r.compile(v, at)
 		if err != nil {
@@ -248,7 +311,7 @@ func (r *resolver) locate(ref *core.Ref) (located, error) {
 				return fail("unresolved reference, %q has no document", key)
 			}
 			if in = r.sh.byOwner[res.Owner]; in == nil {
-				in = r.sh.add(res.Owner.Doc, res.Owner.Bases)
+				in = r.sh.add(res.Owner.Doc, res.Owner.Bases, r.sh.ext.Resources)
 				r.sh.byOwner[res.Owner] = in
 			}
 		}

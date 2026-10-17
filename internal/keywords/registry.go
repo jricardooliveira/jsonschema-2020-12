@@ -37,6 +37,9 @@ type Unit struct {
 	InstanceLocation string
 	KeywordLocation  string
 	Error            string
+	// AbsoluteKeywordLocation is set when the evaluation path crossed a
+	// reference and the resource URI is known (core 12.3.2); else empty.
+	AbsoluteKeywordLocation string
 }
 
 // EvalContext holds per-call evaluation state: the current locations, the
@@ -45,7 +48,9 @@ type Unit struct {
 type EvalContext struct {
 	InstanceLocation string // JSON Pointer of the instance being checked
 	KeywordLocation  string // JSON Pointer of the keyword being evaluated
-	Keyword          string // name of the keyword being evaluated
+	// AbsoluteKeywordLocation of the keyword being evaluated; "" when omitted.
+	AbsoluteKeywordLocation string
+	Keyword                 string // name of the keyword being evaluated
 	// Tree is the evaluation-tree node of the subschema being evaluated; nil
 	// when the caller builds no tree.
 	Tree *TreeNode
@@ -74,7 +79,7 @@ func (c *EvalContext) Report(msg string) error {
 	if *c.count > c.max {
 		return &jsonvalue.LimitError{Limit: "output units", Max: c.max}
 	}
-	c.units = append(c.units, Unit{c.InstanceLocation, c.KeywordLocation, msg})
+	c.units = append(c.units, Unit{c.InstanceLocation, c.KeywordLocation, msg, c.AbsoluteKeywordLocation})
 	return nil
 }
 

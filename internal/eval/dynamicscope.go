@@ -48,16 +48,17 @@ func hasDynamicAnchor(n *compile.Node, name string) bool {
 }
 
 // ResolveDynamic implements core 8.2.3.2: bookending when initial has no
-// matching $dynamicAnchor; otherwise the outermost entered node with one.
-// ponytail: matches entered nodes only, so an anchor on a never-entered
-// subschema of an outer resource is not found; falls back to initial.
+// matching $dynamicAnchor; otherwise the matching anchor of the outermost
+// resource in the dynamic scope, looked up in its compiled anchor table (the
+// anchor need not have been evaluated). A resource is in scope once any of
+// its nodes was entered. Linear in scope depth, no allocation.
 func (s *callState) ResolveDynamic(initial any, name string) any {
 	n, _ := initial.(*compile.Node)
 	if !hasDynamicAnchor(n, name) {
 		return initial
 	}
-	if m := s.scope.Outermost(func(c *compile.Node) bool { return hasDynamicAnchor(c, name) }); m != nil {
-		return m
+	if m := s.scope.Outermost(func(c *compile.Node) bool { return c.Resource != nil && c.Resource.Dynamic[name] != nil }); m != nil {
+		return m.Resource.Dynamic[name]
 	}
 	return initial
 }
