@@ -1,0 +1,206 @@
+{
+  "work_id": "US-0150",
+  "parent_story": "US-0150",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "5ba8cb7d50e80e51f532812d810f16eaf608f304",
+    "base_commit": "c941ecbfe0a8d2c80baaef4047a442c5009241d9"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "'unevaluatedProperties' lives in internal/keywords/unevaluated/unevaluatedproperties.go and registers itself from init() into the keyword registry under the 2020-12 unevaluated vocabulary URI (https://json-schema.org/draft/2020-12/vocab/unevaluated). It has its own test file, and no central keyword list or switch is edited.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'unevaluatedItems' lives in internal/keywords/unevaluated/unevaluateditems.go and registers itself the same way. It has its own test file.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "unevaluatedProperties applies its subschema to each instance property that no successful evaluation at the same instance location has evaluated. Evaluating sources are properties, patternProperties, additionalProperties, dependentSchemas, allOf, anyOf (every passing branch), oneOf, if/then/else, $ref, $dynamicRef and nested unevaluatedProperties. A property evaluated only inside a failed subschema (including a failed 'if', a failing anyOf/oneOf branch or a 'not' subschema) counts as unevaluated. Non-object instances are ignored.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "unevaluatedItems applies its subschema to each array item that no successful evaluation at the same instance location has evaluated. Evaluating sources are prefixItems, items, contains (only the items that matched), allOf, anyOf, oneOf, if/then/else, $ref, $dynamicRef and nested unevaluatedItems, with the same rule that failed subschemas count for nothing. Non-array instances are ignored.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In any schema object, unevaluatedProperties and unevaluatedItems are evaluated after every sibling keyword of that schema object, whatever the key order in the schema text.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When unevaluatedProperties or unevaluatedItems succeeds, every property or item it examined is recorded as evaluated, so an enclosing unevaluated keyword treats them as covered.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When a document is rejected, there is one error per uncovered property or item. Each error carries that property's or item's own instance location (for example /nickname and /age), the keyword location and the absolute keyword location where known. No error quotes an instance value.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Spec-derived positive and negative cases, each citing its 2020-12 core section (11.2 unevaluatedItems, 11.3 unevaluatedProperties, 7.7 annotation collection), are stored in testdata/unevaluated/unevaluatedProperties.json and testdata/unevaluated/unevaluatedItems.json and run by the shared runner. They cover adjacent and nested applicators, failed branches, nested unevaluated keywords, a $ref target and a $dynamicRef/$dynamicAnchor extension that adds properties or items.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 8,
+    "covered": 8,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 103,
+        "deletions": 15
+      },
+      {
+        "path": "internal/eval/order_test.go",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluateditems.go",
+        "change": "added",
+        "additions": 89,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluateditems_test.go",
+        "change": "added",
+        "additions": 81,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluatedproperties.go",
+        "change": "added",
+        "additions": 98,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluatedproperties_test.go",
+        "change": "added",
+        "additions": 230,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/unevaluated/unevaluatedItems.json",
+        "change": "added",
+        "additions": 150,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/unevaluated/unevaluatedProperties.json",
+        "change": "added",
+        "additions": 163,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-d58315ca8e694d5bb0859da0da3b02e1/docs/architecture/adr/ADR-015-unevaluatedproperties-and-unevaluateditems-2020-12.md",
+    "summary": "The implementation follows the story, the ADRs and the boundary rules. One AfterSiblings flag, defaulting to false, replaces any keyword-name list. eval.go is changed only in the dispatch loop: a two-"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [
+      "Fail-closed rule (low): both keywords return an error when the evaluated-location record is missing. But EvaluatedItems.since() returns nil when the mark is out of range (internal/eval/eval.go), so an inconsistent Scope is silently read as 'nothing evaluated'. That path never passes wrongly: the document is reported invalid, or the subschema is applied to every property or item. Still, the boundary rule says an inconsistent state should return an error rather than give a result."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 5.466782,
+    "tokens_in": 4675442,
+    "tokens_out": 81672
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Within each pass, keywords keep the order the compiler gave them in `n.Items`."
+    },
+    {
+      "task": "T2",
+      "text": "I did not run a separate failing-test-first step. The tests were written alongside the implementation."
+    },
+    {
+      "task": "T2",
+      "text": "Evaluated names are looked up by instance location only, from the existing record, so failed branches are already rolled back. As a result, a sibling subschema (an allOf branch, say) can cover a property for an unevaluated keyword in another sibling branch at the same instance location. The project's record has no per-schema-object scope; fixing that would need changes outside this task."
+    },
+    {
+      "task": "T2",
+      "text": "The sentinel no-value check is on error units. I did not test annotation output for the sentinel."
+    },
+    {
+      "task": "T3",
+      "text": "prefixItems coverage is detected by the annotation's keyword location ending in /prefixItems, because ItemAnnotation does not carry the plain keyword name."
+    },
+    {
+      "task": "T3",
+      "text": "Annotate(true) is used as the annotation value for unevaluatedItems."
+    },
+    {
+      "task": "T3",
+      "text": "The tests use the run() helper from unevaluatedproperties_test.go, which checks that no unit contains the SENTINEL instance value."
+    },
+    {
+      "task": "T3",
+      "text": "I added the CoveredItems method to internal/eval/eval.go. That file is in the allowed list, and evaluated_items.go, where the method would naturally go, is not. The method only summarises the existing At() data in built-in types, so keyword packages can read it without importing eval."
+    },
+    {
+      "task": "T3",
+      "text": "When CoveredItems reports that all items are covered, the keyword returns valid right away and records nothing new. The sibling's 'all' entry is already in the log for any enclosing unevaluatedItems."
+    },
+    {
+      "task": "T4",
+      "text": "My expectation for the unevaluatedItems anyOf case with data [1,2,3] was wrong (it is invalid, since the third item is uncovered). I corrected the case to match the spec."
+    },
+    {
+      "task": "T4",
+      "text": "The cases reuse the existing shared TestSpecCases runner, which already globs testdata/*/*.json."
+    },
+    {
+      "task": "remediation",
+      "text": "Rolling back on any failing keyword, not just 'not', follows core 7.7.1 (a failed schema keeps no annotations) and keeps keyword names out of eval.go. One side effect, not asserted by any test: if a 'properties' subschema fails in the same object as unevaluatedProperties (for example {\"properties\":{\"a\":{\"type\":\"string\"}},\"unevaluatedProperties\":false} with {\"a\":1}), /a now gets an extra unevaluatedProperties error. Validity is unchanged. The full suite still passes."
+    },
+    {
+      "task": "remediation",
+      "text": "The new CoveredProperties/CoveredItems methods are in eval.go because evaluated.go and evaluated_items.go are outside this task's files. The old CoveredItems signature was changed; its only caller was unevaluateditems.go."
+    },
+    {
+      "task": "remediation",
+      "text": "The two existing unevaluated test files were extended, and run() now delegates to a new runUnits() helper. No existing assertion was removed."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

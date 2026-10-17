@@ -57,7 +57,11 @@ type EvalContext struct {
 	// Items is the per-evaluation record of item annotations (an
 	// *eval.EvaluatedItems, which implements ItemRecorder), shared with every
 	// child context. It is typed any so this package need not import eval.
-	Items    any
+	Items any
+	// Scope is the Items position (ItemRecorder.Mark) where the schema object
+	// being evaluated began: what was recorded from there on comes from its
+	// own keywords and their successful subschemas (core 11). Set by eval.
+	Scope    int
 	units    []Unit
 	count    *int
 	col      *collector
@@ -136,6 +140,10 @@ type Keyword struct {
 	Vocabulary string // vocabulary URI
 	Compile    CompileFunc
 	Evaluate   EvaluateFunc
+	// AfterSiblings marks a keyword that reads its siblings' annotations: the
+	// evaluator runs it after every other keyword of the same schema object
+	// (core 11). Default false.
+	AfterSiblings bool
 }
 
 // registry is written only by init() functions and read-only afterwards.
