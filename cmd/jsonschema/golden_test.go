@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -68,6 +69,17 @@ func TestGolden(t *testing.T) {
 				got, err := goldenRun(bin, c, want.Shape)
 				if err != nil {
 					fail(want.ID, err.Error())
+					continue
+				}
+				// The recorded call must be the call made now: a changed case
+				// list or perfdata recipe fails outright instead of comparing
+				// a different run against old output.
+				if !slices.Equal(got.Args, want.Args) {
+					fail(want.ID, "recorded args differ from the case list")
+					continue
+				}
+				if got.Stdin != want.Stdin || got.StdinSize != want.StdinSize || got.StdinSHA256 != want.StdinSHA256 {
+					fail(want.ID, "recorded stdin differs from the generated stdin")
 					continue
 				}
 				if got.Exit != want.Exit {

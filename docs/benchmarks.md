@@ -513,67 +513,85 @@ Runs varied by about ±3% (5.5 MB before: 214.7 to 223.9 MB; after: 205.1 to
 ## Story 205 (path frames reused): before and after
 
 Same machine, Go version and method as above (Apple M3 Max, 16 logical CPUs,
-macOS arm64, go1.27.2). "After" is the finished story: `-count=10`, one
-package at a time, median of 10 (mean of the 5th and 6th sorted). "Before" is
-the code just before this story's evaluation change, taken from the story 203
-"after" tables above (`-count=5` medians, same machine): nothing else changed
-the benchmarked code between them (story 204 only added tests). The "before"
-tree could not be rebuilt in this session (git is inspection-only), so the
-before figures are the recorded ones. Change is after against before.
+macOS arm64, go1.27.2). Both sets were measured in one session, one straight
+after the other, `-count=10`, one package at a time, median of 10 (mean of the
+5th and 6th sorted; a median ending in .5 is rounded up). Change is after
+against before; negative is better.
 
-Command:
+- **Before**: the evaluation code at the story's base d7198b7.
+  `internal/eval/eval.go` and `internal/eval/refguard.go` were set back to
+  their base logic (a heap `pathFrame`, a leave closure and a heap `lazyLoc`
+  per node; only comments differed from d7198b7) and `pathstack.go` was
+  emptied. `dynamicscope.go` kept its compatibility `push`, which allocates
+  exactly as the base `push` did. Every benchmark file was the finished one.
+- **After**: the finished code; `git diff HEAD` showed no change to the
+  production files once they were restored.
 
-    go test -run '^$' -bench . -benchmem -count=10 . ./internal/jsonvalue ./cmd/jsonschema
+Commands (each set):
+
+    go test -run '^$' -bench . -benchmem -count=10 .
+    go test -run '^$' -bench . -benchmem -count=10 ./cmd/jsonschema
 
 ### Library (package root)
 
 | Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
 |---|---|---|---|
-| CompileOrder | 124,464 → 107,696 (−13.5%) | 209,249 → 159,808 (−23.6%) | 2,482 → 1,490 (−40.0%) |
-| ValidateSmall | 28,242 → 24,194 (−14.3%) | 41,682 → 30,712 (−26.3%) | 785 → 558 (−28.9%) |
-| Validate0_5MB | 25,649,156 → 21,329,582 (−16.8%) | 35,783,591 → 25,779,400 (−28.0%) | 660,084 → 460,052 (−30.3%) |
-| Validate5_5MB | 253,744,833 → 214,791,329 (−15.4%) | 368,958,400 → 268,954,238 (−27.1%) | 6,600,106 → 4,600,073 (−30.3%) |
-| ValidateErrors | 19,456,277 → 16,184,334 (−16.8%) | 29,283,397 → 21,276,892 (−27.3%) | 480,050 → 320,030 (−33.3%) |
-| ValidateErrorsBasic | 20,304,891 → 16,960,042 (−16.5%) | 31,270,190 → 23,263,599 (−25.6%) | 486,079 → 326,058 (−32.9%) |
+| CompileOrder | 121,821 → 107,082 (−12.1%) | 209,509 → 159,776 (−23.7%) | 2,482 → 1,490 (−40.0%) |
+| ValidateSmall | 27,040 → 24,361 (−9.9%) | 41,682 → 30,712 (−26.3%) | 785 → 558 (−28.9%) |
+| Validate0_5MB | 24,076,961 → 21,539,069 (−10.5%) | 35,783,469 → 25,779,348 (−28.0%) | 660,085 → 460,052 (−30.3%) |
+| Validate5_5MB | 244,068,325 → 215,975,330 (−11.5%) | 368,958,349 → 268,954,649 (−27.1%) | 6,600,105 → 4,600,073 (−30.3%) |
+| ValidateErrors | 18,305,033 → 16,628,118 (−9.2%) | 29,283,472 → 21,276,804 (−27.3%) | 480,051 → 320,029 (−33.3%) |
+| ValidateErrorsBasic | 19,169,953 → 17,227,037 (−10.1%) | 31,270,044 → 23,263,360 (−25.6%) | 486,078 → 326,057 (−32.9%) |
 
 ### Decoded document (package internal/jsonvalue)
 
-Not touched by this story: RetainedHeap/0.5MB 5.5 ms, retained 4,340,754 B;
-RetainedHeap/5.5MB 59 ms, retained 44,924,645 B; RetainedHeapExact/0.5MB
-6.1 ms, retained 5,300,8xx B; RetainedHeapExact/5.5MB 65 ms, retained
-54,524,69x B. All equal the story 203 "after" figures within noise.
+`internal/jsonvalue` does not import `internal/eval`, so its code is the same
+in both trees; it was measured once in the same session (`-count=10`, median):
+
+| Benchmark | ns/op | retained-B | B/op | allocs/op |
+|---|---|---|---|---|
+| RetainedHeap/0.5MB | 5,555,501 | 4,340,754 | 6,281,435 | 170,185 |
+| RetainedHeap/5.5MB | 60,428,592 | 44,924,648 | 67,382,572 | 1,715,811 |
+| RetainedHeapExact/0.5MB | 6,104,132 | 5,300,792 | 7,242,459 | 170,206 |
+| RetainedHeapExact/5.5MB | 66,414,690 | 54,524,696 | 77,105,323 | 1,717,726 |
+
+These match the story 203 "after" figures within run-to-run spread.
 
 ### CLI, in process (package cmd/jsonschema)
 
 | Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
 |---|---|---|---|
-| CLI/0.5MB | 36,830,701 → 32,389,449 (−12.1%) | 50,043,284 → 39,990,300 (−20.1%) | 922,755 → 721,732 (−21.8%) |
-| CLI/5.5MB | 355,866,111 → 305,042,927 (−14.3%) | 499,252,978 → 399,200,000 (−20.0%) | 9,202,786 → 7,201,760 (−21.8%) |
-| CLI/Errors | 23,303,234 → 18,407,647 (−21.0%) | 32,622,777 → 24,570,000 (−24.7%) | 488,678 → 327,665 (−32.9%) |
-| CLI/Verbose0.5MB | 85,369,327 → 70,660,430 (−17.2%) | 129,630,004 → 109,575,500 (−15.5%) | 1,882,895 → 1,481,842 (−21.3%) |
+| CLI/0.5MB | 34,846,863 → 33,022,870 (−5.2%) | 50,043,681 → 39,990,447 (−20.1%) | 922,754 → 721,731 (−21.8%) |
+| CLI/5.5MB | 339,660,785 → 310,899,568 (−8.5%) | 499,252,608 → 399,200,032 (−20.0%) | 9,202,785 → 7,201,762 (−21.7%) |
+| CLI/Errors | 21,097,672 → 18,578,935 (−11.9%) | 32,622,852 → 24,568,684 (−24.7%) | 488,679 → 327,666 (−32.9%) |
+| CLI/Verbose0.5MB | 79,214,468 → 73,675,186 (−7.0%) | 129,630,119 → 109,574,878 (−15.5%) | 1,882,894 → 1,481,841 (−21.3%) |
 
 ### Slowdown judgement (reported, not asserted)
 
-No scenario is slower: every ns/op median is lower (−12% to −21%), so none is
-more than 5% slower.
+No scenario is slower: every ns/op median is lower (−5.2% to −12.1%), so none
+is more than 5% slower.
 
 ### Targets
 
 | Target | Measured | Status |
 |---|---|---|
-| Validate5_5MB B/op at most 280 MB | 268.95 MB | met |
+| Validate5_5MB B/op at most 280 MB | 268,954,649 B (268.95 MB) | met |
 | Validate5_5MB allocs/op at most 4.8 M | 4,600,073 | met |
-| ValidateErrors B/op at most 22.5 MB | 21.28 MB | met |
+| ValidateErrors B/op at most 22.5 MB | 21,276,804 B (21.28 MB) | met |
 | CompileOrder allocs/op at most 1,600 | 1,490 | met |
 | No scenario more than 5% slower | all faster | met |
 
-All targets are met; nothing is held for the operator.
+All targets are met on this machine; nothing is held for the operator.
 
 ### Golden files
 
 `testdata/golden/cli_v1_1.json` holds 2,512 entries and
 `cli_v1_1_large.json` holds 12, so 2,524 entries in total: 631 base cases in
 each of the 4 output shapes. The golden files were not touched by this task.
+`TestGolden` (`go test -count=1 -v -run 'TestGolden$' ./cmd/jsonschema`, no
+`-race`) took 8.1 s on this machine, including the CLI build. It fails at once
+when a recorded case's args or stdin size and SHA-256 differ from the current
+case list or the generated stdin.
 
 ## Allocation and memory limits (story 204)
 
