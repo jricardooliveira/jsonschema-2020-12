@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #15
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #150, 2026-10-17 00:40 UTC)
 
 ## Decision
 Both keywords are plug-ins in the existing internal/keywords/unevaluated package. all.go already blank-imports that package, so it is only read. They need two things from the engine. (1) Ordering: 2020-12 core 11 requires unevaluated* to see every sibling's annotations. A boolean on keywords.Keyword (for example AfterSiblings) lets eval.go run flagged keywords last without a central name list. This is the only edit to the crowded internal/eval/eval.go, and it is kept to the dispatch loop. (2) Evaluated-location annotations: story 191 adds them to the per-call EvalContext and drops them from failing subschemas. These keywords read them for the current instance location and, on success, add every property or item they examined. 'not' contributes nothing by construction, because its subschema must fail. anyOf and oneOf must evaluate every branch, not stop at the first match, for annotations to be complete. Errors are one per uncovered child, at that child's instance location, through the error/output-unit model from story 180, and never carry values.
