@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #153 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 03:12:33 UTC
+- **Run:** #153 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 03:13:12 UTC
 - **Story spend:** ~$12.70 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 153` to accept, or `factory reject 153 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-153-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Leap-second rule (23:59:60 UTC only) applies offset-adjusted UTC; tested for positive and negative offsets.
-  >   ◦ Release-agent note: RFC 5321 email: quoted-string and domain-literal parsing is intricate; length limits (64-byte local part, 254 bytes overall) applied after parsing; fully tested with boundary cases.
-  >   ◦ Release-agent note: Format assertion mode is decided at compile time and read from story 190's per-resource recorded vocabulary flag. If the flag is per-meta-schema rather than per-resource, embedded resources with a different $schema must be tested separately; tests confirm per-resource behaviour.
-  >   ◦ Release-agent note: Depends on story 190's vocabulary flag being correctly recorded in vocab.FormatAssertion and read without re-parsing $vocabulary.
-  >   ◦ Security note (none): No insecure default found. Format assertion is off by default (the option's zero value is false and the CLI flag defaults to off). The only ways a check is skipped are the specified ones: unknown or deferred formats, a missing check, and non-string instances. Checks return a plain bool, with no error or recover path. The error message names only the format from the schema, never the instance value. Meta-schema compilation forces assertion off (noFormat). The format registry is written only from init(). Each check is charged to the step budget with ChargeBytes before it runs, and TestFormatAssertionChargesSteps proves it.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -98,8 +91,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 03:12:04 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 17; findings: 0 new, 0 persistent, 8 resolved |
 | 2026-10-17 03:12:04 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 03:12:33 | agent | release-agent | ✅ pass · 28.3s · $0.0895 |
-| 2026-10-17 03:12:33 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 03:12:33 | run | run waiting_human | ⏸️ |
+| 2026-10-17 03:12:33 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 03:13:12 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 03:13:12 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
