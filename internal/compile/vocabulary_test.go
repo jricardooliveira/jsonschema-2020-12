@@ -64,6 +64,9 @@ func TestParseVocabulary(t *testing.T) {
 				if !errors.As(err, want) {
 					t.Fatalf("got %v", err)
 				}
+				if tc.name == "value not boolean" && err.Error() != `meta-schema `+meta+`: invalid '$vocabulary' entry "`+vCore+`": value is not a boolean` {
+					t.Errorf("message: %v", err)
+				}
 				return
 			}
 			for _, u := range tc.active {

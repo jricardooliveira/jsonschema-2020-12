@@ -209,7 +209,7 @@ func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *
 		}
 		n, err := l.in.compile(l.v, l.ptr)
 		if err != nil {
-			return r, nil, fmt.Errorf("schema location #%s: $ref %q: %v", l.ref.Location, l.ref.Ref, err)
+			return r, nil, fmt.Errorf("schema location #%s: $ref %q: %w", l.ref.Location, l.ref.Ref, err)
 		}
 		l.ref.Target = n
 	}
