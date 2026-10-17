@@ -3,21 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #163 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 20:25:53 UTC · **Stopped:** 2026-10-17 21:28:21 UTC
+- **Run:** #163 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 20:25:53 UTC · **Stopped:** 2026-10-17 21:36:43 UTC
 - **Story spend:** ~$17.33 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 163` to accept, or `factory reject 163 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-163-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Empty file cmd/jsonschema/golden_dbg_test.go should be deleted
-  >   ◦ Release-agent note: spec_test.go was edited to exclude testdata/golden/ (justified: golden files are CLI records, not spec test cases); this is outside the original scope but was approved as a justified test change
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -65,8 +61,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 21:27:26 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 9; findings: 0 new, 1 persistent, 5 resolved |
 | 2026-10-17 21:27:26 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 21:28:20 | agent | release-agent | ✅ warn · 53.6s · $0.1166 |
-| 2026-10-17 21:28:21 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 21:28:21 | run | run waiting_human | ⏸️ |
+| 2026-10-17 21:28:21 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 21:36:43 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 21:36:43 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
