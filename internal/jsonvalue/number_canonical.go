@@ -10,7 +10,11 @@ func (n *Number) Canonical() string {
 	if n.neg {
 		s = "-"
 	}
-	return s + n.mant.Text(10) + "e" + strconv.FormatInt(n.exp, 10)
+	m := strconv.FormatUint(n.mag, 10)
+	if n.big != nil {
+		m = n.big.Text(10)
+	}
+	return s + m + "e" + strconv.FormatInt(n.exp, 10)
 }
 
 // String returns the number as written in the source. It is used for schema
