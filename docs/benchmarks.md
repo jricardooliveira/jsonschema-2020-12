@@ -203,6 +203,67 @@ This package is not touched by the story; the figures only confirm no change.
 - The decoded-document figures are unchanged, as expected.
 - No allocation-limit test was added or changed.
 
+## Story 201 (annotations collected and sorted only when shown): before and after
+
+Both sets were measured on the same machine as above (Apple M3 Max, 16
+logical CPUs, macOS arm64, go1.27.2), one package at a time, `-count=5`,
+median of 5. "Before" is the code at the start of this story (commit 386bf22,
+which already includes stories 199 and 200); "after" is the finished story.
+Change is after against before; negative is better.
+
+Command:
+
+    go test -run '^$' -bench . -benchmem -count=5 . ./internal/jsonvalue ./cmd/jsonschema
+
+### Library (package root)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CompileOrder | 899,140 → 673,243 (−25.1%) | 900,842 → 696,303 (−22.7%) | 25,922 → 14,072 (−45.7%) |
+| ValidateSmall | 35,704 → 30,333 (−15.0%) | 56,516 → 51,208 (−9.4%) | 1,132 → 846 (−25.3%) |
+| Validate0_5MB | 33,949,334 → 28,212,720 (−16.9%) | 55,375,356 → 50,724,540 (−8.4%) | 973,830 → 710,113 (−27.1%) |
+| Validate5_5MB | 314,784,073 → 271,604,364 (−13.7%) | 570,285,988 → 524,157,112 (−8.1%) | 9,683,136 → 7,100,144 (−26.7%) |
+| ValidateErrors | 22,111,058 → 22,293,748 (+0.8%, noise) | 40,656,864 → 40,657,289 (+0.001%, noise) | 510,077 → 510,080 (noise) |
+| ValidateErrorsBasic | 22,337,740 → 22,179,905 (−0.7%) | 42,642,596 → 42,642,832 (+0.0006%, noise) | 516,100 → 516,102 (noise) |
+
+The two error scenarios have no valid-result annotations to collect, so they
+are unchanged: the differences are a few hundred bytes and 2 to 3 allocations
+out of 40 MB and 510,000, inside the run-to-run spread (before-runs of
+ValidateErrors alone ranged 510,076 to 510,079 allocations).
+
+### Decoded document (package internal/jsonvalue)
+
+Not touched by this story; shown only to confirm no change.
+
+| Benchmark | ns/op before → after | retained-B before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|---|
+| RetainedHeap/0.5MB | 5,999,266 → 5,930,574 (noise) | 4,340,753 → 4,340,754 | 6,282,123 → 6,281,994 | 170,200 → 170,197 |
+| RetainedHeap/5.5MB | 60,080,042 → 59,823,958 (noise) | 44,924,650 → 44,924,646 | 67,382,574 → 67,382,582 | 1,715,811 → 1,715,811 |
+
+### CLI, in process (package cmd/jsonschema)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CLI/0.5MB | 41,726,897 → 40,222,769 (−3.6%) | 66,151,160 → 65,472,149 (−1.0%) | 1,049,917 → 984,372 (−6.2%) |
+| CLI/5.5MB | 376,142,181 → 370,964,347 (−1.4%) | 659,647,045 → 654,931,621 (−0.7%) | 10,209,231 → 9,714,408 (−4.8%) |
+| CLI/Errors | 25,310,125 → 24,038,087 (−5.0%) | 44,679,512 → 44,477,816 (−0.5%) | 542,144 → 530,295 (−2.2%) |
+| CLI/Verbose0.5MB | 86,826,378 → 87,357,247 (+0.6%, noise) | 145,015,786 → 144,733,062 (−0.2%) | 2,053,761 → 1,934,518 (−5.8%) |
+
+The CLI gain is smaller than the library gain because the CLI renders the
+report, which needs the annotations, so they are built and sorted on demand
+there (once, in place, with the segments of each pointer computed once).
+
+### Acceptance check
+
+- Valid-document scenarios (library and CLI) have lower allocs/op and lower
+  B/op; allocs/op by 2% to 27%, B/op by 0.2% to 9%.
+- No scenario's allocs/op or B/op rose beyond a few allocations or bytes of
+  noise (the two error scenarios in the library table).
+- ns/op is not worse beyond the ±5% spread on any scenario.
+- The compile figures are lower as well (the meta-schema check at Compile no
+  longer sorts annotations up front); this is recorded as measured.
+- No allocation-limit test was added or changed.
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a

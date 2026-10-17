@@ -30,7 +30,7 @@ type Schema struct {
 type Result struct {
 	valid       bool
 	units       []keywords.Unit
-	annotations []eval.Annotation
+	annotations *eval.Lazy // sorted on first use
 	maxReport   int
 	// read-only inputs to rebuild the evaluation tree in Output
 	root        *compile.Node
@@ -158,9 +158,9 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	ev, err := eval.EvaluateWith(s.root, v, s.el, false)
+	ev, err := eval.EvaluateLazy(s.root, v, s.el)
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn, el: s.el}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: eval.NewLazy(ev.Annotations), maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn, el: s.el}, nil
 }

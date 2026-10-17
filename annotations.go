@@ -21,8 +21,9 @@ type Annotation struct {
 // Annotations returns the annotations of a passing result, ordered by
 // instance location then keyword location; a failing result has none.
 func (r Result) Annotations() []Annotation {
-	out := make([]Annotation, len(r.annotations))
-	for i, a := range r.annotations {
+	sorted := r.annotations.Sorted()
+	out := make([]Annotation, len(sorted))
+	for i, a := range sorted {
 		out[i] = Annotation{a.InstanceLocation, a.KeywordLocation, a.AbsoluteKeywordLocation, a.Keyword, a.Value}
 	}
 	return out

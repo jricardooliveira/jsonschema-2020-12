@@ -173,7 +173,15 @@ func evalItem(ctx *keywords.EvalContext, pf *pathFrame, loc *lazyLoc, it compile
 	if rec != nil {
 		mark = rec.Mark()
 	}
-	ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
+	var ok bool
+	var err error
+	if discardsAnnotations(ctx, it.Keyword.Name) {
+		leave := enterSink(ctx)
+		ok, err = it.Keyword.Evaluate(ctx, it.Data, instance)
+		leave()
+	} else {
+		ok, err = it.Keyword.Evaluate(ctx, it.Data, instance)
+	}
 	if err != nil {
 		return false, err
 	}

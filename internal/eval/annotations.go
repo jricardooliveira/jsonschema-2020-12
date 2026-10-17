@@ -1,9 +1,6 @@
 package eval
 
 import (
-	"slices"
-	"strings"
-
 	"github.com/neoface/jsonschema/internal/compile"
 	"github.com/neoface/jsonschema/internal/keywords"
 )
@@ -47,6 +44,11 @@ func EvaluateTree(n *compile.Node, instance any, maxUnits, maxAnnotations int) (
 // evaluate runs one call; state, when set, is the per-call record (with its
 // caps) to use instead of a default one.
 func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree *Tree, state any) (Evaluation, error) {
+	return evaluateOpt(n, instance, maxUnits, maxAnnotations, tree, state, false)
+}
+
+// evaluateOpt is evaluate; lazy leaves Annotations unsorted.
+func evaluateOpt(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree *Tree, state any, lazy bool) (Evaluation, error) {
 	ctx := keywords.NewEvalContext(maxUnits, evalNode)
 	ctx.Items = state
 	ctx.SetMaxAnnotations(maxAnnotations)
@@ -57,7 +59,10 @@ func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree 
 	}
 	ev := Evaluation{Valid: ok, Units: ctx.Units(), Tree: tree}
 	if ok {
-		ev.Annotations = SortAnnotations(ctx.Annotations())
+		ev.Annotations = ctx.Annotations()
+		if !lazy {
+			ev.Annotations = SortAnnotations(ev.Annotations)
+		}
 	}
 	if tree != nil {
 		tree.Valid, tree.Errors = ok, ctx.Units()
@@ -73,36 +78,5 @@ func evaluate(n *compile.Node, instance any, maxUnits, maxAnnotations int, tree 
 // shorter prefix first), then absolute keyword location, keyword name and
 // evaluation sequence.
 func SortAnnotations(in []Annotation) []Annotation {
-	out := slices.Clone(in)
-	slices.SortStableFunc(out, func(a, b Annotation) int {
-		if c := cmpPointer(a.InstanceLocation, b.InstanceLocation); c != 0 {
-			return c
-		}
-		if c := cmpPointer(a.KeywordLocation, b.KeywordLocation); c != 0 {
-			return c
-		}
-		if c := strings.Compare(a.AbsoluteKeywordLocation, b.AbsoluteKeywordLocation); c != 0 {
-			return c
-		}
-		if c := strings.Compare(a.Keyword, b.Keyword); c != 0 {
-			return c
-		}
-		return a.Seq - b.Seq
-	})
-	return out
+	return sortAnnotations(in)
 }
-
-var unescape = strings.NewReplacer("~1", "/", "~0", "~")
-
-func tokens(p string) []string {
-	if p == "" {
-		return nil
-	}
-	parts := strings.Split(p[1:], "/")
-	for i, t := range parts {
-		parts[i] = unescape.Replace(t)
-	}
-	return parts
-}
-
-func cmpPointer(a, b string) int { return slices.Compare(tokens(a), tokens(b)) }
