@@ -76,7 +76,7 @@ func (st *callState) enter(ctx *keywords.EvalContext, n *compile.Node) (*pathFra
 	*pf = pathFrame{static: n.Location, dynamic: dynamic, viaRef: viaRef, key: f, jump: jump}
 	pf.loc = lazyLoc{pf: pf, res: n.Resource}
 	st.active[f] = struct{}{}
-	st.scope.entries = append(st.scope.entries, n)
+	st.scope.enter(n)
 	st.depth++
 	return pf, nil
 }
@@ -84,7 +84,7 @@ func (st *callState) enter(ctx *keywords.EvalContext, n *compile.Node) (*pathFra
 // exit undoes the matching enter. pf must be the frame of the innermost
 // entered node.
 func (st *callState) exit(pf *pathFrame) {
-	st.scope.entries = st.scope.entries[:len(st.scope.entries)-1]
+	st.scope.exit()
 	if pf.jump {
 		st.refs--
 	}
