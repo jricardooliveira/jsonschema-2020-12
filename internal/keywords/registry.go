@@ -12,6 +12,9 @@ type CompileContext struct {
 	// MaxPatternBytes caps a regular expression's source size; 0 means the
 	// default (validation.DefaultMaxPatternSize).
 	MaxPatternBytes int
+	// FormatAssert is true when format assertion is on for the resource being
+	// compiled (caller option or required format-assertion vocabulary).
+	FormatAssert bool
 	// Siblings are the raw values of every keyword in the same schema object.
 	// Read only.
 	Siblings map[string]any

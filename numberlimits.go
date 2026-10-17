@@ -32,6 +32,9 @@ type Options struct {
 	MaxRefChain    int
 	MaxSteps       int
 	MaxPatternSize int
+	// FormatAssertion turns format assertion on: a string that fails a known
+	// format is invalid. Default off (format is an annotation only).
+	FormatAssertion bool
 	// BaseURI overrides the base URI of a root schema without $id. It must be
 	// absolute with no fragment. See docs/references.md.
 	BaseURI string

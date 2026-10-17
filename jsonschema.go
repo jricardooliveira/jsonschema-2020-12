@@ -102,7 +102,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 		return nil, fmt.Errorf("registry: %w", err)
 	}
 	el := eval.Limits{MaxUnits: max, MaxAnnotations: maxAnn, MaxSteps: rl.steps, MaxRefChain: rl.refChain, MaxDepth: rl.depth}
-	n, docs, err := compile.CompileReachedWith(v, base, ext, rl.pattern)
+	n, docs, err := compile.CompileReachedFormat(v, base, ext, rl.pattern, opts.FormatAssertion)
 	if err != nil {
 		// A keyword rejecting its own value is usually a meta-schema failure
 		// of the main schema or of a supplied one reached before the failure:
