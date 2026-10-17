@@ -3,22 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #168 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 22:44:32 UTC · **Stopped:** 2026-10-17 23:13:11 UTC
+- **Run:** #168 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 22:44:32 UTC · **Stopped:** 2026-10-17 23:16:37 UTC
 - **Story spend:** ~$7.27 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 168` to accept, or `factory reject 168 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-168-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Existing tests were changed or deleted by this story — check that they were not weakened to make a failing check pass: cmd/jsonschema/golden_dbg_test.go (deleted)
-  >   ◦ Files deleted by this story (check each was meant to go): cmd/jsonschema/golden_dbg_test.go
-  >   ◦ Release-agent note: Factory must name cmd/jsonschema/golden_dbg_test.go deletion in the release notes (story acceptance criterion 10).
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -61,9 +56,10 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 23:12:06 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 10; findings: 2 new, 1 persistent, 6 resolved |
 | 2026-10-17 23:12:06 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 23:13:10 | agent | release-agent | ✅ pass · 64.0s · $0.0927 |
-| 2026-10-17 23:13:11 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 23:13:11 | run | run waiting_human | ⏸️ |
+| 2026-10-17 23:13:11 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 23:16:37 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 23:16:37 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
-- none
+- released NOT READY: the evidence gaps named at Checkpoint 3 were accepted by the operator
