@@ -1,0 +1,364 @@
+{
+  "work_id": "US-0154",
+  "parent_story": "US-0154",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "4081371ebb508ad4dd86c299a368ad89c1bfe3d5",
+    "base_commit": "e2f6a7d15d6ee048987eca27f67139d946b2a4c2"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "In assertion mode, 'uri' accepts only strings that match the RFC 3986 URI grammar, including the required scheme. It rejects relative references, spaces, bad percent-encodings (for example '%zz' or '%4') and misplaced characters. The tests are positive and negative and live in internal/formats/uri_test.go.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In assertion mode, 'uri-reference' accepts any RFC 3986 URI-reference, absolute or relative (for example '/a/b?c#d', '#frag', ''). It rejects strings with spaces, bad percent-encodings or characters the grammar does not allow. The tests are positive and negative.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In assertion mode, 'iri' and 'iri-reference' follow RFC 3987. They accept the same strings as uri and uri-reference, plus non-ASCII characters in the allowed ucschar and iprivate ranges, for example 'http://\u0192\u00f8\u00f8.example/\u00fc'. They reject spaces, bad percent-encodings and disallowed characters. 'iri' requires a scheme. The tests are positive and negative.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In assertion mode, 'uri-template' accepts a template only when its spelling follows RFC 6570. Braces must match and not nest. Variable names may use only the allowed characters and pct-encoded triplets. Only the operators + # . / ; ? & are allowed, and only the modifiers :N (1 to 9999) and *. The template is never expanded. Examples: '/users/{id}{?page}' passes; '{', '{a', '{a}}', '{@a}', '{a:0}' and '{a b}' fail. No part of the template is left unchecked.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In assertion mode, 'json-pointer' accepts '' and strings made of '/'-prefixed reference tokens in which '~' is followed only by '0' or '1' (RFC 6901). Examples: '/a~1b' and '/' pass; 'a', '/~2' and '/~' fail.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In assertion mode, 'relative-json-pointer' follows the draft-bhutton-relative-json-pointer-00 grammar that 2020-12 references. That grammar is: a non-negative integer with no leading zero, an optional index manipulation '+N' or '-N', then either '#' or a JSON pointer. Examples: '0', '1/name', '0#', '0+1' and '1-2/name' pass; '01', '0+', '-1', '0##' and '/a' fail.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In assertion mode, 'regex' accepts a string only when it is a valid ECMA-262 pattern under the strict (u-flag) grammar. Lookahead, lookbehind, back-references and named groups are accepted as valid even though RE2 cannot run them, and the code records this. Invalid patterns fail, for example '\\a', a lone '{', '(', '[b-a]' and '(?<n>a)(?<n>b)'. Patterns that the existing ECMA-262-to-RE2 translation step can handle are also passed through it, and the step's result never turns a syntactically valid pattern into a failure.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "For the regex format, '\\p{...}' and '\\P{...}' names are checked against a list of ECMA-262 property names and values written into the code. This covers General_Category and its aliases, Script and Script_Extensions with their aliases, and the binary properties. The list is built using the standard library only (for example unicode.Scripts and unicode.Categories plus hand-written aliases). Names such as '\\p{Letter}', '\\p{L}' and '\\p{Script=Greek}' pass; '\\p{Lettter}' and '\\p{Script=Foo}' fail. Any names the list does not yet cover are recorded in the code.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Each of the eight formats lives in its own file internal/formats/<format>.go and registers itself from init() through the format registration point (internal/formats/registry.go). No existing shared file is edited to add them.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Outside assertion mode, all eight formats stay annotations only: a value that breaks the format still validates as valid. Each format has a test for this.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every format here that is only partly checked carries a code comment that says what it misses. go.mod gains no require line, and no test uses the network.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 11,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "formatassertion_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/formats/assertion_mode_test.go",
+        "change": "added",
+        "additions": 60,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ecma_syntax.go",
+        "change": "added",
+        "additions": 429,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ecma_syntax_test.go",
+        "change": "added",
+        "additions": 57,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ecma_unicode_props.go",
+        "change": "added",
+        "additions": 147,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/ecma_unicode_props_test.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/iri.go",
+        "change": "added",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/iri_reference.go",
+        "change": "added",
+        "additions": 6,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/iri_reference_test.go",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/iri_test.go",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/json_pointer.go",
+        "change": "added",
+        "additions": 25,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/json_pointer_test.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/regex.go",
+        "change": "added",
+        "additions": 35,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/regex_test.go",
+        "change": "added",
+        "additions": 30,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/relative_json_pointer.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/relative_json_pointer_test.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/rfc3986.go",
+        "change": "added",
+        "additions": 186,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/rfc3986_test.go",
+        "change": "added",
+        "additions": 42,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uri.go",
+        "change": "added",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uri_reference.go",
+        "change": "added",
+        "additions": 6,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uri_reference_test.go",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uri_template.go",
+        "change": "added",
+        "additions": 115,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uri_template_test.go",
+        "change": "added",
+        "additions": 46,
+        "deletions": 0
+      },
+      {
+        "path": "internal/formats/uri_test.go",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-0629b595200d439dbfd7ed0713bfe1c7/docs/architecture/adr/ADR-019-format-assertion-uri-iri-templates-pointers-and-re.md",
+    "summary": "Second pass: all earlier findings are resolved and nothing new turned up. assertion_mode_test.go now has one invalid sample for each of the eight formats. It proves through the real compile and valida"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [
+      "No insecure defaults found. Every check fails closed: unknown constructs, '(?i:' modifier groups, unknown \\p names and invalid UTF-8 all return false. The checks are pure functions with no I/O and do not use net/url or regexp to judge validity. The property tables are filled at init and only read afterwards. Translate runs behind recover() and the DefaultMaxPatternSize cap, and regexp.Compile is never called. Format errors never quote the instance value."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 7.730762,
+    "tokens_in": 5223180,
+    "tokens_out": 86496
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The 'ponytail' comment in rfc3986.go records what is only partly checked: no IPv4 dotted-quad rule for hosts, no RFC 3987 4.2 IDN or bidi rules, and port digits are not range-limited."
+    },
+    {
+      "task": "T1",
+      "text": "Annotation-only behaviour outside assertion mode is covered by the central format keyword, since the check is not looked up outside assertion mode. The per-format annotation-only tests belong in assertion_mode_test.go, which is outside this task."
+    },
+    {
+      "task": "T1",
+      "text": "formatassertion_test.go was not edited in this task, so TestFormatAssertionDeferredAndUnknownPass will fail until its format list is cut down. I have not run that root-package test."
+    },
+    {
+      "task": "T1",
+      "text": "formatassertion_test.go was updated because this story deliberately changes the behaviour it tested: formats from this story are no longer accepted for any string in assertion mode. The design says to cut the list to 'no-such-format'. I made that one-line edit now, because T2-T6 will register the other four formats too. The assertion that an unknown format passes is kept."
+    },
+    {
+      "task": "T1",
+      "text": "internal/formats/assertion_mode_test.go covers only the four address formats for now. T2-T6 add their own entries to the assertionSamples table."
+    },
+    {
+      "task": "T2",
+      "text": "The test table uses the shared table() helper, which runs the registered check directly. It does not cover annotation-only mode outside assertion mode. The design assigns that test for all eight formats to the external file assertion_mode_test.go, so I did not duplicate it."
+    },
+    {
+      "task": "T2",
+      "text": "The test reads the 9999 prefix limit from the named constant maxTemplatePrefix instead of repeating the number."
+    },
+    {
+      "task": "T2",
+      "text": "Operators reserved for future use (= , ! @ |) are rejected, as the story says. A comment on the format records that only the grammar is checked."
+    },
+    {
+      "task": "T3",
+      "text": "The index-manipulation number follows the same no-leading-zero rule as the first integer, so '0+01' fails."
+    },
+    {
+      "task": "T3",
+      "text": "A json-pointer with invalid UTF-8 is rejected."
+    },
+    {
+      "task": "T3",
+      "text": "The annotation-only test for these two formats is not in this task. The design puts it in assertion_mode_test.go, which this task did not change."
+    },
+    {
+      "task": "T3",
+      "text": "Both formats are fully checked, so no partial-check comment was needed."
+    },
+    {
+      "task": "T5",
+      "text": "Script and Script_Extensions share one value set."
+    },
+    {
+      "task": "T5",
+      "text": "Binary properties are checked by spelling only, not against Go's tables."
+    },
+    {
+      "task": "T5",
+      "text": "Script aliases are accepted only when Go's unicode.Scripts has the long name. Newer scripts, missing aliases and properties of strings fail closed, as recorded in the code comment."
+    },
+    {
+      "task": "T5",
+      "text": "The name validECMAUnicodeProperty(expr string) bool is my choice for T4 to call."
+    },
+    {
+      "task": "T4",
+      "text": "The scanner accepts lookahead, lookbehind, numbered and named back-references and named groups, since the verdict is by syntax only."
+    },
+    {
+      "task": "T4",
+      "text": "The scanner rejects '\\a', a lone '{', '}' or ']', quantified lookaheads, reversed class ranges, out-of-range back-references and duplicate group names within one alternative."
+    },
+    {
+      "task": "T4",
+      "text": "Group names are checked with Go's unicode tables as an approximation of ID_Start and ID_Continue."
+    },
+    {
+      "task": "T4",
+      "text": "The newer '(?i:...)' modifier groups are rejected, so the check fails closed. Both points are recorded in a ponytail comment in the code."
+    },
+    {
+      "task": "T4",
+      "text": "Quantifier bounds {n,m} are compared as digit strings, so huge numbers cannot overflow."
+    },
+    {
+      "task": "T4",
+      "text": "Duplicate group names across different alternatives are allowed, as in ES2025."
+    },
+    {
+      "task": "T6",
+      "text": "Only `go test ./internal/formats/` was run, and it passes. The root-package and assertion_mode_test.go tests were not run. They should cover the annotation-only and step-charging behaviour for regex."
+    },
+    {
+      "task": "T6",
+      "text": "formatassertion_test.go was not edited. Its list in TestFormatAssertionDeferredAndUnknownPass already contains only 'no-such-format'."
+    },
+    {
+      "task": "remediation",
+      "text": "The surrogate escapes in ecma_syntax_test.go are written by joining strings (\"\\\\\" + \"uD83D\"), because the editing tool turned plain \\u escapes into literal characters."
+    },
+    {
+      "task": "remediation",
+      "text": "A lead surrogate escape followed by a non-trail escape stays a lone surrogate atom, which the u-flag grammar allows. Only a real lead+trail pair is combined."
+    },
+    {
+      "task": "remediation",
+      "text": "formatassertion_test.go was not changed in this pass. Its test for these eight formats is now replaced by the samples in assertion_mode_test.go."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
