@@ -1,0 +1,234 @@
+{
+  "work_id": "US-0164",
+  "parent_story": "US-0164",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "00cec3212fb978f6e8d8efce83c5382e4d42d30a",
+    "base_commit": "b2e37ade51c92c5a392b9db52950c82d1697ab0e"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "EvalChild takes its child EvalContext from the per-call collector, which keeps one context per depth and resets it for each child. A new unit test shows that sibling children at the same depth reuse one context and that every reset clears all per-child state.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The caller still owns the returned units slice. A new test shows that units returned for one child are not aliased or overwritten when a later sibling at the same depth is evaluated.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A doc comment next to EvalChild and the per-depth context stack states two rules: no keyword may keep its child context after EvalChild returns, and the caller owns the returned units slice.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In test binaries only, a reused child context is wiped (poisoned) as soon as EvalChild returns, so any later use fails loudly. A new test proves that a keyword which keeps its child context fails under this check. Production builds behave as without the check.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Any keyword found to need data from its child context after EvalChild returns keeps a fresh context, as today. Each such keyword is named in the story record and documented next to the code. No applicator, annotate or recording file is edited for this.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Per-call state (the context stack) is never shared between Validate calls. go test -race ./... is green, including a new concurrent-validation test that exercises reused child contexts.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "All existing tests pass unchanged. None is removed or weakened. allocs_test.go and docs/benchmarks.md are not edited.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The #205 golden comparison test passes: CLI stdout, stderr and exit code are byte-identical to the committed v1.1 golden files in flag, basic, detailed and verbose. No golden file is regenerated or edited.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new root-package file allocs_childctx_test.go holds this story's lowered allocation limits for the guarded scenarios. Each limit is the measured value plus about 10% headroom, with the measured value recorded next to it. The file reuses the helpers and race gating of allocs_test.go and allocs_race_on/off_test.go without editing them.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new file docs/benchmarks/r3-206-childctx.md records the following: before medians (main after #205) and after medians from go test -bench -count=10 on the same machine (B/op, allocs/op, ns/op); the absolute values after the story; and a verdict for each target. Targets: Validate5_5MB at most 200 MB B/op combined (the 305 MB stand-alone target is noted as not measured); ValidateErrors drops by at least about 4.8 MB B/op; ValidateSmall drops by at least about 6,200 B/op. Timings are noted as noisy because they were taken during a parallel build, to be re-measured at Checkpoint 3.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "If any target is missed, the numbers are recorded and the story is held for the operator's decision. It is never marked done silently.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Standard library only. go.mod is unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "allocs_childctx_test.go",
+        "change": "added",
+        "additions": 35,
+        "deletions": 0
+      },
+      {
+        "path": "childctx_race_test.go",
+        "change": "added",
+        "additions": 42,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks/r3-206-childctx.md",
+        "change": "added",
+        "additions": 62,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/childctx.go",
+        "change": "added",
+        "additions": 49,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/childctx_poison.go",
+        "change": "added",
+        "additions": 13,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/childctx_poison_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/childctx_test.go",
+        "change": "added",
+        "additions": 55,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 18,
+        "deletions": 3
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/eval/eval.go"
+    ],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-d76c4e15da1e41b0bc30dc1b42ab01d7/docs/architecture/adr/ADR-029-one-reusable-child-evaluation-context-per-depth.md",
+    "summary": "The change does what the story asks without changing behaviour. EvalChild now reuses one child context per depth from a per-call stack. reset replaces the whole struct, so nothing leaks between siblin"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 3.220061,
+    "tokens_in": 3419253,
+    "tokens_out": 40914
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "Medians were computed by hand from the 10 runs. B/op and allocs/op barely vary, so the B/op medians are rounded to about 10 bytes."
+    },
+    {
+      "task": "T1",
+      "text": "The 'before' baseline is the worktree HEAD 079149b, which includes #205."
+    },
+    {
+      "task": "T1",
+      "text": "Timings were taken during a parallel build and are noisy; the operator re-measures at Checkpoint 3."
+    },
+    {
+      "task": "T1",
+      "text": "Validate5_5MB before is already about 269 MB, so the 200 MB combined target needs about a 69 MB drop from this story."
+    },
+    {
+      "task": "T2",
+      "text": "The collector struct is in annotate.go, which is outside this task's files, so childStack is a separate type. T3 will hold it per call and add a depth to EvalContext in registry.go."
+    },
+    {
+      "task": "T2",
+      "text": "reset sets units to nil rather than truncating. Units are still allocated only when a child reports a failure, as before, and the caller owns the slice."
+    },
+    {
+      "task": "T3",
+      "text": "Every current EvalChild caller uses only the returned (ok, units, err) and never touches the child context, so no keyword needs the fresh-context path. The list of fresh-context keywords is empty."
+    },
+    {
+      "task": "T3",
+      "text": "A hand-built EvalContext with no stack (nil stk) still gets a freshly allocated child, as before."
+    },
+    {
+      "task": "T3",
+      "text": "internal/eval/eval.go needed no edit."
+    },
+    {
+      "task": "T3",
+      "text": "childctx_test.go still passes unchanged."
+    },
+    {
+      "task": "T4",
+      "text": "Importing the testing package for testing.Testing() into internal/keywords is acceptable, as the design chose. It only reads a flag and registers no test flags."
+    },
+    {
+      "task": "T4",
+      "text": "The poison test uses a hand-built root context with a stub evalNode as the retaining keyword. Real keywords never see their child context outside EvalChild."
+    },
+    {
+      "task": "T4",
+      "text": "internal/keywords/registry.go was edited because the call to poison has to sit in EvalChild; no other keyword file was touched."
+    },
+    {
+      "task": "T5",
+      "text": "Limits are measured values plus about 10%, rounded up: ValidateSmall 509 allocs (limit 560) and 23,216 B (25,600); Validate5_5MB 196,951,210 B (216,700,000); ValidateErrors 15,511,248 B (17,100,000)."
+    },
+    {
+      "task": "T5",
+      "text": "Only bytes are guarded for the 5.5 MB and Errors scenarios, because the allocs_test.go count limits for them are unchanged by this story."
+    },
+    {
+      "task": "T5",
+      "text": "The measured values were taken on the current worktree code, which has T1-T4 in place."
+    },
+    {
+      "task": "T6",
+      "text": "Medians were computed by hand from the 10 runs of each benchmark; for an even count I averaged the two middle values."
+    },
+    {
+      "task": "T6",
+      "text": "The 'before' table was left as recorded by T1 and not re-measured."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}
