@@ -88,6 +88,21 @@ schema docs/examples/bad-schema.json: invalid against its meta-schema at "/type"
 
 Error lines never contain the content of the schema or the document.
 
+## Accepted input
+
+Schemas and documents must be one JSON value (RFC 8259) in UTF-8. Each of
+these is broken JSON (exit code 2):
+
+- A second leading UTF-8 byte order mark (a single one is accepted).
+- Anything but whitespace after the value, including a second value.
+- Bytes that are not valid UTF-8.
+- A `\u` escape that leaves a surrogate without its partner. A valid surrogate
+  pair decodes to one code point.
+- An object that repeats a member name at any depth, compared after
+  unescaping. The error gives the location of the repeat.
+
+A number over the digit or exponent cap is a limit error, also exit code 2.
+
 ## Several documents
 
 With exactly one document, stdout is exactly one output object of the chosen

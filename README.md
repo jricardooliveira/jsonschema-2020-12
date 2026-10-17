@@ -45,3 +45,8 @@ operator decision.
 - [Library](docs/library.md): compile once, validate many.
 - [Scope](docs/scope.md): mandatory 2020-12 behaviour and optional features.
 - [Deviations](docs/deviations.md): regex differences, partly checked formats, known differences.
+- [References](docs/references.md): base URIs, `$ref` resolution, loops.
+
+Earlier pages that now only point to the pages above:
+[cli-contract.md](docs/cli-contract.md), [formats.md](docs/formats.md),
+[regex-deviations.md](docs/regex-deviations.md).

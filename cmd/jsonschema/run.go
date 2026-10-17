@@ -70,7 +70,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	flags.Var(&refDirs, "ref-dir", "folder, needs a mapping: "+refHelp)
 	if err := flags.Parse(args[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			return fail("usage: jsonschema validate [-o flag|basic|detailed|verbose]<schema-file> [<document-file>|-]...")
+			return fail("usage: jsonschema validate [-o flag|basic|detailed|verbose] <schema-file> [<document-file>|-]...")
 		}
 		if lf.bad != "" {
 			return fail("invalid value for flag -" + lf.bad)
