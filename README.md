@@ -55,9 +55,13 @@ The rules for keeping the evaluation independent:
   `factory:` were made by the Factory.
 - **Tests:** 466 Go test and fuzz functions and 84 JSON test-data files, all written from the
   specification. Every candidate passed `go build`, `go vet` and `go test -race`.
-- **Candidate for evaluation:** commit `09d8ec23da454a69fa5eb4d821403b14ca06e88a` is the
-  Factory's final integrated main. The only commit after it in this repository adds this
-  README section.
+- **Candidates for evaluation:**
+  - Round 1, the feature-complete validator: commit `09d8ec23da454a69fa5eb4d821403b14ca06e88a`
+    (tag `evaluation-candidate`).
+  - Round 2, the same behaviour made faster: commit `f35d9e4000a57a7c2bdda7a4f216b648de5265b4`
+    (tag `performance-round-2`).
+  - Both are the Factory's final integrated main for their round. The only commits in this
+    repository not made by the Factory are the README updates and their merge.
 
 Known gaps are listed honestly in [`docs/deviations.md`](docs/deviations.md):
 
@@ -67,6 +71,41 @@ Known gaps are listed honestly in [`docs/deviations.md`](docs/deviations.md):
 
 The Go module path is `github.com/neoface/jsonschema` (the Factory chose it). Build from a clone
 as shown below.
+
+## Round 2: performance
+
+After round 1, the product owner benchmarked the validator against a widely used Go validator. It
+was correct but about 2× slower and used about 3× the memory, and schema compilation was about 10×
+slower. They amended the brief with those measurements. The Factory planned 7 more stories (#198–#204):
+
+- reproducible in-repo benchmarks ([`docs/benchmarks.md`](docs/benchmarks.md));
+- keyword locations rendered only when needed;
+- the evaluated-property record kept only when an `unevaluated*` keyword can see it;
+- annotations kept only when they can be observed;
+- the meta-schema set built once per process;
+- compact numbers with an inline `int64` fast path;
+- allocation and byte-limit tests.
+
+The rule was that correctness never regresses for speed. Every round-1 test still passes,
+including under `go test -race`, and round 2 deleted no tests.
+
+In-repo benchmarks (`go test -run '^$' -bench . -benchmem`) on an Apple M3 Max with Go 1.27.2:
+
+| Scenario | Round 1 | Round 2 |
+|---|---|---|
+| Small document (~0.5 KB), per validation | ~49 µs · 75 KB · 1,582 allocs | ~27 µs · 42 KB · 785 allocs |
+| 500 KB valid document | ~46 ms · 74 MB · 1.42 M allocs (~11 MB/s) | ~25 ms · 36 MB · 660 k allocs (~21 MB/s) |
+| 330 KB document with 1,000 errors | ~32 ms · 54 MB | ~20 ms · 29 MB |
+| 5.5 MB valid document | ~454 ms · 756 MB allocated · 315 MiB peak | ~252 ms · 369 MB allocated · 194 MiB peak |
+| Schema compile (repeated) | ~963 µs · 1.04 MB · 28 k allocs | ~121 µs · 209 KB · 2.5 k allocs |
+
+- The small-document, 500 KB and compile rows were re-measured independently at review. The
+  other rows come from the operator's runs.
+- An output-identity check compared the round-1 and round-2 binaries over 48 runs (12 cases × 4
+  output formats); stdout, stderr and exit codes were byte-identical.
+- Still open: large documents allocate about 1.5× more than the comparison validator.
+  `multipleOf` still allocates on each evaluation. The retained size of decoded documents
+  dropped only 8–11%.
 
 ---
 
