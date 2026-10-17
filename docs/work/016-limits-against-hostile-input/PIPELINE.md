@@ -3,19 +3,23 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #152 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-17 01:41:14 UTC · **Stopped:** 2026-10-17 02:17:35 UTC
-- **Story spend:** ~$13.24 of $35.00 (estimated at API list prices)
+- **Run:** #152 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-17 01:41:14 UTC · **Stopped:** 2026-10-17 02:27:43 UTC
+- **Story spend:** ~$18.16 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 152` to accept, or `factory reject 152 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 152` to accept, or `factory reject 152 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: The boundary rules require per-entry charging in required, dependentRequired and dependentSchemas. Their files are not in modules_affected: the validation package's required.go and dependentrequired.go, and the applicator package's dependentschemas.go. Right now their loops grow with the size of the schema list but cost only one step per keyword, so a reused large required list is not charged in proportion to its work. Not granted automatically: internal/keywords/validation/required.go (not in the approved design and not a test); internal/keywords/validation/dependentrequired.go (not in the approved design and not a test); internal/keywords/applicator/dependentschemas.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: internal/keywords/validation/required.go, internal/keywords/validation/dependentrequired.go, internal/keywords/applicator/dependentschemas.go
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: internal/limits package is separate from jsonvalue.LimitError (design decision A said reuse that error; actual code uses it and stores constants in internal/limits for closed-set validation). Minimal departure; error type is still shared.
+  >   ◦ Release-agent note: EvalContext.Charge() does nothing without a per-call record (only keywords with context that has Items as callState pay the cost). Cannot be reached in practice because evaluate() installs callState before any keyword runs; safe but opaque.
+  >   ◦ Release-agent note: Breaking change: limit error messages, Registry.MaxFileBytes=0 behavior, pattern size error type. Documented in migration_notes; all existing tests updated by story 193.
+  >   ◦ Security note (low): LOW: EvalContext.Charge (internal/keywords/registry.go) does nothing when ctx.Items is not the per-call record, so it fails open. All public paths go through EvaluateWith, which installs the call state, and keywordStep in eval.go fails closed. So this cannot be reached today. It is hardening only.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -66,8 +70,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 02:10:58 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ['AC6 / boundary rule (proportional step charging): the architecture and boundary rules require ChargeBytes/Charge in uniqueitems.go, enum.go, const.go, c… |
 | 2026-10-17 02:10:58 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 9 finding(s) |
 | 2026-10-17 02:17:35 | agent | coder-agent | ✅ scope-request · remediation · 395.3s · $3.0962 |
-| 2026-10-17 02:17:35 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-17 02:17:35 | run | run waiting_human | ⏸️ |
+| 2026-10-17 02:17:35 | gate | gate-question | ❌ REJECTED: yes, grant internal/keywords/validation/required.go, internal/keywords/validation/dependentrequired.go and internal/keywords/applicator/dependentschemas.go for this run (per-entry step charging only). |
+| 2026-10-17 02:17:53 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 3 finding(s) |
+| 2026-10-17 02:25:34 | agent | coder-agent | ✅ complete · remediation · 460.8s · $3.7048 |
+| 2026-10-17 02:25:57 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 02:25:58 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 02:26:52 | agent | tester-agent | ✅ warn · 54.3s · $1.0840 |
+| 2026-10-17 02:26:52 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 11; findings: 2 new, 0 persistent, 3 resolved |
+| 2026-10-17 02:26:52 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 02:27:42 | agent | release-agent | ✅ pass · 49.4s · $0.1233 |
+| 2026-10-17 02:27:43 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 02:27:43 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
