@@ -35,7 +35,7 @@ func Builtins() (map[string]any, error) {
 			if err != nil {
 				return err
 			}
-			doc, err := jsonvalue.Decode(data)
+			doc, err := jsonvalue.DecodeLimited(data, jsonvalue.NumberLimits{}) // *Number leaves, like supplied schemas
 			if err != nil {
 				return fmt.Errorf("embedded meta-schema %s: %v", p, err)
 			}

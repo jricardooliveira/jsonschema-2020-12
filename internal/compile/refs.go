@@ -140,6 +140,23 @@ func (p pendingRes) fill() error {
 	return nil
 }
 
+// CompileReached is CompileWithRegistry that also returns every document the
+// main one reaches: the main schema first (Source ""), then each supplied
+// document a reference led to. Built-in meta-schemas are not listed.
+func CompileReached(doc any, baseURI string, ext *registry.Index) (*Node, []Doc, error) {
+	r, root, err := compileDocument(doc, baseURI, ext)
+	if err != nil {
+		return nil, nil, err
+	}
+	docs := []Doc{{Value: doc}}
+	for _, o := range r.sh.all[1:] {
+		if o.source != registry.BuiltinSource {
+			docs = append(docs, Doc{Value: o.doc, Source: o.source})
+		}
+	}
+	return root, docs, nil
+}
+
 func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *Node, error) {
 	idx, err := registry.Build(doc, baseURI)
 	if err != nil {
@@ -204,6 +221,7 @@ type located struct {
 type resolver struct {
 	sh        *shared
 	doc       any
+	source    string                        // where doc came from; "" for the main schema
 	bases     map[string]string             // schema pointer -> base URI in effect there
 	resources map[string]*registry.Resource // base URI -> indexed resource
 	infos     map[string]*Resource          // base URI -> compiled resource (nil: not indexed)
@@ -312,6 +330,7 @@ func (r *resolver) locate(ref *core.Ref) (located, error) {
 			}
 			if in = r.sh.byOwner[res.Owner]; in == nil {
 				in = r.sh.add(res.Owner.Doc, res.Owner.Bases, r.sh.ext.Resources)
+				in.source = res.Source
 				r.sh.byOwner[res.Owner] = in
 			}
 		}

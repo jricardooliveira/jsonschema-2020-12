@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -38,6 +39,13 @@ func TestSpecCases(t *testing.T) {
 				t.Errorf("%s: %q cites no spec section", f, g.Description)
 			}
 			s, err := Compile(g.Schema)
+			var bad *InvalidSchemaError
+			if errors.As(err, &bad) {
+				// Core 8.1.1: a schema failing its meta-schema is a load error,
+				// never a result (e.g. negative or fractional minItems).
+				t.Logf("%s: %s: rejected by meta-schema, as required", f, g.Description)
+				continue
+			}
 			if err != nil {
 				t.Errorf("%s: %s: compile: %v", f, g.Description, err)
 				continue

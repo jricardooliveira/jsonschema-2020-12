@@ -10,6 +10,7 @@ import (
 	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/keywords"
 	_ "github.com/neoface/jsonschema/internal/keywords/all"
+	"github.com/neoface/jsonschema/internal/registry"
 )
 
 // Schema is a compiled schema, immutable and safe for concurrent use.
@@ -71,11 +72,52 @@ func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("registry: %w", err)
 	}
-	n, err := compile.CompileWithRegistry(v, base, ext)
+	if ext == nil {
+		if ext, err = registry.Build(true, "https://registry.invalid/unused"); err != nil {
+			return nil, fmt.Errorf("registry: %w", err)
+		}
+	}
+	// Built-ins last: a supplied file at a built-in address must equal it.
+	if err := ext.AddBuiltins(); err != nil {
+		return nil, fmt.Errorf("registry: %w", err)
+	}
+	n, docs, err := compile.CompileReached(v, base, ext)
 	if err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
 	}
+	if err := metaCheck(docs, ext, max); err != nil {
+		return nil, err
+	}
 	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep}, nil
+}
+
+// metaCheck validates the main schema and every reached supplied schema
+// against their meta-schema (core 8.1.1). Failing is *InvalidSchemaError;
+// limit errors and any internal error also fail (fail closed). Format is
+// never asserted here, whatever the options say.
+func metaCheck(docs []compile.Doc, ext *registry.Index, max int) error {
+	checks, err := compile.MetaChecks(docs, ext)
+	if err != nil {
+		return fmt.Errorf("schema: %w", err)
+	}
+	for _, c := range checks {
+		// Annotations are dropped here: the caller's cap is for documents.
+		ev, err := eval.EvaluateFull(c.Meta, c.Doc.Value, max, eval.DefaultMaxAnnotations)
+		if err != nil {
+			return fmt.Errorf("schema: %w", err)
+		}
+		if ev.Valid {
+			continue
+		}
+		var deepest keywords.Unit
+		for _, u := range ev.Units {
+			if len(u.KeywordLocation) >= len(deepest.KeywordLocation) {
+				deepest = u
+			}
+		}
+		return newInvalidSchemaError(c.Doc.Source, deepest.InstanceLocation, deepest.KeywordLocation)
+	}
+	return nil
 }
 
 // Validate checks a JSON document. An error means it could not be checked.
