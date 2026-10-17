@@ -29,15 +29,17 @@ Modules the architecture expects to touch:
 - `internal/compile/compile.go`
 - `internal/compile/fragment.go`
 - `internal/compile/fragment_test.go`
+- `internal/output/registry.go`
 - `internal/output/tree.go`
 - `internal/output/nested_limit_test.go`
 - `internal/output/detailed.go`
 - `internal/output/detailed_test.go`
 - `internal/output/verbose.go`
 - `internal/output/verbose_test.go`
-- `internal/eval/units.go`
-- `internal/eval/units_verbose_test.go`
+- `jsonschema.go`
+- `output.go`
 - `output_nested_test.go`
+- `output_unchanged_test.go`
 - `cmd/jsonschema/output_nested_test.go`
 - `cmd/jsonschema/abslocation_escape_test.go`
 
@@ -54,20 +56,29 @@ exactly this order:
 
 ## Risks
 
+- internal/output/registry.go, jsonschema.go and output.go were read-only in the reservation and are now write claims. The Tree field on Report and RegisterTreeReport/NeedsTree are the smallest seam that lets a shape receive the tree, and Result has to keep the root node and instance so it can rebuild the tree. jsonschema.go is crowded; the change is three fields and one line.
+- A Result now keeps the decoded instance alive for as long as the caller holds it. Validate does no extra work and records nothing extra, but memory is held longer when callers keep many Results.
+- Detailed and verbose evaluate the document a second time inside Output. That doubles the CPU cost only for those shapes. Flag and basic are unaffected.
+- Verbose does not list passing leaf assertions that have no subschema and no annotation, because the reviewer ruled out recording passing units. This is documented in the shape files.
 - Encoding the fragment changes absoluteKeywordLocation for schemas with special characters in their keys. Existing tests that assert the unencoded form will need updating.
-- Verbose may need passing units that the evaluator does not record today, which would raise the memory cost of each call.
-- Verbose output for large documents can hit the report cap. That is intended. Until story 193 adds the CLI flag, CLI users cannot raise the cap; only library callers can, through Options.MaxReportBytes.
+- Verbose output for large documents can hit the report cap. That is intended. Until story 193 adds the CLI flag, only library callers can raise the cap, through Options.MaxReportBytes.
+- output_unchanged_test.go relies on hashes taken before the change. If the coder takes them after changing flag or basic, the test proves nothing. The new fragment encoding does not affect it because the test schema's keys need no encoding.
 
 Implementation constraints the coder must honor:
 
 - Standard library only; go.mod unchanged
-- Each shape is its own file, registered from init() with output.RegisterReport; no edit to a central list or switch
+- Each shape is its own file, registered from init() with output.RegisterTreeReport; no edit to a central list or switch
+- Schema.Validate keeps calling eval.EvaluateFull: it builds no tree and records no passing units. Only Result.Output, for a shape where NeedsTree is true, calls eval.EvaluateTree, with the same MaxOutputUnits and MaxAnnotations
+- Passing tree nodes never count against MaxOutputUnits; do not add Report calls or passing units anywhere
+- Do not edit internal/eval/eval.go, internal/eval/units.go or internal/keywords/registry.go
+- Touch internal/compile/compile.go only for the one-line fragment call, and jsonschema.go only for the Result fields and the line in Validate that fills them
+- Do not edit cmd/jsonschema/run.go and do not add a report-bytes CLI flag (story 193 owns it). A nil Report.Tree must render a minimal valid root unit, so run.go's output.Render name probe accepts the new shapes
+- Enforce the cap while rendering, by writing each unit through the existing output.Budget, not after building the whole report in memory
 - Never emit instance values; property names appear only where an annotation lists matched names
-- Enforce the cap while building, by writing through the existing output.Budget, not after building the whole tree in memory
-- Do not edit internal/eval/eval.go; touch internal/compile/compile.go only for the one-line call
-- Do not edit cmd/jsonschema/run.go and do not add a report-bytes CLI flag (story 193 owns it)
-- Cap tests use DefaultMaxReportBytes and Options.MaxReportBytes from the code instead of repeating the number; the 'raise the cap' test is library-level (output_nested_test.go, internal/output/nested_limit_test.go)
-- The compiled Schema stays immutable; all state is per call (go test -race)
+- Write output_unchanged_test.go first, at the base commit, so its flag/basic SHA-256 values and CLI exit codes come from the code before this story
+- Cap tests use DefaultMaxReportBytes and Options.MaxReportBytes from the code instead of repeating the number; the 'raise the cap' test is library-level
+- The compiled Schema and Result stay immutable; the tree is per Output call and never cached (go test -race)
+- Comments in detailed.go and verbose.go record the parts produced only partly: no unit for a passing leaf assertion that has no subschema and no annotation, and absoluteKeywordLocation only where it is known
 
 - DB impact: no · API impact: yes · Migration needed: no
 
