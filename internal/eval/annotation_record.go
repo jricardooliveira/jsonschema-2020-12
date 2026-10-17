@@ -34,8 +34,7 @@ func (l *Lazy) Sorted() []Annotation {
 		return nil
 	}
 	l.once.Do(func() {
-		s := SortAnnotations(l.raw)
-		l.sorted, l.raw = s, nil
+		l.sorted, l.raw = sortInPlace(l.raw), nil // raw is owned: no copy
 	})
 	return l.sorted
 }
