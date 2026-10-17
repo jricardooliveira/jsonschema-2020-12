@@ -1,7 +1,7 @@
 # PLAN #20: README and docs/ that describe the finished validator, proven by tests
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #155, 2026-10-17 05:21 UTC)
 - Design: see `ADR-020-*.md` under `docs/architecture/adr/`
 
 ## Files that change

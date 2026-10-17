@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #20
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #155, 2026-10-17 05:21 UTC)
 
 ## Decision
 This is a docs story. It changes one usage-text line in Go code and adds three test files. All prose goes in new files under docs/ plus README.md. Pages: README.md (what it is, build, test, quick start, dependency rule, links), docs/cli.md, docs/output-formats.md, docs/limits.md, docs/library.md, docs/scope.md, docs/deviations.md (regex, partly checked formats, Known differences). Example inputs live in a new folder, docs/examples/. The docs tests sit in package main under cmd/jsonschema so they can call the existing run function and inspect its flag set without spawning a binary or touching the network. The Example function sits in the root package's external test package (jsonschema_test), so it uses only the public API. Every value in the docs (flag names, defaults, output shapes) is read from the built code, never copied from the brief. Where the two differ, the code wins and the difference goes in Known differences.
