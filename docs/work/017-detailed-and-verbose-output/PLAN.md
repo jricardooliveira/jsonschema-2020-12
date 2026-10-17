@@ -54,25 +54,26 @@ exactly this order:
 
 ## Risks
 
-- Encoding the fragment changes absoluteKeywordLocation for schemas with special characters in keys. Existing tests that assert the unencoded form will need updating.
-- Verbose may need passing units that the evaluator does not currently record, which would grow the per-call memory cost.
-- Verbose output for large documents can hit the report cap. That is intended, but users may need the raise flag.
+- Encoding the fragment changes absoluteKeywordLocation for schemas with special characters in their keys. Existing tests that assert the unencoded form will need updating.
+- Verbose may need passing units that the evaluator does not record today, which would raise the memory cost of each call.
+- Verbose output for large documents can hit the report cap. That is intended. Until story 193 adds the CLI flag, CLI users cannot raise the cap; only library callers can, through Options.MaxReportBytes.
 
 Implementation constraints the coder must honor:
 
 - Standard library only; go.mod unchanged
-- Each shape is its own file registered from init(); no central list or switch edit
-- Never emit instance values; property names only where an annotation lists matched names
-- Enforce DefaultMaxReportBytes during building, not after building the whole tree in memory
+- Each shape is its own file, registered from init() with output.RegisterReport; no edit to a central list or switch
+- Never emit instance values; property names appear only where an annotation lists matched names
+- Enforce the cap while building, by writing through the existing output.Budget, not after building the whole tree in memory
 - Do not edit internal/eval/eval.go; touch internal/compile/compile.go only for the one-line call
-- Tests read limits and defaults from code constants
-- Compiled Schema stays immutable; per-call state only (go test -race)
+- Do not edit cmd/jsonschema/run.go and do not add a report-bytes CLI flag (story 193 owns it)
+- Cap tests use DefaultMaxReportBytes and Options.MaxReportBytes from the code instead of repeating the number; the 'raise the cap' test is library-level (output_nested_test.go, internal/output/nested_limit_test.go)
+- The compiled Schema stays immutable; all state is per call (go test -race)
 
-- DB impact: no · API impact: yes: two new output-format values; absoluteKeywordLocation fragment encoding changes in all shapes · Migration needed: no
+- DB impact: no · API impact: yes · Migration needed: no
 
 Breaking changes:
 
-- absoluteKeywordLocation for schema keys with spaces, '%' or non-ASCII characters is now percent-encoded in flag/basic output too
+- absoluteKeywordLocation for schema keys that contain spaces, '%' or non-ASCII characters is now percent-encoded, in flag and basic output too (accepted by the reviewer)
 
 ## Proof
 
