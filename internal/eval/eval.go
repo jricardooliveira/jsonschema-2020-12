@@ -2,6 +2,8 @@
 package eval
 
 import (
+	"strings"
+
 	"github.com/neoface/jsonschema/internal/compile"
 	"github.com/neoface/jsonschema/internal/keywords"
 )
@@ -58,6 +60,25 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 		}
 	}
 	return valid, nil
+}
+
+// CoveredItems summarises the item annotations at instLoc in plain types, for
+// keyword packages that cannot import eval (unevaluatedItems, core 11.2): all
+// is true when one annotation covers every element, prefix is the largest
+// index prefixItems covered (-1 when none) and indices are contains' matches.
+func (r *EvaluatedItems) CoveredItems(instLoc string) (all bool, prefix int, indices []int) {
+	prefix = -1
+	for kw, a := range r.At(instLoc) {
+		switch {
+		case a.All:
+			all = true
+		case strings.HasSuffix(kw, "/prefixItems"):
+			prefix = max(prefix, a.Largest)
+		default:
+			indices = append(indices, a.Indices...)
+		}
+	}
+	return all, prefix, indices
 }
 
 // evalItem evaluates one keyword of a schema object and makes sure a failure
