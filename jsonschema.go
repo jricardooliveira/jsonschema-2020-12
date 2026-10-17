@@ -22,6 +22,8 @@ type Schema struct {
 	maxAnn int // annotation cap
 	// maxReport is the rendered-report byte cap.
 	maxReport int
+	maxInput  int // per-input byte cap
+	el        eval.Limits
 }
 
 // Result is the outcome of one Validate call.
@@ -34,6 +36,7 @@ type Result struct {
 	root        *compile.Node
 	inst        any
 	max, maxAnn int
+	el          eval.Limits
 }
 
 // Valid reports whether the document satisfied the schema.
@@ -50,6 +53,7 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 
 func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	s, err := compileChecked(schema, opts, reg)
+	err = asLimit(err)
 	var ise *InvalidSchemaError
 	if errors.As(err, &ise) && ise.Source == "" {
 		ise.Source = opts.SchemaPath // name the main schema file when known
@@ -74,9 +78,20 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err != nil {
 		return nil, err
 	}
+	rl, err := opts.resolveLimits()
+	if err != nil {
+		return nil, err
+	}
 	base, err := opts.baseURI()
 	if err != nil {
 		return nil, fmt.Errorf("options: %w", err)
+	}
+	lim.MaxDepth = rl.depth // one depth for the schema, registry files and documents
+	if reg.MaxFileBytes == 0 {
+		reg.MaxFileBytes = rl.input // each input shares one cap
+	}
+	if err := checkInput(schema, rl.input); err != nil {
+		return nil, err
 	}
 	v, err := jsonvalue.DecodeLimited(schema, lim)
 	if err != nil {
@@ -86,32 +101,33 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err != nil {
 		return nil, fmt.Errorf("registry: %w", err)
 	}
-	n, docs, err := compile.CompileReached(v, base, ext)
+	el := eval.Limits{MaxUnits: max, MaxAnnotations: maxAnn, MaxSteps: rl.steps, MaxRefChain: rl.refChain, MaxDepth: rl.depth}
+	n, docs, err := compile.CompileReachedWith(v, base, ext, rl.pattern)
 	if err != nil {
 		// A keyword rejecting its own value is usually a meta-schema failure
 		// of the main schema or of a supplied one reached before the failure:
 		// report that as InvalidSchemaError naming the failing document. A
 		// limit or '$schema' error from the check is reported as such.
-		if merr := metaCheck(docs, ext, max, maxAnn); merr != nil {
+		if merr := metaCheck(docs, ext, el); merr != nil {
 			return nil, merr
 		}
 		return nil, fmt.Errorf("schema: %w", err)
 	}
-	if err := metaCheck(docs, ext, max, maxAnn); err != nil {
+	if err := metaCheck(docs, ext, el); err != nil {
 		return nil, err
 	}
-	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep}, nil
+	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input, el: el}, nil
 }
 
 // metaCheck validates the main schema and every reached supplied schema,
 // and each custom meta-schema on their chains, against their meta-schema
-// (core 8.1.1), under the caller's output-unit and annotation caps. Failing
-// is *InvalidSchemaError naming the failing document; limit errors and any
-// internal error also fail (fail closed). Format is never asserted here,
-// whatever the options say.
-func metaCheck(docs []compile.Doc, ext *registry.Index, max, maxAnn int) error {
+// (core 8.1.1), under the caller's configured caps (each run gets a fresh
+// budget). Failing is *InvalidSchemaError naming the failing document; limit
+// errors and any internal error also fail (fail closed). Format is never
+// asserted here, whatever the options say.
+func metaCheck(docs []compile.Doc, ext *registry.Index, el eval.Limits) error {
 	err := compile.MetaChecks(docs, ext, func(c compile.Check) error {
-		ev, err := eval.EvaluateFull(c.Meta, c.Doc.Value, max, maxAnn)
+		ev, err := eval.EvaluateWith(c.Meta, c.Doc.Value, el, false)
 		if err != nil {
 			return err
 		}
@@ -135,13 +151,16 @@ func metaCheck(docs []compile.Doc, ext *registry.Index, max, maxAnn int) error {
 
 // Validate checks a JSON document. An error means it could not be checked.
 func (s *Schema) Validate(document []byte) (Result, error) {
+	if err := checkInput(document, s.maxInput); err != nil {
+		return Result{}, err
+	}
 	v, err := jsonvalue.DecodeLimited(document, s.lim)
 	if err != nil {
-		return Result{}, fmt.Errorf("document: %w", err)
+		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	ev, err := eval.EvaluateFull(s.root, v, s.max, s.maxAnn)
+	ev, err := eval.EvaluateWith(s.root, v, s.el, false)
 	if err != nil {
-		return Result{}, fmt.Errorf("document: %w", err)
+		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn, el: s.el}, nil
 }

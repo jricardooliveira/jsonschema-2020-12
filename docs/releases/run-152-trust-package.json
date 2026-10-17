@@ -1,0 +1,545 @@
+{
+  "work_id": "US-0152",
+  "parent_story": "US-0152",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "3321c5559c4971d512c4f42e28bd5a0609155426",
+    "base_commit": "4348b1f5fd74fc383980243caad016ab7aa6f006"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Defaults are exported named constants with doc comments: nesting depth 10,000 (the existing jsonvalue.MaxDepth value), 64 MiB per input (the existing maxInputBytes value), $ref/$dynamicRef chain 2x the depth default (20,000 jumps on one evaluation path), 100,000,000 work steps per document, and 256 MiB total for registry inputs. Tests read these values from the code. All existing tests and spec cases pass unchanged under the defaults.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Each limit can be raised or lowered through a library Options field and a CLI flag. An unset or zero value means the default. A negative value is rejected (library error, CLI exit 2). No setting switches a limit off.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The nesting-depth limit applies to both schemas and documents. Exceeding it at compile or validate time returns a limit error. The CLI exits with code 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The size limit applies to each input: the schema, each registry file, and each document from a file or stdin. A separate total limit applies to all registry files and folders together. Exceeding either returns a limit error, exit 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A $ref/$dynamicRef chain that never terminates (for example a self-reference or a mutual cycle that consumes no instance) stops at the reference-chain limit with a limit error, exit 2. A legitimately deep recursive schema within the default is not stopped.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A deterministic work-step counter (checking steps per document, never wall-clock time) stops an exponential blow-up such as deeply nested anyOf with a limit error, exit 2. A large ordinary document is not stopped.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The library returns a distinct *jsonschema.LimitError, matchable with errors.As. It names the limit (depth, input size, registry size, reference chain, work steps, number digits, number exponent, pattern size, output units, annotations) and the value that was set. Schema, reference and syntax errors are never a LimitError.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "CLI with one document: a limit error gives exit 2, empty stdout, and exactly one stderr line of the form 'limit exceeded: <limit> <value> (raise with --<flag>)'. With several documents, that document's line marks it as an error instead of a report, and the worst result sets the exit code.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The existing limits (number digits/exponent, pattern size, output units from story 180, annotations) follow the same style: Options field, CLI flag, LimitError. The output-unit cap (DefaultMaxOutputUnits, Options.MaxOutputUnits) gets a CLI flag. A contract test shows that exceeding it gives exit 2, empty stdout and one stderr line.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Load-once proof under go test -race: several goroutines run Validate and Result.Output concurrently on one compiled Schema, including documents that hit a limit, with no race reported. A test shows that the compiled Schema's behaviour and limits are unchanged after many validations, because limit counters live only in the per-call evaluation context.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every limit has its own library test, and every limit flag has a CLI contract test.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 11,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/limitflags.go",
+        "change": "added",
+        "additions": 109,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/limitflags_test.go",
+        "change": "added",
+        "additions": 72,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/parse_errors_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/registry_cli_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 27,
+        "deletions": 53
+      },
+      {
+        "path": "concurrency_race_test.go",
+        "change": "added",
+        "additions": 106,
+        "deletions": 0
+      },
+      {
+        "path": "depth_registry_limits_test.go",
+        "change": "added",
+        "additions": 101,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/limits_test.go",
+        "change": "added",
+        "additions": 47,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 18,
+        "deletions": 6
+      },
+      {
+        "path": "internal/ecmaregex/translate.go",
+        "change": "modified",
+        "additions": 28,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotations.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 3
+      },
+      {
+        "path": "internal/eval/budget.go",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/budget_test.go",
+        "change": "added",
+        "additions": 203,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated.go",
+        "change": "modified",
+        "additions": 11,
+        "deletions": 6
+      },
+      {
+        "path": "internal/eval/refguard.go",
+        "change": "modified",
+        "additions": 26,
+        "deletions": 5
+      },
+      {
+        "path": "internal/eval/refguard_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/jsonvalue/decode.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 4
+      },
+      {
+        "path": "internal/jsonvalue/depth_option_test.go",
+        "change": "added",
+        "additions": 42,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/limits.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/contains.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/applicator/dependentschemas.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties.go",
+        "change": "modified",
+        "additions": 20,
+        "deletions": 15
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 19,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/validation/const.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/validation/dependentrequired.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/enum.go",
+        "change": "modified",
+        "additions": 19,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/validation/maxlength.go",
+        "change": "modified",
+        "additions": 16,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/minlength.go",
+        "change": "modified",
+        "additions": 8,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/validation/pattern.go",
+        "change": "modified",
+        "additions": 16,
+        "deletions": 11
+      },
+      {
+        "path": "internal/keywords/validation/required.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/uniqueitems.go",
+        "change": "modified",
+        "additions": 33,
+        "deletions": 2
+      },
+      {
+        "path": "internal/limits/limits.go",
+        "change": "added",
+        "additions": 33,
+        "deletions": 0
+      },
+      {
+        "path": "internal/limits/limits_test.go",
+        "change": "added",
+        "additions": 16,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/budget_test.go",
+        "change": "added",
+        "additions": 70,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/sources.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 2
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 33,
+        "deletions": 14
+      },
+      {
+        "path": "limit_names_test.go",
+        "change": "added",
+        "additions": 183,
+        "deletions": 0
+      },
+      {
+        "path": "limits.go",
+        "change": "added",
+        "additions": 112,
+        "deletions": 0
+      },
+      {
+        "path": "limits_test.go",
+        "change": "added",
+        "additions": 120,
+        "deletions": 0
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "modified",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "output.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 3
+      },
+      {
+        "path": "registry_option_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "registry_options.go"
+    ],
+    "design_unplanned": [
+      "internal/keywords/applicator/dependentschemas.go",
+      "internal/keywords/validation/dependentrequired.go",
+      "internal/keywords/validation/required.go",
+      "internal/limits/limits.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/keywords/applicator/dependentschemas.go",
+        "granted_by": "operator",
+        "at": "gate-question #1367"
+      },
+      {
+        "path": "internal/keywords/validation/dependentrequired.go",
+        "granted_by": "operator",
+        "at": "gate-question #1367"
+      },
+      {
+        "path": "internal/keywords/validation/required.go",
+        "granted_by": "operator",
+        "at": "gate-question #1367"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-7e8f2d5ea0f547c6a00d38db7626d4e3/docs/architecture/adr/ADR-016-limits-against-hostile-input-and-proof-of-the-load.md",
+    "summary": "Second pass: all earlier findings are resolved. Step charging is now proportional to the work in every keyword the boundary rules name, plus the three granted files. Charging happens before the work, "
+  },
+  "security_boundary": {
+    "overall": "warn",
+    "highest_severity": "low",
+    "breaking_changes": [
+      "Public functions now return a top-level *jsonschema.LimitError for every exceeded limit, instead of a *jsonvalue.LimitError wrapped in 'schema:', 'document:' or 'registry:' text.",
+      "Internal limit names change: 'schema file bytes' becomes 'input size', 'total registry bytes' becomes 'registry size', and 'evaluation depth' becomes 'nesting depth', which carries the depth that was set.",
+      "An oversize pattern becomes a LimitError ('pattern size'), where it was a plain schema error with different wording.",
+      "CLI stderr for every limit becomes 'limit exceeded: <limit> <value> (raise with --<flag>)', replacing '<limit> exceeds limit <n> ...'. parse_errors_test.go is updated.",
+      "Registry.MaxFileBytes = 0 now follows Options.MaxInputBytes. The default value is unchanged (64 MiB).",
+      "Evaluation step counts rise, because steps are now charged per keyword and in proportion to the bytes compared or matched. A caller who set a low custom MaxSteps may hit it sooner.",
+      "Every exceeded limit now comes back from Compile, CompileWithOptions, CompileWithRegistry, Validate and Result.Output as a top-level *jsonschema.LimitError, not a wrapped internal error.",
+      "Limit names change: 'schema file bytes' becomes 'input size', 'total registry bytes' becomes 'registry size', and 'evaluation depth' becomes 'nesting depth' (carrying the configured depth).",
+      "An oversize pattern becomes a LimitError ('pattern size') instead of a plain schema error.",
+      "The CLI stderr line for every limit becomes 'limit exceeded: <limit> <value> (raise with --<flag>)', and number-cap errors lose their line and column.",
+      "Registry.MaxFileBytes = 0 now follows the resolved Options.MaxInputBytes (same 64 MiB default).",
+      "Step counts rise because charging is now per keyword and scaled by bytes, so a caller with a low custom MaxSteps may hit the cap sooner.",
+      "A pure $ref/$dynamicRef cycle now matches errors.As for LimitError through LoopError.Unwrap."
+    ],
+    "findings": [
+      "LOW: EvalContext.Charge (internal/keywords/registry.go) does nothing when ctx.Items is not the per-call record, so it fails open. All public paths go through EvaluateWith, which installs the call state, and keywordStep in eval.go fails closed. So this cannot be reached today. It is hardening only.",
+      "boundary review: Work-step charging has gaps against operator decision 5 ('charged by all keywords'). The design charges one step per keyword in the dispatch, plus proportional charges only for uniqueItems, enum, const, contains, patternProperties, pattern, minLength and maxLength. Other keywords loop over schema-sized or instance-sized data. They are dependentRequired, dependentSchemas, the required name list, and every `format` checker in assertion mode, including `format: regex` on an instance-supplied string. A crafted 64 MiB schema can reference such a keyword many times through fan-out ($ref inside allOf or anyOf). Each hop costs one step but a long loop. A human should settle whether one dispatch step per keyword is enough, or whether each of these loops must charge in proportion. The rules below require proportional charging.",
+      "boundary review: The pure-cycle LimitError produced through LoopError.Unwrap does not say which Value it carries. The binding rule is that it must be the configured MaxRefChain, and the design does not contradict it. The rule is kept."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 18.155241,
+    "tokens_in": 26172218,
+    "tokens_out": 199575
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The approved design (A) reuses jsonvalue.LimitError instead of a new internal error type. internal/limits therefore holds only the name set and Resolve; the task's 'go test ./internal/limits' needs the package to exist."
+    },
+    {
+      "task": "T1",
+      "text": "asLimit converts only limit names in the closed set. Registry reads still use the old names 'schema file bytes' and 'total registry bytes', and their messages name the file. TestRegistryLimitsRaisable and TestRegistryLimitFlags check for that file name, so I left them unconverted. The registry task should rename those limits and then update those tests."
+    },
+    {
+      "task": "T1",
+      "text": "Only MaxInputBytes is used by the engine so far. MaxDepth, MaxRefChain, MaxSteps and MaxPatternSize are resolved and validated but stored nowhere. The depth, reference-chain, step and pattern-size tasks wire them in."
+    },
+    {
+      "task": "T2",
+      "text": "The input-size check already existed in jsonschema.go from T1, so I changed nothing there."
+    },
+    {
+      "task": "T2",
+      "text": "registry_option_test.go and cmd/jsonschema/registry_cli_test.go asserted that limit errors name the registry file. The story deliberately replaces that with a message of limit name and value only, so I updated those assertions."
+    },
+    {
+      "task": "T2",
+      "text": "The new tests are in their own file, depth_registry_limits_test.go, instead of growing limits_test.go."
+    },
+    {
+      "task": "T2",
+      "text": "internal/jsonvalue/depth_option_test.go and internal/registry/budget_test.go were not created, as the design says."
+    },
+    {
+      "task": "T2",
+      "text": "The -race run is left to T6."
+    },
+    {
+      "task": "T2",
+      "text": "internal/compile/limits.go was not created. Compilation only walks values the decoder already depth-checked, so it needs no separate check. limits_test.go covers this and passes, including a schema nested to the full default depth of 10,000."
+    },
+    {
+      "task": "T2",
+      "text": "Two existing tests were updated because this story changes the limit-error text: registry_option_test.go and cmd/jsonschema/registry_cli_test.go now expect the limit name ('input size' / 'registry size') instead of the file name."
+    },
+    {
+      "task": "T2",
+      "text": "Go's built-in JSON decoder refuses nesting deeper than jsonvalue.MaxDepth (10,000), so setting MaxDepth higher has no effect beyond that. Such input still gets a 'nesting depth' limit error, never a syntax error. This is marked in decode.go with a ponytail comment."
+    },
+    {
+      "task": "T3",
+      "text": "internal/eval/evaluated_items.go is outside scope, so the per-call ref and path caps live on callState (refguard.go), and EvaluateWith pre-wraps the state. evaluate() in annotations.go gained a `state any` parameter."
+    },
+    {
+      "task": "T3",
+      "text": "limits.go asLimit now keeps the whole error chain as inner, so errors.As still finds *eval.LoopError (TestSpecCycleIsErrorNotHang needed it) and the jsonvalue.LimitError."
+    },
+    {
+      "task": "T3",
+      "text": "refguard_test.go TestEvalDepthLimit was updated: the depth limit now reports the configured nesting depth (jsonvalue.MaxDepth) instead of eval.MaxEvalDepth. The test's other assertions are unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "Added one step per keyword in eval.go, which raises step counts slightly. No existing test broke."
+    },
+    {
+      "task": "T3",
+      "text": "Not done in this task: wiring eval.Limits through jsonschema.go, and the proportional charging in keyword files such as uniqueItems, enum, const, pattern, patternProperties, contains and minLength/maxLength. Those are separate tasks or scope. The hostile uniqueItems and patternProperties tests also depend on that charging."
+    },
+    {
+      "task": "T4",
+      "text": "Option and CLI plumbing for number digits/exponent, output units and annotations was already in place, so those caps needed no code change."
+    },
+    {
+      "task": "T4",
+      "text": "additionalproperties.go is outside this task's scope and calls compileRegex with two arguments. That call skips the size check, which is safe because patternProperties checks the same keys in the same schema object. The only effect is that an oversize key can be translated once without a cap before patternProperties rejects it."
+    },
+    {
+      "task": "T4",
+      "text": "A schema's meta-check records annotations under the same MaxAnnotations cap, so a low cap can fail at compile time. The annotations test asserts that."
+    },
+    {
+      "task": "T5",
+      "text": "jsonschema.go and output.go were edited because Schema.Validate and Result.Output called EvaluateFull and EvaluateTree with default step, reference-chain and depth caps. Without this, --max-steps and --max-ref-chain had no effect. Both Schema and Result now carry an eval.Limits value, and Validate and Output call eval.EvaluateWith with it."
+    },
+    {
+      "task": "T5",
+      "text": "parse_errors_test.go was updated only for the changed oversize-file stderr wording: it now expects 'limit exceeded: input size' instead of 'exceeds limit'."
+    },
+    {
+      "task": "T5",
+      "text": "maxInputBytes in the CLI is now an alias of jsonschema.DefaultMaxInputBytes, defined in limitflags.go. This keeps run_test.go compiling."
+    },
+    {
+      "task": "T5",
+      "text": "main.go is unchanged; it needed no edit for this wiring."
+    },
+    {
+      "task": "T6",
+      "text": "The ref-chain limit is not among the documents the race test sends. Reaching it needs a recursive schema, and a separate Schema would not exercise the shared one. Other tests already cover it."
+    },
+    {
+      "task": "T6",
+      "text": "Both new tests passed under -race when run on their own. The immutability test was run before the final gofmt, which only reformatted the file, and the concurrent test was re-run after the check fix. I did not run the full go test -race ./... suite or re-run the two tests after that last gofmt."
+    },
+    {
+      "task": "remediation",
+      "text": "concurrency_race_test.go was updated because the meta-check now honours lowered limits. `MaxSteps: 200` was too low for the schema's own meta-check, so the cap is now a named `raceSteps = 20_000` and the steps-hitting document is sized from it. Every other assertion is unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "Lowering --max-steps or --max-ref-chain now also limits the meta-check. A cap too small for it gives a limit error at compile time, still exit 2 with the same flag hint. The CLI contract tests pass unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "The format-checker charging and the `format: regex` / `CompileBounded` finding do not apply yet. There is no internal/formats package: format is annotation-only (formatannotation/format.go), so no format checker runs."
+    },
+    {
+      "task": "remediation",
+      "text": "properties.go also does a hash lookup per instance key, which is linear in the key. It is not in scope and not named in the findings, so it was left as is."
+    },
+    {
+      "task": "remediation",
+      "text": "There is no internal/formats package yet, so no format checker exists to charge or to send through `ecmaregex.CompileBounded`. The LOW `format: regex` finding has nothing to change in this story; the format checkers must follow the rule when they are added."
+    },
+    {
+      "task": "remediation",
+      "text": "I updated concurrency_race_test.go because the meta-check now runs under the configured caps (the MEDIUM fix). Its old caps (MaxSteps 200, MaxDepth 8) are now too low for the schema's own meta-check to pass. The new caps are MaxDepth 40, MaxSteps 5000 and MaxRefChain 20. The documents are resized to match, and the test still hits the depth, steps and output-unit limits. I added a `$ref` property and a document that hits the reference-chain limit. All the old assertions are kept."
+    },
+    {
+      "task": "remediation",
+      "text": "uniqueItems charges each element after its fingerprint is built, because the size is only known then; each comparison is charged before it runs. `findDuplicates(arr)` is kept as a wrapper with no charging, so the existing tests work unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "In eval.go I added a small `keywordStep` helper so a missing evaluation state fails closed. This goes slightly beyond the one-line limit the design set for eval.go, and is done to fix the panic risk the review found."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

@@ -127,8 +127,10 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 			}
 			// encoding/json has its own depth cap (same value) and fails first
 			// when the opener is the one that would exceed it.
-			if rest := bytes.TrimLeft(data[min(dec.InputOffset(), int64(len(data))):], " \t\r\n,:"); len(stack) >= MaxDepth && len(rest) > 0 && (rest[0] == '[' || rest[0] == '{') {
-				return nil, &LimitError{Limit: "nesting depth", Max: MaxDepth, Offset: dec.InputOffset() + base}
+			if rest := bytes.TrimLeft(data[min(dec.InputOffset(), int64(len(data))):], " \t\r\n,:"); len(stack) >= min(lim.MaxDepth, MaxDepth) && len(rest) > 0 && (rest[0] == '[' || rest[0] == '{') {
+				// ponytail: encoding/json's Decoder refuses nesting past MaxDepth, so a
+				// higher setting cannot go beyond it; replace the tokenizer to lift it.
+				return nil, &LimitError{Limit: "nesting depth", Max: min(lim.MaxDepth, MaxDepth), Offset: dec.InputOffset() + base}
 			}
 			return nil, syntaxErr(data, dec.InputOffset(), "syntax error")
 		}
@@ -155,8 +157,8 @@ func decode(orig []byte, lim NumberLimits, exact bool) (any, error) {
 		case json.Delim:
 			switch t {
 			case '{', '[':
-				if len(stack)+1 > MaxDepth {
-					return nil, &LimitError{Limit: "nesting depth", Max: MaxDepth, Offset: dec.InputOffset() + base}
+				if len(stack)+1 > lim.MaxDepth {
+					return nil, &LimitError{Limit: "nesting depth", Max: lim.MaxDepth, Offset: dec.InputOffset() + base}
 				}
 				if t == '{' {
 					stack = append(stack, &frame{obj: map[string]any{}, keys: true})

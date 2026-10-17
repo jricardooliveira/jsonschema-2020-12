@@ -25,6 +25,13 @@ const MaxEvalDepth = 4 * jsonvalue.MaxDepth
 type LoopError struct {
 	SchemaLocation   string
 	InstanceLocation string
+	refMax           int // the call's reference-chain cap
+}
+
+// Unwrap makes a never-ending reference cycle match a reference-chain limit
+// error (errors.As), carrying the configured cap.
+func (e *LoopError) Unwrap() error {
+	return &jsonvalue.LimitError{Limit: "reference chain", Max: e.refMax}
 }
 
 func (e *LoopError) Error() string {
@@ -52,6 +59,9 @@ type callState struct {
 	active map[frame]struct{}
 	path   []*pathFrame
 	scope  DynamicScope
+	refs   int // $ref/$dynamicRef jumps on the current path
+	// per-call caps: reference jumps and path depth (4 x the nesting depth)
+	maxRefChain, maxPath int
 }
 
 // enterNode marks (n, instance location) active, pushes n on the evaluation
@@ -68,7 +78,7 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 		}
 		// First frame of a call: wrap the record (same pointer, so callers
 		// that kept it still see every annotation).
-		st = &callState{EvaluatedItems: rec, active: map[frame]struct{}{}}
+		st = &callState{EvaluatedItems: rec, active: map[frame]struct{}{}, maxRefChain: DefaultMaxRefChain, maxPath: MaxEvalDepth}
 		ctx.Items = st
 	}
 	// Every node entry, including through $ref, is one evaluation step, so
@@ -76,24 +86,35 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 	if err := st.Step(); err != nil {
 		return nil, nil, err
 	}
-	if len(st.path) >= MaxEvalDepth {
-		return nil, nil, &jsonvalue.LimitError{Limit: "evaluation depth", Max: MaxEvalDepth}
+	if len(st.path) >= st.maxPath {
+		return nil, nil, &jsonvalue.LimitError{Limit: "nesting depth", Max: st.maxPath / 4}
 	}
 	f := frame{n, ctx.InstanceLocation}
 	if _, dup := st.active[f]; dup {
-		return nil, nil, &LoopError{SchemaLocation: n.Location, InstanceLocation: ctx.InstanceLocation}
+		return nil, nil, &LoopError{SchemaLocation: n.Location, InstanceLocation: ctx.InstanceLocation, refMax: st.maxRefChain}
 	}
 	pf := &pathFrame{static: n.Location, dynamic: n.Location}
+	jump := false
 	if k := len(st.path); k > 0 {
 		parent := st.path[k-1]
 		pf.dynamic = dynamicLocation(parent, n.Location)
-		pf.viaRef = parent.viaRef || parent.kw == "$ref" || parent.kw == "$dynamicRef"
+		jump = parent.kw == "$ref" || parent.kw == "$dynamicRef"
+		pf.viaRef = parent.viaRef || jump
+	}
+	if jump {
+		if st.refs >= st.maxRefChain {
+			return nil, nil, &jsonvalue.LimitError{Limit: "reference chain", Max: st.maxRefChain}
+		}
+		st.refs++
 	}
 	st.active[f] = struct{}{}
 	st.path = append(st.path, pf)
 	popScope := st.scope.push(n)
 	return pf, func() {
 		popScope()
+		if jump {
+			st.refs--
+		}
 		delete(st.active, f)
 		st.path = st.path[:len(st.path)-1]
 	}, nil

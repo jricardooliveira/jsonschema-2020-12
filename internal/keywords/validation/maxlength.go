@@ -36,9 +36,24 @@ func compileMaxLength(_ *keywords.CompileContext, value any) (any, error) {
 	return compileLength("maxLength", value)
 }
 
+// runeCount charges the work of counting s's code points, then counts them.
+func runeCount(ctx *keywords.EvalContext, s string) (int, error) {
+	if err := ctx.ChargeBytes(len(s)); err != nil {
+		return 0, err
+	}
+	return utf8.RuneCountInString(s), nil
+}
+
 func evalMaxLength(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
 	s, ok := instance.(string)
-	if !ok || jsonvalue.Cmp(number(utf8.RuneCountInString(s)), compiled.(*jsonvalue.Number)) <= 0 {
+	if !ok {
+		return true, nil
+	}
+	n, err := runeCount(ctx, s)
+	if err != nil {
+		return false, err
+	}
+	if jsonvalue.Cmp(number(n), compiled.(*jsonvalue.Number)) <= 0 {
 		return true, nil
 	}
 	return false, ctx.Report("string is longer than maxLength")

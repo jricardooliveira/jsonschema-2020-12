@@ -50,7 +50,7 @@ func evalDependentSchemas(ctx *keywords.EvalContext, compiled any, instance any)
 	}
 	valid := true
 	for _, d := range compiled.([]depSchema) {
-		if err := step(ctx); err != nil {
+		if err := ctx.ChargeBytes(len(d.trigger)); err != nil { // per entry, by key length
 			return false, err
 		}
 		if _, present := obj[d.trigger]; !present {

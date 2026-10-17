@@ -42,10 +42,14 @@ func CountStep(ctx *keywords.EvalContext) error {
 }
 
 // reportMissing reports each name absent from obj, in schema order. The
-// messages hold only names from the schema. Each failure counts one step.
+// messages hold only names from the schema. Each name is charged by its
+// length before the lookup, and each failure counts one more step.
 func reportMissing(ctx *keywords.EvalContext, names []string, obj map[string]any) (bool, error) {
 	valid := true
 	for _, n := range names {
+		if err := ctx.ChargeBytes(len(n)); err != nil {
+			return false, err
+		}
 		if _, ok := obj[n]; !ok {
 			valid = false
 			if err := CountStep(ctx); err != nil {

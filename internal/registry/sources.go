@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/neoface/jsonschema/internal/limits"
 )
 
 // Default caps for supplied schema files.
@@ -94,9 +95,9 @@ func (l *Loader) open(path, address string, want fs.FileInfo) (Loaded, error) {
 	}
 	if len(data) > lim {
 		if len(data) > max {
-			return Loaded{}, fmt.Errorf("%s: %w", path, &jsonvalue.LimitError{Limit: "schema file bytes", Max: max})
+			return Loaded{}, fmt.Errorf("%s: %w", path, &jsonvalue.LimitError{Limit: limits.InputSize, Max: max})
 		}
-		return Loaded{}, fmt.Errorf("%s: %w", path, &jsonvalue.LimitError{Limit: "total registry bytes", Max: l.total()})
+		return Loaded{}, fmt.Errorf("%s: %w", path, &jsonvalue.LimitError{Limit: limits.RegistrySize, Max: l.total()})
 	}
 	l.used += len(data)
 	doc, err := jsonvalue.DecodeLimited(data, l.Numbers)

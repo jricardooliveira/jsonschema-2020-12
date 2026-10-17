@@ -1,8 +1,6 @@
 package validation
 
 import (
-	"unicode/utf8"
-
 	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/keywords"
 )
@@ -17,7 +15,14 @@ func compileMinLength(_ *keywords.CompileContext, value any) (any, error) {
 
 func evalMinLength(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
 	s, ok := instance.(string)
-	if !ok || jsonvalue.Cmp(number(utf8.RuneCountInString(s)), compiled.(*jsonvalue.Number)) >= 0 {
+	if !ok {
+		return true, nil
+	}
+	n, err := runeCount(ctx, s)
+	if err != nil {
+		return false, err
+	}
+	if jsonvalue.Cmp(number(n), compiled.(*jsonvalue.Number)) >= 0 {
 		return true, nil
 	}
 	return false, ctx.Report("string is shorter than minLength")

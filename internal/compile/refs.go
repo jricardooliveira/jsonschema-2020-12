@@ -79,6 +79,7 @@ type shared struct {
 	todo      []pendingRes // resources whose Dynamic table is not filled yet
 	// formatAssertion: some resource's meta-schema requires format-assertion.
 	formatAssertion bool
+	maxPattern      int // pattern source cap in bytes; 0 means the default
 }
 
 type pendingRef struct {
@@ -148,7 +149,13 @@ func (p pendingRes) fill() error {
 // the documents reached before the failure are still returned, so the caller
 // can tell a meta-schema failure in one of them from other errors.
 func CompileReached(doc any, baseURI string, ext *registry.Index) (*Node, []Doc, error) {
-	r, root, err := compileDocument(doc, baseURI, ext)
+	return CompileReachedWith(doc, baseURI, ext, 0)
+}
+
+// CompileReachedWith is CompileReached with a cap on pattern source size in
+// bytes; 0 means the default.
+func CompileReachedWith(doc any, baseURI string, ext *registry.Index, maxPattern int) (*Node, []Doc, error) {
+	r, root, err := compileDocumentWith(doc, baseURI, ext, maxPattern)
 	docs := []Doc{{Value: doc}}
 	if r != nil {
 		for _, o := range r.sh.all[1:] {
@@ -164,11 +171,15 @@ func CompileReached(doc any, baseURI string, ext *registry.Index) (*Node, []Doc,
 }
 
 func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *Node, error) {
+	return compileDocumentWith(doc, baseURI, ext, 0)
+}
+
+func compileDocumentWith(doc any, baseURI string, ext *registry.Index, maxPattern int) (*resolver, *Node, error) {
 	idx, err := registry.Build(doc, baseURI)
 	if err != nil {
 		return nil, nil, err
 	}
-	sh := &shared{main: idx, ext: ext, byOwner: map[*registry.Owner]*resolver{}}
+	sh := &shared{main: idx, ext: ext, byOwner: map[*registry.Owner]*resolver{}, maxPattern: maxPattern}
 	r := sh.add(doc, idx.Bases, idx.Resources)
 	root, err := r.compile(doc, "")
 	if err != nil {
@@ -285,10 +296,11 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 		}
 		kwLoc := loc + "/" + escape.Replace(name)
 		ctx := &keywords.CompileContext{
-			Location:  kwLoc,
-			Siblings:  s,
-			Sub:       func(v any, rel string) (any, error) { return at(v, kwLoc+rel) },
-			CompileAt: at,
+			Location:        kwLoc,
+			MaxPatternBytes: r.sh.maxPattern,
+			Siblings:        s,
+			Sub:             func(v any, rel string) (any, error) { return at(v, kwLoc+rel) },
+			CompileAt:       at,
 		}
 		data, err := kw.Compile(ctx, s[name])
 		if err != nil {

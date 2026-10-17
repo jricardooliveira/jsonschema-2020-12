@@ -1,12 +1,13 @@
 package applicator
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
 	"github.com/neoface/jsonschema/internal/ecmaregex"
+	"github.com/neoface/jsonschema/internal/jsonvalue"
 	"github.com/neoface/jsonschema/internal/keywords"
-	"github.com/neoface/jsonschema/internal/keywords/validation"
 )
 
 func init() {
@@ -18,20 +19,24 @@ type patternEntry struct {
 	node any
 }
 
-// compileRegex: size check, ECMA-262 translation, RE2 compile. Any failure is
-// a schema error. The error text names only the schema's pattern.
-// ponytail: duplicates validation/pattern.go's steps; share a helper later.
+// compileRegex re-compiles a sibling patternProperties key for
+// additionalProperties. patternProperties itself enforces the size cap on the
+// same keys in the same schema object, so the size check is skipped here.
+// ponytail: pass ctx.MaxPatternBytes from additionalproperties.go when it is next in scope.
 func compileRegex(keyword, src string) (*regexp.Regexp, error) {
-	if len(src) > validation.DefaultMaxPatternSize {
-		return nil, fmt.Errorf("%s: pattern exceeds size limit of %d bytes", keyword, validation.DefaultMaxPatternSize)
-	}
-	re2, err := ecmaregex.Translate(src)
+	return compileRegexMax(keyword, src, len(src))
+}
+
+// compileRegexMax: bounded ECMA-262 translation and RE2 compile. Failure is a
+// schema error, except an oversize pattern, which is a pattern-size limit error.
+func compileRegexMax(keyword, src string, max int) (*regexp.Regexp, error) {
+	re, err := ecmaregex.CompileBounded(src, max)
 	if err != nil {
+		var le *jsonvalue.LimitError
+		if errors.As(err, &le) {
+			return nil, err
+		}
 		return nil, fmt.Errorf("%s %q: %w", keyword, src, err)
-	}
-	re, err := regexp.Compile(re2)
-	if err != nil {
-		return nil, fmt.Errorf("%s %q: cannot be compiled: %w", keyword, src, err)
 	}
 	return re, nil
 }
@@ -43,7 +48,7 @@ func compilePatternProperties(ctx *keywords.CompileContext, value any) (any, err
 	}
 	out := make([]patternEntry, 0, len(m))
 	for _, k := range sortedKeys(m) {
-		re, err := compileRegex("patternProperties", k)
+		re, err := compileRegexMax("patternProperties", k, ctx.MaxPatternBytes)
 		if err != nil {
 			return nil, err
 		}
@@ -64,12 +69,12 @@ func evalPatternProperties(ctx *keywords.EvalContext, compiled any, instance any
 	valid := true
 	var applied []string
 	for _, k := range sortedKeys(obj) {
-		if err := step(ctx); err != nil {
+		if err := ctx.ChargeBytes(len(k)); err != nil {
 			return false, err
 		}
 		matched := false
 		for _, p := range compiled.([]patternEntry) {
-			if err := step(ctx); err != nil {
+			if err := ctx.ChargeBytes(len(k)); err != nil { // each RE2 match is linear in k
 				return false, err
 			}
 			if !p.re.MatchString(k) {

@@ -53,8 +53,9 @@ func TestRegistryLimitFlags(t *testing.T) {
 		flags []string
 		want  string // text the one-line error must hold
 	}{
-		{"per-file over", []string{"--max-ref-file-bytes", under}, "person.json"},
-		{"total over", []string{"--max-ref-total-bytes", size}, "self_id.json"},
+		// Limit errors now name the limit and value, not the file (story 193).
+		{"per-file over", []string{"--max-ref-file-bytes", under}, "limit exceeded: input size " + under},
+		{"total over", []string{"--max-ref-total-bytes", size}, "limit exceeded: registry size "},
 		{"per-file zero", []string{"--max-ref-file-bytes", "0"}, "max-ref-file-bytes"},
 		{"total negative", []string{"--max-ref-total-bytes", "-1"}, "max-ref-total-bytes"},
 	} {

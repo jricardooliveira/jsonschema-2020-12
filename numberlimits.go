@@ -25,6 +25,13 @@ type Options struct {
 	MaxAnnotations int
 	// MaxReportBytes caps one rendered report; 0 means DefaultMaxReportBytes.
 	MaxReportBytes int
+	// MaxDepth, MaxInputBytes, MaxRefChain, MaxSteps and MaxPatternSize: 0
+	// means the matching Default constant, negative is an error.
+	MaxDepth       int
+	MaxInputBytes  int
+	MaxRefChain    int
+	MaxSteps       int
+	MaxPatternSize int
 	// BaseURI overrides the base URI of a root schema without $id. It must be
 	// absolute with no fragment. See docs/references.md.
 	BaseURI string

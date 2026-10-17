@@ -15,13 +15,14 @@ func (r Result) Output(shape string) ([]byte, error) {
 	rep := output.Report{Valid: r.valid, Units: r.units, Annotations: r.annotations}
 	if output.NeedsTree(shape) && r.root != nil {
 		// The tree is rebuilt per call, never cached, so a Result stays immutable.
-		ev, err := eval.EvaluateTree(r.root, r.inst, r.max, r.maxAnn)
+		ev, err := eval.EvaluateWith(r.root, r.inst, r.el, true)
 		if err != nil {
-			return nil, err
+			return nil, asLimit(err)
 		}
 		rep.Tree = ev.Tree
 	}
-	return output.RenderReport(shape, rep, r.maxReport)
+	b, err := output.RenderReport(shape, rep, r.maxReport)
+	return b, asLimit(err)
 }
 
 // DefaultMaxReportBytes is the default cap on one rendered report. Exceeding

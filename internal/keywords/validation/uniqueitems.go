@@ -27,7 +27,10 @@ func evalUniqueItems(ctx *keywords.EvalContext, compiled any, instance any) (boo
 	if !ok || !compiled.(bool) {
 		return true, nil
 	}
-	groups, _ := findDuplicates(arr)
+	groups, _, err := findDuplicatesCharged(arr, ctx.ChargeBytes)
+	if err != nil {
+		return false, err
+	}
 	for _, g := range groups {
 		if err := ctx.Report("elements " + joinPositions(g) + " are equal"); err != nil {
 			return false, err
@@ -57,6 +60,17 @@ func joinPositions(g []int) string {
 // comparisons made. Elements are bucketed by a full-content fingerprint first,
 // so comparisons happen only inside a bucket (at most one per element).
 func findDuplicates(arr []any) ([][]int, int) {
+	g, c, _ := findDuplicatesCharged(arr, nil)
+	return g, c
+}
+
+// findDuplicatesCharged is findDuplicates that calls charge (when set) with
+// the fingerprint length of each element once it is built, and again before
+// each deep-equality comparison, so the work-step budget grows with the
+// bytes examined. The fingerprint is unambiguous (equal text means equal
+// values), so a bucket holds one class and there is about one comparison per
+// element; never fall back to pairwise comparison.
+func findDuplicatesCharged(arr []any, charge func(int) error) ([][]int, int, error) {
 	type class struct {
 		rep     any
 		members []int
@@ -65,12 +79,21 @@ func findDuplicates(arr []any) ([][]int, int) {
 	var order []*class
 	comparisons := 0
 	var sb strings.Builder
+	if charge == nil {
+		charge = func(int) error { return nil }
+	}
 	for i, el := range arr {
 		sb.Reset()
 		fingerprint(&sb, el)
 		key := sb.String()
+		if err := charge(len(key)); err != nil {
+			return nil, comparisons, err
+		}
 		var found *class
 		for _, c := range buckets[key] {
+			if err := charge(len(key)); err != nil {
+				return nil, comparisons, err
+			}
 			comparisons++
 			if jsonvalue.Equal(c.rep, el) {
 				found = c
@@ -91,7 +114,15 @@ func findDuplicates(arr []any) ([][]int, int) {
 		}
 	}
 	sort.Slice(groups, func(a, b int) bool { return groups[a][0] < groups[b][0] })
-	return groups, comparisons
+	return groups, comparisons, nil
+}
+
+// canonicalSize is the length of v's fingerprint: the bytes a deep-equality
+// comparison against v can examine.
+func canonicalSize(v any) int {
+	var sb strings.Builder
+	fingerprint(&sb, v)
+	return sb.Len()
 }
 
 // fingerprint writes an unambiguous canonical encoding of v: equal values give

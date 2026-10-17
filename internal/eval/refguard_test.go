@@ -63,7 +63,7 @@ func TestEvalDepthLimit(t *testing.T) {
 	doc := nested("[", "", "]", eval.MaxEvalDepth/(k+2)+10)
 	ok, err := guardRun(t, schema, doc)
 	var le *jsonvalue.LimitError
-	if ok || !errors.As(err, &le) || le.Max != eval.MaxEvalDepth {
+	if ok || !errors.As(err, &le) || le.Max != jsonvalue.MaxDepth { // the nesting depth that was set
 		t.Errorf("%v %v", ok, err)
 	}
 }

@@ -5,8 +5,36 @@ package ecmaregex
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
+
+	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/neoface/jsonschema/internal/limits"
 )
+
+// DefaultMaxPatternSize is the longest accepted pattern, in bytes of UTF-8.
+const DefaultMaxPatternSize = 64 << 10
+
+// CompileBounded translates and compiles src. A source longer than max bytes
+// (0 means DefaultMaxPatternSize) is a *jsonvalue.LimitError named "pattern
+// size", checked before any translation. Other errors never carry a limit.
+func CompileBounded(src string, max int) (*regexp.Regexp, error) {
+	if max <= 0 {
+		max = DefaultMaxPatternSize
+	}
+	if len(src) > max {
+		return nil, &jsonvalue.LimitError{Limit: limits.PatternSize, Max: max}
+	}
+	re2, err := Translate(src)
+	if err != nil {
+		return nil, err
+	}
+	re, err := regexp.Compile(re2)
+	if err != nil {
+		return nil, fmt.Errorf("cannot be compiled: %w", err)
+	}
+	return re, nil
+}
 
 // Error reports a pattern construct that cannot be translated.
 type Error struct {

@@ -9,11 +9,17 @@ func init() {
 	keywords.Register(keywords.Keyword{Name: "const", Vocabulary: VocabularyURI, Compile: compileConst, Evaluate: evalConst})
 }
 
-// compileConst accepts any JSON value.
-func compileConst(_ *keywords.CompileContext, value any) (any, error) { return value, nil }
+// compileConst accepts any JSON value and keeps its canonical size.
+func compileConst(_ *keywords.CompileContext, value any) (any, error) {
+	return sized{value, canonicalSize(value)}, nil
+}
 
 func evalConst(ctx *keywords.EvalContext, compiled any, instance any) (bool, error) {
-	if jsonvalue.Equal(compiled, instance) {
+	c := compiled.(sized)
+	if err := ctx.ChargeBytes(c.size); err != nil {
+		return false, err
+	}
+	if jsonvalue.Equal(c.v, instance) {
 		return true, nil
 	}
 	return false, ctx.Report("value must equal the const value")

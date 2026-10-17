@@ -46,7 +46,8 @@ func evalDependentRequired(ctx *keywords.EvalContext, compiled any, instance any
 	}
 	valid := true
 	for _, d := range compiled.([]depRequired) {
-		if err := CountStep(ctx); err != nil {
+		if err := ctx.ChargeBytes(len(d.trigger)); err != nil { // per entry, by key length
+
 			return false, err
 		}
 		if _, present := obj[d.trigger]; !present {
