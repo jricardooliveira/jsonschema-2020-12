@@ -1,7 +1,7 @@
 # PLAN #30: Object keywords without wasted copies (properties, additionalProperties, patternProperties)
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #166, 2026-10-17 22:13 UTC)
 - Design: see `ADR-030-*.md` under `docs/architecture/adr/`
 
 ## Files that change

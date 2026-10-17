@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #30
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #166, 2026-10-17 22:13 UTC)
 
 ## Decision
 The change is confined to the applicator vocabulary package and two small engine seams.
