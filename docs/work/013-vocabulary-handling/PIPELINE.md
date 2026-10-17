@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #151 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:37:03 UTC
+- **Run:** #151 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:37:21 UTC
 - **Story spend:** ~$10.12 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 151` to accept, or `factory reject 151 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-151-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: AC 10: The error message for non-2020-12 $schema changed from a generic 'not supported' to a specific 'unsupported $schema: draft-07; only 2020-12 is supported'. This is intentional and helpful, but metaschema_cli_test.go was updated. Verify the new message is acceptable to stakeholders.
-  >   ◦ Release-agent note: AC 11: $schema, $vocabulary and $comment are now silent core keywords with no annotation output. This is a breaking change for any test, tool or workflow that expects these keywords in basic/detailed reports. All existing affected tests (metaschema_cli_test.go, schema_keyword.json) have been updated, but verify no downstream code depends on these annotations.
-  >   ◦ Release-agent note: Vocabulary sets are immutable after Compile. If a custom meta-schema is updated (e.g., removing the validation vocabulary), any schema referencing it must be recompiled to pick up the change. This is correct (immutable compiled schema), but verify alignment with your caching/recompilation strategy.
-  >   ◦ Release-agent note: Tester's two low findings (non-blockers): (1) Unreferenced $defs entries are not validated for vocabulary errors until referenced. (2) One malformed case (relative key) is primarily unit-tested. Both acceptable but worth reviewer awareness.
-  >   ◦ Security note (low): Fails closed as required: every parse problem returns an error with no fallback to 'all vocabularies active', and only a missing '$vocabulary' key activates everything. The recognised set is the fixed eight URIs in internal/keywords/vocabularies.go and is not widened by registry contents. Quoted vocabulary keys go through bound() at 80 runes, and the draft name comes from a fixed regex capture. No instance values reach error messages. No network or disk reads beyond the registry were added.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -89,8 +82,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 01:35:47 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 2 new, 0 persistent, 0 resolved |
 | 2026-10-17 01:35:47 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 01:37:02 | agent | release-agent | ✅ warn · 74.7s · $0.1061 |
-| 2026-10-17 01:37:03 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 01:37:03 | run | run waiting_human | ⏸️ |
+| 2026-10-17 01:37:03 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 01:37:21 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 01:37:21 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
