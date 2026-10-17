@@ -1,0 +1,16 @@
+{
+  "batch": "7957ae327a69493597760ec0c37ffd44",
+  "baseline": "c941ecbfe0a8d2c80baaef4047a442c5009241d9",
+  "members": [
+    {
+      "run_id": 149,
+      "head": "4f1ce2e04586fc00efb3ce4407b3d589038a5a32",
+      "candidate": "02a432d32ed2cec0425412a1a4360d8a0064dd3d"
+    },
+    {
+      "run_id": 150,
+      "head": "6789d7ac7618e3faa4ad0b618de6fa1dca418df1",
+      "candidate": "5ba8cb7d50e80e51f532812d810f16eaf608f304"
+    }
+  ]
+}
