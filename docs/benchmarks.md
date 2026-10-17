@@ -752,6 +752,85 @@ alone would need to reach at most 214,439,053 B/op and 3,698,684 allocs/op
 (263,691,661 − 49,252,608; 5,601,469 − 1,902,785). That is a drop of 18.7% and
 34.0%; whether rendering changes can do this is decided by the "after" run.
 
+## Story 209 (report rendered without copies): after
+
+Same machine, Go version and method as the "before" set above (Apple M3 Max,
+go1.27.2, `go test -run '^$' -bench . -benchmem -count=10 ./cmd/jsonschema`,
+median of 10, the mean of the 5th and 6th sorted values). Idle machine.
+
+The change: a pointer segment is decoded only when it contains `~`
+(`eval.DecodeSegment`, shared by every shape), and the basic report buffer is
+pre-sized by `sizeHint`. After the operator's decision the hint covers the full
+rendered size: the wrapper (`{"valid":..,"errors":[` and `]}`), the fixed JSON
+framing of every unit, the locations, the error text and the size of each
+annotation value, capped at the remaining report-byte limit, plus 1 byte for the
+newline. It only sets capacity; byte counting and the limit check are untouched.
+`TestSizeHintCoversRenderedPerfReports` checks the hint is at least the rendered
+size for the 0.5 MB valid and the error perf documents.
+
+### CLI, in process (package cmd/jsonschema)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CLI/0.5MB | 29,423,930 → 24,473,162 (−16.8%) | 27,307,104 → 20,706,372 (−24.2%) | 561,428 → 351,392 (−37.4%) |
+| CLI/5.5MB | 273,590,120 → 232,820,225 (−14.9%) | 263,691,661 → 208,240,932 (−21.0%) | 5,601,469 → 3,501,433 (−37.5%) |
+| CLI/Errors | 23,695,346 → 16,204,386 (−31.6%) | 14,870,477 → 13,753,808 (−7.5%) | 248,362 → 248,346 (−0.01%) |
+| CLI/Verbose0.5MB | 65,119,383 → 55,984,518 (−14.0%) | 84,481,021 → 78,880,862 (−6.6%) | 1,181,534 → 761,498 (−35.6%) |
+
+The before timings were measured while another benchmark run was in the
+background (see the before section), so the ns/op gain is partly noise; B/op and
+allocs/op are not affected.
+
+### Targets, with the v1.1 f35d9e4 source values
+
+| Target | Computation | Measured | Verdict |
+|---|---|---|---|
+| CLI/5.5MB B/op drop at least 49,252,608 | 499,252,608 − 450,000,000 = 49,252,608; measured drop 263,691,661 − 208,240,932 = 55,450,729 | 208,240,932 | met |
+| CLI/5.5MB B/op at most 450,000,000 | 208,240,932 ≤ 450,000,000 | 208,240,932 | met |
+| CLI/5.5MB allocs/op drop at least 1,902,785 | 9,202,785 − 7,300,000 = 1,902,785; measured drop 5,601,469 − 3,501,433 = 2,100,036 | 3,501,433 | met |
+| CLI/5.5MB allocs/op at most 7,300,000 | 3,501,433 ≤ 7,300,000 | 3,501,433 | met |
+
+Note on the B/op drop: the first version of the hint counted only location
+strings and gave a drop of 33,053,943 (short of 49,252,608); the operator asked
+for the hint to cover the full rendered size, which gave the figures above.
+A memory profile was not re-run for this record; the B/op figure is the check.
+
+### Peak RSS, 5.5 MB document, `-o basic`
+
+`/usr/bin/time -l` on the built CLI (`TestCLIPeakMemoryTimeL`, maximum resident
+set size in bytes), 5 runs after:
+
+| Run | after |
+|---|---|
+| 1 | 156,909,568 |
+| 2 | 154,632,192 |
+| 3 | 151,748,608 |
+| 4 | 156,483,584 |
+| 5 | 155,910,144 |
+| Median | 155,910,144 |
+
+Before median 220,217,344 (see above). Drop 220,217,344 − 155,910,144 =
+64,307,200 bytes = 61.33 MiB, against the required 31,457,280 (30 MiB): met.
+
+`TestCLIPeakMemory -peakmem`, one run: 5.5 MB maxrss 159,858,688 bytes (floor
+8,568,832; 0.5 MB 28,377,088; errors 22,282,240). Before (median of 5 recorded
+above): 222,314,496. Drop 62,455,808 bytes = 59.56 MiB: met.
+
+### Allocation limits (allocs_test.go)
+
+Re-measured with `go test -count=1 -v -run TestAllocs .`: the library paths
+(Compile, Validate, basic of the error document) do not change with this story
+(for example Validate5_5MB 3,000,069 allocs and 124,673,026 bytes;
+ErrorsBasic 247,005). Measured + 10% for each rounds to its current limit or
+above it, so no limit in `allocs_test.go` was changed and none was raised.
+
+### Checks
+
+- `go test -race ./...`: all packages pass.
+- `TestGolden` (v1.1 golden files, flag, basic, detailed, verbose): passes; no
+  golden file was touched.
+- All story 209 targets are met on this machine; nothing is held.
+
 ## Allocation and memory limits (story 204)
 
 The limits in the table below are the story 204 values; story 208 lowered

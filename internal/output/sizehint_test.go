@@ -18,7 +18,7 @@ func hintUnits(n int) []keywords.Unit {
 func TestSizeHintIsLocationSizePlusNewline(t *testing.T) {
 	r := Report{Units: hintUnits(3)}
 	per := errUnitOverhead + len("/a/b") + len("/properties/a") + len("bad")
-	if got, want := sizeHint(r, 1<<30), 3*per+1; got != want {
+	if got, want := sizeHint(r, 1<<30), len(`{"valid":false,"errors":[]}`)+3*per-1+1; got != want {
 		t.Errorf("hint = %d, want %d", got, want)
 	}
 }
