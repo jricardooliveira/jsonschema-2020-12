@@ -159,7 +159,7 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	ev, err := eval.EvaluateLazy(s.root, v, s.el)
+	ev, err := eval.EvaluateValidate(s.root, v, s.el)
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}

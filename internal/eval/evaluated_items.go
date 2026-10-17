@@ -50,6 +50,9 @@ type EvaluatedItems struct {
 	// steps counts evaluation steps for this call (see Step); Rollback never
 	// resets it.
 	steps, maxSteps int
+	// skip turns recording off. The zero value records (fail-safe); only
+	// EvaluateLazy sets it, when no unevaluated* keyword is reachable.
+	skip bool
 }
 
 type itemEntry struct {
@@ -77,6 +80,9 @@ func (r *EvaluatedItems) Rollback(mark int) {
 }
 
 func (r *EvaluatedItems) add(inst, kw string, a ItemAnnotation) {
+	if r.skip {
+		return
+	}
 	a.Keyword = kw
 	r.entries = append(r.entries, itemEntry{key: itemKey{inst, kw}, ann: a})
 }
