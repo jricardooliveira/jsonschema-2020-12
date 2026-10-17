@@ -3,24 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #157 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 10:53:58 UTC · **Stopped:** 2026-10-17 11:25:18 UTC
+- **Run:** #157 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 10:53:58 UTC · **Stopped:** 2026-10-17 11:29:09 UTC
 - **Story spend:** ~$3.93 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 157` to accept, or `factory reject 157 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-157-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Dead code: location.go defines nodeLoc and kwLoc types that are never used. The actual code uses a simpler lazyLoc type in eval.go. Remove the unused types from location.go before shipping, or refactor to use the location.go types and remove the lazyLoc from eval.go.
-  >   ◦ Release-agent note: Test/code mismatch: location_test.go tests nodeLoc and kwLoc against an eager reimplementation, but these types are not deployed. The actual lazyLoc type in eval.go has no dedicated unit tests; its correctness is verified only by end-to-end tests. Add unit tests for lazyLoc or refactor to use the location.go types consistently.
-  >   ◦ Release-agent note: Hard-coded limit edge values in limits_edge_regression_test.go (depth 4, ref-chain 5, steps 186, output-units 4, report-bytes 414, annotations 37) are not derived from the code; the acceptance criterion says limits should be read from the code, not repeated as numbers. Consider reading these from options.go or limitflags.go instead.
-  >   ◦ Release-agent note: The change touches internal/keywords files in multiple vocabularies (applicator, unevaluated) to wire the lazy location interface. All touched files are in the granted scope, but the if.go modification introduces a branchLoc type to carry the base absolute location; confirm this works correctly in verbose's second evaluation pass.
-  >   ◦ Security note (none): No new security issue. Locations are still built only from schema-static data (pathFrame dynamic/static, Resource, Item.Location) and never from instance values. KeywordLoc() returns "" when ctx.Loc is nil, which matches the old zero-value KeywordLocation, so it is not a new way to fail open. The limit error paths are unchanged, and the new edge test pins them to exit 2.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -62,8 +55,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 11:24:42 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 8; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 11:24:42 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 11:25:17 | agent | release-agent | ✅ warn · 35.0s · $0.0695 |
-| 2026-10-17 11:25:18 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 11:25:18 | run | run waiting_human | ⏸️ |
+| 2026-10-17 11:25:18 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 11:29:09 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 11:29:09 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
