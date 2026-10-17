@@ -359,6 +359,49 @@ it is smaller than `CompileOrder`. Before the change it runs the build steps
 `Compile` runs on every call; once the shared build function exists it calls
 that function instead, so the "after" figure is comparable.
 
+## Story 202 (meta-schema built once per process): after
+
+Same machine, Go version and method as the "before" set (`-count=5`, median
+of 5). "Before" is the story 202 "before" table above for the compile rows and
+the story 200 "after" tables for the other scenarios (nothing else changed in
+between). Command:
+
+    go test -run '^$' -bench . -benchmem -count=5 . ./internal/jsonvalue ./cmd/jsonschema ./internal/compile
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CompileOrder (repeated compile) | 689,619 → 125,328 (−81.8%) | 696,549 → 209,407 (−69.9%) | 14,072 → 2,489 (−82.3%) |
+| FirstLoadOrder (one-shot) | 422,503 → 425,224 (noise) | 339,838 → 339,988 (noise) | 6,019 → 6,020 (noise) |
+| ValidateSmall | 28,701 → 29,123 (noise) | 42,641 → 42,643 | 829 → 829 |
+| Validate0_5MB | 26,535,065 → 26,792,761 (noise) | 36,742,878 → 36,742,889 | 700,087 → 700,087 |
+| Validate5_5MB | 253,485,354 → 254,783,750 (noise) | 377,118,288 → 377,118,316 | 7,000,109 → 7,000,109 |
+| ValidateErrors | 19,721,135 → 20,477,864 (noise) | 29,849,153 → 29,849,586 | 500,049 → 500,051 |
+| ValidateErrorsBasic | 20,308,417 → 21,140,034 (noise) | 31,835,532 → 31,834,696 | 506,077 → 506,076 |
+| RetainedHeap/0.5MB | 6,046,076 → 5,976,054 (noise) | 6,282,028 → 6,282,026 | 170,198 → 170,198 |
+| RetainedHeap/5.5MB | 60,161,680 → 61,137,884 (noise) | 67,382,574 → 67,382,576 | 1,715,811 → 1,715,811 |
+| CLI/0.5MB | 38,480,686 → 39,090,659 (noise) | 51,485,678 → 51,001,696 (−0.9%) | 974,347 → 962,762 (−1.2%) |
+| CLI/5.5MB | 352,835,722 → 351,065,708 | 507,894,690 → 507,413,272 | 9,614,379 → 9,602,792 (−0.1%) |
+| CLI/Errors | 23,913,738 → 21,834,825 (−8.7%) | 33,673,367 → 33,187,324 (−1.4%) | 520,272 → 508,685 (−2.2%) |
+| CLI/Verbose0.5MB | 84,931,387 → 82,405,022 (−3.0%) | 130,751,052 → 130,269,925 (−0.4%) | 1,924,494 → 1,912,909 (−0.6%) |
+
+The CompileOrder "before" is the figure measured at the start of this story.
+
+`FirstLoadOrder` is unchanged by design: it calls the build function itself on
+every iteration, so it measures the one-time cost a one-shot CLI run still
+pays once (building the built-in set, then compiling the order schema). The
+saving shows in repeated compiles, where each Compile after the first reuses
+the shared set.
+
+### Acceptance check
+
+- The compile benchmark is lower in all three numbers: ns/op −82%, B/op −70%,
+  allocs/op −82%.
+- No scenario's allocs/op or B/op rose beyond a few allocations or bytes of
+  run-to-run noise (`ValidateErrors` +2 allocs of 500,000). The CLI rows are
+  lower because each CLI run compiles the schema once, and the meta-schema
+  check no longer collects annotations.
+- No allocation-limit test was added or changed by this story.
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a
