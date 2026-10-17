@@ -42,6 +42,9 @@ func EvaluateLimited(n *compile.Node, instance any, maxUnits, maxSteps int) (boo
 // for the object at instLoc. kwLoc is the keyword location. The slice is
 // copied. It shares the item log, so a failed branch's Rollback drops it too.
 func (r *EvaluatedItems) RecordProperties(instLoc, kwLoc string, names []string) {
+	if r.skip {
+		return
+	}
 	r.entries = append(r.entries, itemEntry{
 		key:   itemKey{instLoc, kwLoc},
 		props: true,

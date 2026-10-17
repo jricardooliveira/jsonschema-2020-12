@@ -16,6 +16,22 @@ func Evaluate(n *compile.Node, instance any) (bool, error) {
 	return ok, err
 }
 
+// EvaluateValidate is EvaluateLazy for a Validate call: no tree is built, so
+// the evaluated-property/item record is skipped when the root node says no
+// unevaluated* keyword is reachable (NoUnevaluated, set once at Compile).
+// Charging and every limit run as in EvaluateLazy. The switch lives only in
+// this call's own state.
+// ponytail: duplicates EvaluateLazy's few lines; annotation_record.go was
+// outside this task's files. Fold the two together later.
+func EvaluateValidate(n *compile.Node, instance any, lim Limits) (Evaluation, error) {
+	items := newEvaluatedItems(lim.MaxSteps)
+	items.skip = n.NoUnevaluated
+	return evaluateOpt(n, instance, lim.MaxUnits, lim.MaxAnnotations, nil, &callState{
+		EvaluatedItems: items, active: map[frame]struct{}{},
+		maxRefChain: lim.MaxRefChain, maxPath: 4 * lim.MaxDepth,
+	}, true)
+}
+
 // evalNode evaluates a compiled schema into ctx. Units of failing keywords
 // and applicators accumulate in ctx in evaluation order.
 func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {

@@ -264,6 +264,77 @@ there (once, in place, with the segments of each pointer computed once).
   longer sorts annotations up front); this is recorded as measured.
 - No allocation-limit test was added or changed.
 
+## Story 200 (evaluated properties and items recorded only when needed): before and after
+
+Both sets were measured on the same machine as above (Apple M3 Max, 16
+logical CPUs, macOS arm64, go1.27.2), in the same tree and the same session,
+`-count=5`, median of 5.
+
+- **Before**: the finished code with the load-time decision forced off
+  (`n.NoUnevaluated = false`, so recording stays on everywhere, as it did
+  before this story). This was done by a temporary one-line edit of
+  `jsonschema.go`, reverted before the "after" run. Its figures equal the
+  story 201 "after" figures to within noise, as expected.
+- **After**: the finished code, unchanged.
+
+Command:
+
+    go test -run '^$' -bench . -benchmem -count=5 . ./internal/jsonvalue ./cmd/jsonschema
+
+The order schema has no unevaluated* keyword, so flag and basic checks skip
+the record. Change is after against before; negative is better.
+
+### Library (package root)
+
+| Benchmark | ns/op before → after | MB/s before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|---|
+| CompileOrder | 667,268 → 682,721 (noise) | – | 696,779 → 696,654 (noise) | 14,072 → 14,072 (0) |
+| ValidateSmall | 30,154 → 28,701 (−4.8%) | 16.32 → 17.14 | 51,208 → 42,641 (−16.7%) | 846 → 829 (−2.0%) |
+| Validate0_5MB | 29,076,265 → 26,535,065 (−8.7%) | 17.80 → 19.47 | 50,724,601 → 36,742,878 (−27.6%) | 710,113 → 700,087 (−1.4%) |
+| Validate5_5MB | 269,257,406 → 253,485,354 (−5.9%) | 20.30 → 21.57 | 524,157,710 → 377,118,288 (−28.1%) | 7,100,145 → 7,000,109 (−1.4%) |
+| ValidateErrors | 22,006,129 → 19,721,135 (−10.4%) | 15.13 → 16.88 | 40,656,893 → 29,849,153 (−26.6%) | 510,078 → 500,049 (−2.0%) |
+| ValidateErrorsBasic | 22,715,679 → 20,308,417 (−10.6%) | 14.66 → 16.39 | 42,642,644 → 31,835,532 (−25.3%) | 516,101 → 506,077 (−1.9%) |
+
+### Decoded document (package internal/jsonvalue)
+
+Not touched by the story; shown only to confirm no change.
+
+| Benchmark | ns/op before → after | retained-B before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|---|
+| RetainedHeap/0.5MB | 5,944,405 → 6,046,076 (noise) | 4,340,752 → 4,340,751 | 6,282,021 → 6,282,028 | 170,198 → 170,198 |
+| RetainedHeap/5.5MB | 59,948,123 → 60,161,680 (noise) | 44,924,641 → 44,924,641 | 67,382,573 → 67,382,574 | 1,715,811 → 1,715,811 |
+
+### CLI, in process (package cmd/jsonschema)
+
+| Benchmark | ns/op before → after | MB/s before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|---|
+| CLI/0.5MB | 39,534,288 → 38,480,686 (−2.7%) | 13.07 → 13.43 | 65,469,570 → 51,485,678 (−21.4%) | 984,372 → 974,347 (−1.0%) |
+| CLI/5.5MB | 372,067,181 → 352,835,722 (−5.2%) | 14.69 → 15.49 | 654,932,610 → 507,894,690 (−22.5%) | 9,714,409 → 9,614,379 (−1.0%) |
+| CLI/Errors | 25,324,144 → 23,913,738 (−5.6%) | 13.15 → 13.92 | 44,477,457 → 33,673,367 (−24.3%) | 530,296 → 520,272 (−1.9%) |
+| CLI/Verbose0.5MB | 86,439,052 → 84,931,387 (−1.7%) | 5.98 → 6.08 | 144,733,299 → 130,751,052 (−9.7%) | 1,934,520 → 1,924,494 (−0.5%) |
+
+Verbose is lower too: its first pass (Validate) skips the record, while its
+second pass (the tree) records, as designed.
+
+### Acceptance check
+
+- Flag and basic validation of the order documents (library and CLI) have
+  lower B/op (about 17% to 28% in the library, 21% to 24% in the CLI for
+  flag/basic-style runs) and lower allocs/op (1% to 2%).
+- No scenario's allocs/op or B/op rose. The decoded-document figures are
+  unchanged.
+- `CompileOrder`: a first version of the load-time reachability scan used a
+  heap stack and cost 3 allocations (14,072 → 14,075). The scan now recurses
+  over the already depth-limited schema value and allocates nothing, so
+  `CompileOrder` is back at 14,072 allocs/op (runs: 14,071 to 14,072) and
+  its B/op is inside run-to-run spread. The `CompileOrder` row and the root
+  and CLI rows were re-measured after that fix (same command, `-count=5`,
+  median); the validation rows matched the figures above to within a few
+  allocations and bytes, so they are kept.
+- ns/op is lower on every validation scenario (about 2% to 11%); the speed
+  gain is recorded, not required. Changes within ±5% are noise.
+- No allocation-limit test was added or changed.
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a

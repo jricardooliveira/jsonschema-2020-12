@@ -33,6 +33,9 @@ type Node struct {
 	// FormatAssertion is set on the root node only: some resource's
 	// meta-schema requires the format-assertion vocabulary.
 	FormatAssertion bool
+	// NoUnevaluated is set on the root node only, by NeedsEvaluated at load
+	// time: no unevaluated* keyword is reachable. Zero (false) means unknown.
+	NoUnevaluated bool
 }
 
 // Resource is the compiled view of one schema resource, shared by its nodes.

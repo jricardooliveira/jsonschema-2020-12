@@ -116,6 +116,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err := metaCheck(docs, ext, el); err != nil {
 		return nil, err
 	}
+	n.NoUnevaluated = !compile.NeedsEvaluated(docs, ext)
 	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input, el: el}, nil
 }
 
@@ -158,7 +159,7 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	ev, err := eval.EvaluateLazy(s.root, v, s.el)
+	ev, err := eval.EvaluateValidate(s.root, v, s.el)
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
