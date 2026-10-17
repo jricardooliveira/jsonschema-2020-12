@@ -43,35 +43,34 @@ anything outside it is reported as a scope violation in the trust package:
 
 Modules the architecture expects to touch:
 
-- `internal/limits/limits.go`
-- `internal/limits/limits_test.go`
 - `limits.go`
 - `limits_test.go`
-- `options.go`
 - `numberlimits.go`
-- `numberlimits_test.go`
 - `jsonschema.go`
 - `output.go`
+- `registry_options.go`
 - `concurrency_race_test.go`
 - `internal/jsonvalue/limits.go`
 - `internal/jsonvalue/decode.go`
 - `internal/jsonvalue/depth_option_test.go`
-- `internal/compile/limits.go`
-- `internal/compile/compile.go`
-- `internal/compile/limits_test.go`
+- `internal/compile/refs.go`
 - `internal/eval/budget.go`
-- `internal/eval/eval.go`
 - `internal/eval/budget_test.go`
 - `internal/eval/annotations.go`
+- `internal/eval/refguard.go`
+- `internal/eval/refguard_test.go`
+- `internal/eval/evaluated.go`
+- `internal/eval/eval.go`
 - `internal/keywords/registry.go`
-- `internal/keywords/core/ref.go`
-- `internal/keywords/core/dynamicref.go`
-- `internal/registry/registry.go`
-- `internal/registry/budget_test.go`
+- `internal/keywords/validation/enum.go`
+- `internal/keywords/validation/uniqueitems.go`
+- `internal/keywords/validation/pattern.go`
+- `internal/keywords/applicator/patternproperties.go`
 - `internal/ecmaregex/translate.go`
+- `internal/registry/sources.go`
+- `internal/registry/budget_test.go`
 - `cmd/jsonschema/limitflags.go`
 - `cmd/jsonschema/limitflags_test.go`
-- `cmd/jsonschema/main.go`
 - `cmd/jsonschema/run.go`
 - `cmd/jsonschema/parse_errors_test.go`
 
@@ -89,26 +88,36 @@ exactly this order:
 
 ## Risks
 
-- Step counting in the hot path could slow validation; keep it a single increment and compare.
-- Ref-chain counting must count jumps on the current path (decrement on return), or deep but finite recursion will be miscounted.
-- Deep recursion in compile/eval before the depth check could still overflow the goroutine stack; check before descending.
-- Changing the stderr wording may break existing CLI tests from stories 178-180.
+- Files outside the reservation that the code requires: registry_options.go (where Registry and its caps actually live), internal/registry/sources.go (the real loader; registry.go does not need changes), internal/compile/refs.go (the real compile path builds CompileContext there, so compile.go is not edited), internal/eval/refguard.go and evaluated.go (where steps, path depth and the ref hop are counted), refguard_test.go (it asserts le.Max == eval.MaxEvalDepth, which changes to the depth that was set), validation/enum.go, validation/uniqueitems.go, validation/pattern.go and applicator/patternproperties.go. Dropped from the reservation as not needed: internal/limits/*, options.go, numberlimits_test.go, internal/compile/compile.go, internal/compile/limits*.go, internal/keywords/core/ref.go and dynamicref.go, cmd/jsonschema/main.go, internal/registry/registry.go.
+- Meta-check of a schema nested near DefaultMaxDepth: the 2020-12 meta-schema makes about two $ref/$dynamicRef hops per schema level, so a schema like {items:{items:...}} close to 10,000 levels can reach the 20,000 ref-chain cap. It already meets the 40,000-node path backstop today. The coder must check that no existing test compiles such a schema. Ordinary schemas are far below this.
+- The per-keyword Step changes step counts. Tests that search for a minimal cap (assertLookupCountsSteps) adapt automatically. Any test that uses a fixed small cap must keep passing; refguard_test passes its own max.
+- Pure cycles now satisfy errors.As for LimitError through LoopError.Unwrap. The CLI hint '(raise with --max-ref-chain)' will not help for a true cycle; this is accepted to meet the acceptance criterion.
+- Exceeded number caps no longer print line and column in the CLI line, because the mandated format is name and value only.
+- Folding the depth into jsonvalue.NumberLimits makes the name inaccurate. Mark it with a ponytail comment; rename it to DecodeLimits when the file is next in scope.
+- The step check runs on the hot path: one increment and one compare only.
 
 Implementation constraints the coder must honor:
 
-- Work limit is a deterministic step count, never time-based.
-- Limits cannot be disabled; zero means default and negative is rejected.
-- Tests read limit values from exported constants or Options, never literal numbers.
-- Limit error messages never quote instance values.
-- Compiled Schema is never mutated; counters live per call.
-- No new dependencies; go.mod unchanged.
-- New tests go in new files; existing tests are edited only where a changed message or flag breaks them.
+- Binding boundary rules: (1) check input length against the resolved cap before decoding (library Compile/Validate, CLI readCapped, registry LimitReader); (2) depth is checked by the iterative decoder before descending, and the eval-path backstop (4 x depth) is checked in enterNode before pushing; (3) count ref chains per path: increment on entering through $ref/$dynamicRef, decrement in the pop func; (4) super-linear keyword loops charge steps in proportion to their work (enum: entry size precomputed at compile; uniqueItems: one step per element), plus one step per keyword in eval.go's dispatch; (5) every Validate, meta-check run and Result.Output tree re-evaluation builds a fresh budget through EvaluateWith, and nothing is cached on Schema or Result; (6) LimitErrors are wrapped only with %w inside the engine and converted by asLimit into a top-level *jsonschema.LimitError at every public return.
+- LimitError.Limit takes only the 11 exported constants; jsonvalue/limits.go holds the internal mirror. A test walks every internal producer (decode, registry, eval, keywords, output, ecmaregex) and checks that its name is in the set.
+- Do not rename or remove any existing CLI flag, Options field, Registry field or exported constant. New flags use --max-<name>.
+- Do not change EvaluateFull, EvaluateTree, EvaluateLimited or CompileReached signatures; they become default-limit wrappers.
+- eval.go: add only the one-line Step per keyword in the dispatch. keywords/registry.go: add only the MaxPatternBytes field and the Charge method. jsonschema.go: resolve limits, run the length check, call asLimit and store eval.Limits; no other changes.
+- Tests read every value from exported or package constants (DefaultMax*, jsonvalue.MaxDepth, maxInputBytes, validation.DefaultMaxPatternSize), never literals. Each limit has a library test in limits_test.go at, below and above the cap via a lowered Options value, plus a negative-value error test. Each limit flag has a contract test in limitflags_test.go (exit 2, empty stdout, one stderr line naming the flag; a negative or zero value is a usage error), including --max-output-units and a multi-document worst-result test.
+- concurrency_race_test.go: 8+ goroutines run Validate and then Output for every shape on one Schema, mixing valid, invalid and limit-hitting documents (steps, ref chain, depth, output units); it must pass under go test -race. A second test compares Schema.lim, Validate results and Output bytes before and after 1,000 validations, comparing values, never func fields.
+- Limit messages carry only the limit name and the value set; never an instance value or pattern text.
+- Standard library only; go.mod unchanged.
+- Doc comments state the defaults, and that very large depth values can exhaust the goroutine stack.
 
-- DB impact: no · API impact: yes: new Options fields, LimitError type, Default* constants, new CLI flags · Migration needed: no
+- DB impact: no · API impact: yes · Migration needed: no
 
 Breaking changes:
 
-- Errors from existing number/depth caps become *jsonschema.LimitError; stderr wording for oversize inputs changes to the unified format.
+- Public functions now return a top-level *jsonschema.LimitError for every exceeded limit, instead of a *jsonvalue.LimitError wrapped in 'schema:', 'document:' or 'registry:' text.
+- Internal limit names change: 'schema file bytes' becomes 'input size', 'total registry bytes' becomes 'registry size', and 'evaluation depth' becomes 'nesting depth' carrying the depth that was set.
+- An oversize pattern becomes a LimitError ('pattern size'), where it was a plain schema error with different wording.
+- CLI stderr for every limit becomes 'limit exceeded: <limit> <value> (raise with --<flag>)', replacing '<limit> exceeds limit <n> ...'. parse_errors_test.go is updated.
+- Registry.MaxFileBytes = 0 now follows Options.MaxInputBytes. The default value is unchanged (64 MiB).
 
 ## Proof
 
