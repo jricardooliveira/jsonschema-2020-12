@@ -163,14 +163,14 @@ func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, [
 	if rec != nil {
 		mark = rec.Mark()
 	}
-	amark := len(c.col.list)
+	amark := c.col.list.Mark()
 	ok, err := c.evalNode(child, node, instance)
 	if !ok {
 		if rec != nil {
 			rec.Rollback(mark)
 		}
-		c.col.list = c.col.list[:amark] // a failed schema keeps no annotations
-		tn.dropAnnotations()            // nor does anything below it
+		c.col.list.Truncate(amark) // a failed schema keeps no annotations
+		tn.dropAnnotations()       // nor does anything below it
 	}
 	if tn != nil {
 		tn.Valid, tn.Errors = ok, child.units

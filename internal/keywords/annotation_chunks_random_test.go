@@ -1,10 +1,8 @@
-package eval
+package keywords
 
 import (
 	"math/rand"
 	"testing"
-
-	"github.com/neoface/jsonschema/internal/keywords"
 )
 
 const chunkRandomSeed = 208
@@ -14,7 +12,7 @@ const chunkRandomSeed = 208
 func TestChunkStoreRandomAgainstSlice(t *testing.T) {
 	rng := rand.New(rand.NewSource(chunkRandomSeed))
 	var s chunkStore
-	var ref []keywords.Annotation
+	var ref []Annotation
 	var marks []int
 	seq := 0
 	crossed, capped := false, false
@@ -40,7 +38,7 @@ func TestChunkStoreRandomAgainstSlice(t *testing.T) {
 		check(step)
 	}
 	add := func() {
-		a := keywords.Annotation{Seq: seq}
+		a := Annotation{Seq: seq}
 		seq++
 		s.Add(a)
 		ref = append(ref, a)

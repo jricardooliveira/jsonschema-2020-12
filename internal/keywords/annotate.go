@@ -48,7 +48,7 @@ func (n *TreeNode) dropAnnotations() {
 // collector is the per-call annotation log, shared by a context and all of
 // its children. It is append-only so a failed subschema can roll back.
 type collector struct {
-	list     []Annotation
+	list     chunkStore
 	count    int
 	max, seq int
 	discard  bool // annotations are counted but neither recorded nor kept
@@ -80,7 +80,7 @@ func (c *EvalContext) Annotate(value any) error {
 	}
 	col.seq++
 	a := Annotation{InstanceLocation: c.InstanceLocation, KeywordLocation: c.KeywordLoc(), Keyword: c.Keyword, Value: value, Seq: col.seq}
-	col.list = append(col.list, a)
+	col.list.Add(a)
 	if c.Tree != nil {
 		c.Tree.Annotations = append(c.Tree.Annotations, a)
 	}
@@ -92,8 +92,9 @@ func (c *EvalContext) Annotate(value any) error {
 // stack buffer or a slice that is later appended to).
 func (c *EvalContext) AnnotateNames(names []string) error { return c.Annotate(names) }
 
-// Annotations returns the annotations kept so far, in evaluation order.
-func (c *EvalContext) Annotations() []Annotation { return c.col.list }
+// Annotations returns the annotations kept so far, in evaluation order, as one
+// new slice (flattened from the chunks).
+func (c *EvalContext) Annotations() []Annotation { return c.col.list.Flatten() }
 
 // AnnotateOnly returns a keyword that always passes and annotates its own
 // schema value. Registered or not, it never fails validation.

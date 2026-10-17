@@ -1,12 +1,8 @@
-package eval
+package keywords
 
-import (
-	"testing"
+import "testing"
 
-	"github.com/neoface/jsonschema/internal/keywords"
-)
-
-func chunkAnn(i int) keywords.Annotation { return keywords.Annotation{Seq: i} }
+func chunkAnn(i int) Annotation { return Annotation{Seq: i} }
 
 func TestChunkStoreGrowthCapacities(t *testing.T) {
 	var s chunkStore

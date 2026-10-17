@@ -1,6 +1,4 @@
-package eval
-
-import "github.com/neoface/jsonschema/internal/keywords"
+package keywords
 
 const (
 	chunkFirstCap = 16
@@ -17,7 +15,7 @@ const (
 // belongs to one evaluation and is never shared or pooled, so it needs no
 // locking. Truncate clears the removed entries so their Values can be freed.
 type chunkStore struct {
-	chunks [][]keywords.Annotation
+	chunks [][]Annotation
 	cur    int
 	n      int
 }
@@ -29,7 +27,7 @@ func (s *chunkStore) Len() int { return s.n }
 func (s *chunkStore) Mark() int { return s.n }
 
 // Add appends one entry.
-func (s *chunkStore) Add(a keywords.Annotation) {
+func (s *chunkStore) Add(a Annotation) {
 	for s.cur < len(s.chunks) && len(s.chunks[s.cur]) == cap(s.chunks[s.cur]) {
 		s.cur++
 	}
@@ -38,7 +36,7 @@ func (s *chunkStore) Add(a keywords.Annotation) {
 		if s.cur < 8 { // 16<<8 == 4096
 			c = chunkFirstCap << s.cur
 		}
-		s.chunks = append(s.chunks, make([]keywords.Annotation, 0, c))
+		s.chunks = append(s.chunks, make([]Annotation, 0, c))
 	}
 	s.chunks[s.cur] = append(s.chunks[s.cur], a)
 	s.n++
@@ -73,8 +71,8 @@ func (s *chunkStore) Truncate(mark int) {
 }
 
 // Flatten copies all entries, in order, into one new slice of exactly Len.
-func (s *chunkStore) Flatten() []keywords.Annotation {
-	out := make([]keywords.Annotation, 0, s.n)
+func (s *chunkStore) Flatten() []Annotation {
+	out := make([]Annotation, 0, s.n)
 	for _, c := range s.chunks {
 		out = append(out, c...)
 	}
