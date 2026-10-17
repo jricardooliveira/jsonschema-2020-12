@@ -3,19 +3,23 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #151 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:15:53 UTC
-- **Story spend:** ~$1.96 of $35.00 (estimated at API list prices)
+- **Run:** #151 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-17 01:06:09 UTC · **Stopped:** 2026-10-17 01:23:37 UTC
+- **Story spend:** ~$3.86 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 151` to accept, or `factory reject 151 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 151` to accept, or `factory reject 151 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > The coder asks for files the approved design does not name: The approved design says compile.go is touched only to call the vocabulary step and to route inactive keywords to the unknown-keyword path. The keyword loop that actually runs in production is resolver.compile in internal/compile/refs.go, and compile.go's loop is not on that path. The design also says jsonschema.go is not edited. But the accessor needs a field on Schema and a place to fill it, and both are in jsonschema.go. Two files outside this task's allowed list are needed: internal/compile/refs.go and jsonschema.go. Not granted automatically: internal/compile/refs.go (not in the approved design and not a test); jsonschema.go (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
-  > paths: internal/compile/refs.go, jsonschema.go
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
+  >   • Security finding (medium) not resolved: F1 (medium): errors from an externally referenced registry resource that declares its own '$schema' lose their type. They pass through the existing refs.go line 212 wrap, fmt.Errorf("...: %v", err). Examples are UnknownVocabularyError and CoreVocabularyError. The CLI still exits 2, so the check still fails closed, but errors.As cannot see the type, which falls short of AC2's library contract for that path. No test covers a $ref-reached resource with its own vocabulary set.
+  >   ◦ Release-agent note: Breaking change: basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. Tests and evaluators that expected these annotations will need updating.
+  >   ◦ Release-agent note: The change routes inactive-vocabulary keywords through the existing unknown-keyword path in compile.go, a crowded file. The edit is surgical (four lines in the keyword loop), but future changes to that loop must be aware of the new condition.
+  >   ◦ Release-agent note: Error message for malformed '$vocabulary' entries (the bound entry key) is asserted only at unit test level, not in CLI integration tests (F3). The message is generated and used correctly, but large entry keys longer than 80 characters are silently truncated in the error message.
+  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -45,8 +49,20 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 01:15:23 | gate | gate-build | ✅ [T2] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
 | 2026-10-17 01:15:23 | boss | authorize coder-agent:T3 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
 | 2026-10-17 01:15:53 | agent | coder-agent | ✅ scope-request · T3 · 29.7s · $0.3407 |
-| 2026-10-17 01:15:53 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-17 01:15:53 | run | run waiting_human | ⏸️ |
+| 2026-10-17 01:15:53 | gate | gate-question | ❌ REJECTED: yes, grant internal/compile/refs.go and jsonschema.go for this run (the production keyword loop is in refs.go; the format-assertion record accessor lives on Schema). No other story is running. |
+| 2026-10-17 01:16:14 | boss | authorize coder-agent:T3 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 01:17:54 | agent | coder-agent | ✅ complete · T3 · 99.8s · $0.4751 |
+| 2026-10-17 01:19:26 | gate | gate-build | ✅ [T3] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:19:26 | boss | authorize coder-agent:T5 | ✅ gate-2-architect, approved by the operator at Checkpoint 2 |
+| 2026-10-17 01:21:30 | agent | coder-agent | ✅ complete · T5 · 123.5s · $0.5775 |
+| 2026-10-17 01:21:52 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 01:21:52 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-17 01:23:04 | agent | tester-agent | ✅ warn · 71.8s · $0.7703 |
+| 2026-10-17 01:23:04 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 01:23:04 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 01:23:36 | agent | release-agent | ✅ warn · 31.8s · $0.0778 |
+| 2026-10-17 01:23:37 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 01:23:37 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
