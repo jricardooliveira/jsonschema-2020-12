@@ -16,9 +16,9 @@
 | 12 | Embedded meta-schemas and schema validation | released | [012-embedded-meta-schemas-and-schema-validation/](012-embedded-meta-schemas-and-schema-validation/) | 148 |
 | 13 | $vocabulary handling | to do |  |  |
 | 14 | Annotation collection | released | [014-annotation-collection/](014-annotation-collection/) | 144 |
-| 15 | unevaluatedProperties and unevaluatedItems | to do |  |  |
+| 15 | unevaluatedProperties and unevaluatedItems | released | [015-unevaluatedproperties-and-unevaluateditems/](015-unevaluatedproperties-and-unevaluateditems/) | 150 |
 | 16 | Limits against hostile input | to do |  |  |
-| 17 | Detailed and verbose output | to do |  |  |
+| 17 | Detailed and verbose output | released | [017-detailed-and-verbose-output/](017-detailed-and-verbose-output/) | 149 |
 | 18 | Format assertion: mode, dates, email, hostnames, IP and UUID | to do |  |  |
 | 19 | Format assertion: URI, IRI, templates, pointers and regex | to do |  |  |
 | 20 | User documentation: CLI contract and scope | to do |  |  |
@@ -79,7 +79,7 @@
    Collect 2020-12 annotations during evaluation, with their instance and keyword locations. Annotations are dropped from any subschema that fails. Collect these: annotation keywords such as title, description, default, deprecated, readOnly, writeOnly and examples; 'format' values, which by default are annotations only and never fail validation; contentEncoding, contentMediaType and contentSchema, which are annotations only; and unknown keywords, which are ignored for validation and collected as annotations. Unknown formats are never an error. Applicators record which properties and items they evaluated. Annotations appear in the output formats wherever the 2020-12 shapes include them. Write spec-derived tests.
    Why: Annotation tracking is what unevaluatedProperties and unevaluatedItems depend on, so it comes first.
 
-15. **unevaluatedProperties and unevaluatedItems** — to do
+15. **unevaluatedProperties and unevaluatedItems** — released
    Add the 2020-12 'unevaluatedProperties' and 'unevaluatedItems' keywords, each in its own file and registered through the keyword registry. They use the collected annotations from every adjacent applicator and from nested ones: properties, patternProperties, additionalProperties, prefixItems, items, contains, allOf, anyOf, oneOf, not, if/then/else, dependentSchemas, $ref, $dynamicRef, and nested unevaluated keywords. Only successful subschemas count. Write spec-derived positive and negative tests, including cases that go through $ref and $dynamicRef.
    Why: Needs every applicator, references and annotation collection in place, so it comes after all of them.
 
@@ -87,7 +87,7 @@
    Add built-in limits on nesting depth, input size, and $ref/$dynamicRef recursion that never terminates, so a crafted schema or document cannot hang or crash the tool. Exceeding a limit is a clear error with exit code 2, never a silent valid or invalid result. The defaults are generous enough that ordinary, spec-conformant schemas and documents are never affected. The caller can raise each limit through a library option and a CLI flag. Also prove the load-once guarantee: a loaded schema is never changed after loading and is safe to use from several goroutines at the same time. Cover this with tests run under the race detector. Add tests for each limit and CLI contract tests for the limit flags.
    Why: Hardens the finished engine against untrusted input once all recursive features exist.
 
-17. **Detailed and verbose output** — to do
+17. **Detailed and verbose output** — released
    Add the 2020-12 'detailed' and 'verbose' output formats, as far as practical, as new formats registered through the output-format registration point. Both the library and the CLI output-format option can select them. The nested reports carry the instance location, keyword location and absolute keyword location, and they include annotations where the shapes call for them. They never quote document values. When one document is checked, stdout is exactly one output object. With several documents, each line holds the unchanged output object. Document in the code any part of the shapes that is only partly produced. Write tests for both shapes.
    Why: An optional feature that plugs into the existing output registration point without touching the keywords.
 
