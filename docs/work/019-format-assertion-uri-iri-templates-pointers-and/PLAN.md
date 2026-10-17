@@ -1,7 +1,7 @@
 # PLAN #19: Format assertion: URI, IRI, templates, pointers and regex
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #154, 2026-10-17 03:19 UTC)
 - Design: see `ADR-019-*.md` under `docs/architecture/adr/`
 
 ## Files that change

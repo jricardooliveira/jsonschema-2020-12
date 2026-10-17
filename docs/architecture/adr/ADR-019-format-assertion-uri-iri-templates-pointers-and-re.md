@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #19
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #154, 2026-10-17 03:19 UTC)
 
 ## Decision
 This is the previous design with the reviewer's four points applied. All work still goes in new files in internal/formats (story 195). Each format registers from init() through formats.Register(name, func(string) bool) in internal/formats/registry.go, which is read and never edited. rfc3986.go is the strict grammar shared by uri, uri-reference, iri and iri-reference, with an IRI switch. The regex format is judged by ecma_syntax.go together with ecma_unicode_props.go.
