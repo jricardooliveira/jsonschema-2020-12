@@ -77,6 +77,8 @@ type shared struct {
 	all       []*resolver
 	pending   []pendingRef
 	todo      []pendingRes // resources whose Dynamic table is not filled yet
+	// formatAssertion: some resource's meta-schema requires format-assertion.
+	formatAssertion bool
 }
 
 type pendingRef struct {
@@ -91,7 +93,7 @@ type pendingRes struct {
 }
 
 func (sh *shared) add(doc any, bases map[string]string, resources map[string]*registry.Resource) *resolver {
-	r := &resolver{sh: sh, doc: doc, bases: bases, resources: resources, memo: map[string]*Node{}, infos: map[string]*Resource{}}
+	r := &resolver{sh: sh, doc: doc, bases: bases, resources: resources, memo: map[string]*Node{}, infos: map[string]*Resource{}, vocabs: map[string]*VocabularySet{}}
 	sh.all = append(sh.all, r)
 	return r
 }
@@ -211,6 +213,7 @@ func compileDocument(doc any, baseURI string, ext *registry.Index) (*resolver, *
 		}
 		l.ref.Target = n
 	}
+	root.FormatAssertion = sh.formatAssertion
 	return r, root, sh.checkPureCycles()
 }
 
@@ -230,6 +233,7 @@ type resolver struct {
 	resources map[string]*registry.Resource // base URI -> indexed resource
 	infos     map[string]*Resource          // base URI -> compiled resource (nil: not indexed)
 	memo      map[string]*Node              // schema pointer -> compiled node
+	vocabs    map[string]*VocabularySet     // base URI -> active set (nil: all)
 	nodes     []*Node
 	refs      []*core.Ref
 }
@@ -261,6 +265,10 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 	}
 	sort.Strings(names)
 	n := &Node{Location: loc, Resource: r.info(loc)}
+	vocab, err := r.vocabAt(loc)
+	if err != nil {
+		return nil, err
+	}
 	at := func(v any, at string) (any, error) {
 		c, err := r.compile(v, at)
 		if err != nil {
@@ -270,8 +278,8 @@ func (r *resolver) compile(v any, loc string) (*Node, error) {
 	}
 	for _, name := range names {
 		kw, ok := keywords.Lookup(name)
-		if !ok {
-			// Unknown keywords are annotated (core 6.5), as in compileAt.
+		if !ok || !vocab.allows(kw) {
+			// Unknown or inactive-vocabulary keywords are annotated (core 6.5, 8.1.2).
 			n.Items = append(n.Items, Item{keywords.AnnotateOnly(name, ""), s[name], loc + "/" + escape.Replace(name)})
 			continue
 		}
