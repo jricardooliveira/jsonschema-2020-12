@@ -136,6 +136,10 @@ type Keyword struct {
 	Vocabulary string // vocabulary URI
 	Compile    CompileFunc
 	Evaluate   EvaluateFunc
+	// AfterSiblings marks a keyword that reads its siblings' annotations: the
+	// evaluator runs it after every other keyword of the same schema object
+	// (core 11). Default false.
+	AfterSiblings bool
 }
 
 // registry is written only by init() functions and read-only afterwards.

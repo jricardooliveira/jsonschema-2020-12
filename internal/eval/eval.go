@@ -42,23 +42,39 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 		return false, ctx.Report("schema is false, no value is valid")
 	}
 	valid := true
-	for _, it := range n.Items {
-		ctx.KeywordLocation = pf.at(it.Keyword.Name, it.Location)
-		ctx.AbsoluteKeywordLocation = abs(it.Location)
-		ctx.Keyword = it.Keyword.Name
-		before := len(ctx.Units())
-		ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
-		if err != nil {
-			return false, err
-		}
-		if !ok {
-			valid = false
-			if len(ctx.Units()) == before { // keyword gave no unit of its own
-				if err := ctx.Report("rule " + it.Keyword.Name + " failed"); err != nil {
-					return false, err
-				}
+	// Two passes: keywords flagged AfterSiblings run last, in schema order.
+	for pass := 0; pass < 2; pass++ {
+		for _, it := range n.Items {
+			if it.Keyword.AfterSiblings != (pass == 1) {
+				continue
+			}
+			ok, err := evalItem(ctx, pf, abs, it, instance)
+			if err != nil {
+				return false, err
+			}
+			if !ok {
+				valid = false
 			}
 		}
 	}
 	return valid, nil
+}
+
+// evalItem evaluates one keyword of a schema object and makes sure a failure
+// leaves at least one unit.
+func evalItem(ctx *keywords.EvalContext, pf *pathFrame, abs func(string) string, it compile.Item, instance any) (bool, error) {
+	ctx.KeywordLocation = pf.at(it.Keyword.Name, it.Location)
+	ctx.AbsoluteKeywordLocation = abs(it.Location)
+	ctx.Keyword = it.Keyword.Name
+	before := len(ctx.Units())
+	ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
+	if err != nil {
+		return false, err
+	}
+	if !ok && len(ctx.Units()) == before { // keyword gave no unit of its own
+		if err := ctx.Report("rule " + it.Keyword.Name + " failed"); err != nil {
+			return false, err
+		}
+	}
+	return ok, nil
 }
