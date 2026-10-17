@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #31
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #168, 2026-10-17 22:44 UTC)
 
 ## Decision
 New file internal/eval/annotation_chunks.go holds a chunk store: a slice of chunks, where chunk k has capacity min(16<<k, 4096), plus a (chunk, offset) cursor. Mark returns the total length. Truncate moves the cursor back and keeps emptied chunks, so later Adds reuse them. Flatten allocates exactly Len entries once. The annotation sink keeps its existing API and only swaps its backing storage, so eval.go, the keyword files and the child-context code from 206 need no edits. The store lives in the per-call evaluation context: fresh per check, never shared. The Result holds the store plus a sync.Once. The Once flattens, applies the existing order (annotation_order.go, precomputed segments), stores the sorted slice and nils the chunk references. Annotations() and Output() both go through it. Measurement compares the code just before this story with the code after it, against the operator's v1.1 f35d9e4 values.
