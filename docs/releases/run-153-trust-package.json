@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "a62a225cde3b53b848aa306179ccc4283e515034",
+    "commit": "2b7b6adaa0885746c762859dc338af3393eaef4f",
     "base_commit": "42f6d69d4b3487814124f06edf40c4efef976ca7"
   },
   "tests": {
@@ -130,7 +130,7 @@
       {
         "path": "formatassertion_test.go",
         "change": "added",
-        "additions": 79,
+        "additions": 100,
         "deletions": 0
       },
       {
@@ -172,13 +172,13 @@
       {
         "path": "internal/formats/duration.go",
         "change": "added",
-        "additions": 55,
+        "additions": 58,
         "deletions": 0
       },
       {
         "path": "internal/formats/duration_test.go",
         "change": "added",
-        "additions": 12,
+        "additions": 15,
         "deletions": 0
       },
       {
@@ -362,23 +362,27 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-9392f68c2a3d45daa3454c55f105fc37/docs/architecture/adr/ADR-018-format-assertion-mode-dates-email-hostnames-ip-and.md",
-    "summary": "The story is implemented as designed. There is one format registry, with each format in its own file registering from init(). The mode is fixed at compile time from the caller option OR the per-resour"
+    "summary": "The implementation meets all 17 acceptance criteria and follows the architecture and boundary rules. There is one format registry, each format registers itself from its own file, and the mode is fixed"
   },
   "security_boundary": {
     "overall": "pass",
     "highest_severity": "medium",
     "breaking_changes": [],
     "findings": [
-      "F2 (low): The boundary rule says each format check must be charged to the per-call budget. format.go does call ctx.ChargeBytes(len(s)) before the check, but no test drives a huge string or a low MaxSteps through a format to prove that the limit gives an 'evaluation steps' error rather than running on. A safety branch with no test."
+      "No instance value reaches the output. The error message is a fixed text plus the format name taken from the schema, and a test checks this.",
+      "The only paths that pass by default are the ones the story specifies: unknown formats, the not-yet-built formats and a format with no registered check. Check functions return a plain bool and have no error path.",
+      "Each format check is charged ChargeBytes(len(s)) before it runs, following ADR-016, and TestFormatAssertionChargesSteps proves this. All checks are hand-written, single-pass and non-recursive, with no regexp or net parsers.",
+      "Meta-schema compilation is forced to annotation-only (noFormat), whatever the caller's option or the schema's vocabulary.",
+      "The format registry is written only from init(), and the mode is captured in the compiled keyword, so the compiled schema stays immutable."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 4.579876,
-    "tokens_in": 5348071,
-    "tokens_out": 65022
+    "usd": 6.593016,
+    "tokens_in": 6523139,
+    "tokens_out": 84960
   },
   "assumptions": [
     {
@@ -460,6 +464,14 @@
     {
       "task": "T6",
       "text": "Documentation-only task. I did not run any tests or build."
+    },
+    {
+      "task": "remediation",
+      "text": "The finding calls it the 'work steps' LimitError. The project's name for that limit is `LimitSteps` (\"evaluation steps\"), so the test checks `jsonschema.LimitSteps` and does not use a literal string."
+    },
+    {
+      "task": "remediation",
+      "text": "I changed the `duration` row in `docs/formats.md` so the docs match the stricter rule."
     }
   ],
   "blockers": [],
