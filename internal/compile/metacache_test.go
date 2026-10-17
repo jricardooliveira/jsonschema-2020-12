@@ -42,6 +42,20 @@ func TestBuiltinSetBuiltOnce(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// A caller resource layered on a copy never reaches the shared index.
+	set, _ := sharedBuiltin()
+	before := len(set.idx.Resources)
+	ext := &registry.Index{Resources: map[string]*registry.Resource{}}
+	if err := ext.AddBuiltins(); err != nil {
+		t.Fatal(err)
+	}
+	ext.Resources["https://example.invalid/extra"] = &registry.Resource{}
+	if err := ext.AddBuiltins(); err != nil {
+		t.Fatal(err)
+	}
+	if len(set.idx.Resources) != before {
+		t.Fatal("shared built-in index was written")
+	}
 	if n := builtinBuilds.Load(); n != 1 {
 		t.Fatalf("buildBuiltin ran %d times, want 1", n)
 	}
