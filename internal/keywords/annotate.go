@@ -51,6 +51,15 @@ type collector struct {
 	list     []Annotation
 	count    int
 	max, seq int
+	discard  bool // annotations are counted but neither recorded nor kept
+}
+
+// SetDiscard switches discard mode and returns the previous setting. In it
+// Annotate still counts against the cap but records nothing. It is shared by
+// every child context of the call.
+func (c *EvalContext) SetDiscard(on bool) (prev bool) {
+	prev, c.col.discard = c.col.discard, on
+	return prev
 }
 
 // SetMaxAnnotations sets the annotation cap; it must be positive. Call it on
@@ -65,6 +74,9 @@ func (c *EvalContext) Annotate(value any) error {
 	col.count++
 	if col.count > col.max {
 		return &jsonvalue.LimitError{Limit: "annotations", Max: col.max}
+	}
+	if col.discard {
+		return nil
 	}
 	col.seq++
 	a := Annotation{InstanceLocation: c.InstanceLocation, KeywordLocation: c.KeywordLoc(), Keyword: c.Keyword, Value: value, Seq: col.seq}
