@@ -99,7 +99,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err != nil {
 		return nil, fmt.Errorf("registry: %w", err)
 	}
-	n, docs, err := compile.CompileReached(v, base, ext)
+	n, docs, err := compile.CompileReachedWith(v, base, ext, rl.pattern)
 	if err != nil {
 		// A keyword rejecting its own value is usually a meta-schema failure
 		// of the main schema or of a supplied one reached before the failure:

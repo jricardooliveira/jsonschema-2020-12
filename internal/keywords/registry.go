@@ -9,6 +9,9 @@ import "github.com/neoface/jsonschema/internal/jsonvalue"
 type CompileContext struct {
 	// Location is the JSON Pointer of the keyword being compiled.
 	Location string
+	// MaxPatternBytes caps a regular expression's source size; 0 means the
+	// default (validation.DefaultMaxPatternSize).
+	MaxPatternBytes int
 	// Siblings are the raw values of every keyword in the same schema object.
 	// Read only.
 	Siblings map[string]any

@@ -63,3 +63,58 @@ func TestExistingLimitErrorsAreTopLevel(t *testing.T) {
 		t.Fatalf("got %v", err)
 	}
 }
+
+func TestPatternSizeOption(t *testing.T) {
+	const max = 8
+	at := `{"pattern":"` + strings.Repeat("a", max) + `"}`
+	if _, err := CompileWithOptions([]byte(at), Options{MaxPatternSize: max}); err != nil {
+		t.Fatalf("at cap: %v", err)
+	}
+	for _, s := range []string{
+		`{"pattern":"` + strings.Repeat("a", max+1) + `"}`,
+		`{"patternProperties":{"` + strings.Repeat("a", max+1) + `":true}}`,
+		`{"additionalProperties":false,"patternProperties":{"` + strings.Repeat("a", max+1) + `":true}}`,
+	} {
+		var le *LimitError
+		_, err := CompileWithOptions([]byte(s), Options{MaxPatternSize: max})
+		if !errors.As(err, &le) || le.Limit != LimitPatternSize || le.Value != max {
+			t.Errorf("%.40s: got %v", s, err)
+		}
+	}
+	big := `{"pattern":"` + strings.Repeat("a", DefaultMaxPatternSize+1) + `"}`
+	if _, err := CompileWithOptions([]byte(big), Options{MaxPatternSize: DefaultMaxPatternSize + 1}); err != nil {
+		t.Errorf("raised cap: %v", err)
+	}
+	var le *LimitError
+	if _, err := Compile([]byte(big)); !errors.As(err, &le) || le.Value != DefaultMaxPatternSize {
+		t.Errorf("default cap: %v", err)
+	}
+}
+
+func TestOutputUnitsAndAnnotationsLimitErrors(t *testing.T) {
+	s, err := CompileWithOptions([]byte(`{"items":{"minimum":5}}`), Options{MaxOutputUnits: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var le *LimitError
+	if _, err := s.Validate([]byte(`[1,2,3]`)); !errors.As(err, &le) || le.Limit != LimitOutputUnits || le.Value != 1 {
+		t.Errorf("units: %v", err)
+	}
+	// The meta-check of the schema records annotations under the same cap.
+	le = nil
+	_, err = CompileWithOptions([]byte(`{"title":"t","description":"d"}`), Options{MaxAnnotations: 1})
+	if !errors.As(err, &le) || le.Limit != LimitAnnotations || le.Value != 1 {
+		t.Errorf("annotations: %v", err)
+	}
+}
+
+func TestNumberExponentLimitError(t *testing.T) {
+	s, err := CompileWithOptions([]byte(`true`), Options{MaxNumberExponent: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var le *LimitError
+	if _, err := s.Validate([]byte(`1e999`)); !errors.As(err, &le) || le.Limit != LimitNumberExponent || le.Value != 2 {
+		t.Errorf("got %v", err)
+	}
+}
