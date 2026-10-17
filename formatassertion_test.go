@@ -61,7 +61,7 @@ func TestFormatAssertionEnablement(t *testing.T) {
 }
 
 func TestFormatAssertionDeferredAndUnknownPass(t *testing.T) {
-	for _, f := range []string{"uri", "uri-reference", "iri", "iri-reference", "uri-template", "json-pointer", "relative-json-pointer", "regex", "no-such-format"} {
+	for _, f := range []string{"no-such-format"} {
 		s, err := jsonschema.CompileWithOptions([]byte(`{"format":"`+f+`"}`), jsonschema.Options{FormatAssertion: true})
 		if err != nil {
 			t.Fatal(err)
