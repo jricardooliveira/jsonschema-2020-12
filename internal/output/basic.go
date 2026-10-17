@@ -6,12 +6,13 @@ import (
 	"github.com/neoface/jsonschema/internal/jsonvalue"
 )
 
-// basicUnit is one error unit. absoluteKeywordLocation is left out until an
-// absolute base URI is known (stories 186/187).
+// basicUnit is one error unit. absoluteKeywordLocation is omitted when
+// unknown, or when the evaluation path crossed no reference (core 12.3.2).
 type basicUnit struct {
-	InstanceLocation string `json:"instanceLocation"`
-	KeywordLocation  string `json:"keywordLocation"`
-	Error            string `json:"error"`
+	InstanceLocation        string `json:"instanceLocation"`
+	KeywordLocation         string `json:"keywordLocation"`
+	AbsoluteKeywordLocation string `json:"absoluteKeywordLocation,omitempty"`
+	Error                   string `json:"error"`
 }
 
 // annotationUnit is one annotation unit of a passing report. Its annotation
@@ -98,7 +99,7 @@ func init() {
 		}
 		return writeList(w, false, "errors", len(r.Units), func(i int) any {
 			u := r.Units[i]
-			return basicUnit{u.InstanceLocation, u.KeywordLocation, u.Error}
+			return basicUnit{u.InstanceLocation, u.KeywordLocation, u.AbsoluteKeywordLocation, u.Error}
 		})
 	})
 }

@@ -1,0 +1,3 @@
+{"$id":"https://t.example/strict","$dynamicAnchor":"node","$ref":"tree","required":["data"],
+ "$defs":{"tree":{"$id":"https://t.example/tree","$dynamicAnchor":"node","type":"object",
+  "properties":{"data":true,"children":{"type":"array","items":{"$dynamicRef":"#node"}}}}}}

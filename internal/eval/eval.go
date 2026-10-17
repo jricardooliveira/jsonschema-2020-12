@@ -26,16 +26,25 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	if ctx.Tree != nil {
 		ctx.Tree.KeywordLocation = pf.dynamic
 	}
+	// core 12.3.2: absoluteKeywordLocation only once a reference was crossed.
+	abs := func(loc string) string {
+		if !pf.viaRef {
+			return ""
+		}
+		return n.Resource.AbsoluteLocation(loc)
+	}
 	if n.Bool != nil {
 		if *n.Bool {
 			return true, nil
 		}
 		ctx.KeywordLocation = pf.dynamic
+		ctx.AbsoluteKeywordLocation = abs(n.Location)
 		return false, ctx.Report("schema is false, no value is valid")
 	}
 	valid := true
 	for _, it := range n.Items {
 		ctx.KeywordLocation = pf.at(it.Keyword.Name, it.Location)
+		ctx.AbsoluteKeywordLocation = abs(it.Location)
 		ctx.Keyword = it.Keyword.Name
 		before := len(ctx.Units())
 		ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)

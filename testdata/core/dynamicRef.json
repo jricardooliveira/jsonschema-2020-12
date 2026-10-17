@@ -1,0 +1,80 @@
+[
+  {
+    "spec": "2020-12 core, section 8.2.3.2: resolves to the outermost matching $dynamicAnchor in the dynamic scope",
+    "description": "outer resource's anchor overrides the inner default",
+    "schema": {"$id": "http://x/root", "$dynamicAnchor": "T", "$ref": "list",
+      "$defs": {"list": {"$id": "list", "type": "array", "items": {"$dynamicRef": "#T"},
+        "$defs": {"default": {"$dynamicAnchor": "T", "type": "number"}}}}},
+    "tests": [
+      {"description": "empty array", "data": [], "valid": true},
+      {"description": "nested arrays (root applies at items)", "data": [[], [[]]], "valid": true},
+      {"description": "number item rejected by outer", "data": [1], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.2: the outermost resource in the dynamic scope holding the anchor anywhere inside it wins, even in a never-evaluated $defs entry",
+    "description": "outer resource's anchor in $defs overrides the inner default",
+    "schema": {"$id": "http://x/root", "$ref": "list",
+      "$defs": {"foo": {"$dynamicAnchor": "T", "type": "string"},
+        "list": {"$id": "list", "type": "array", "items": {"$dynamicRef": "#T"},
+          "$defs": {"d": {"$dynamicAnchor": "T"}}}}},
+    "tests": [
+      {"description": "string items", "data": ["a"], "valid": true},
+      {"description": "number item rejected by the outer anchor", "data": [1], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.2: with no outer anchor, the initial target is used",
+    "description": "list used on its own keeps its default",
+    "schema": {"$id": "http://x/list", "type": "array", "items": {"$dynamicRef": "#T"},
+      "$defs": {"default": {"$dynamicAnchor": "T", "type": "number"}}},
+    "tests": [
+      {"description": "numbers", "data": [1, 2.5], "valid": true},
+      {"description": "string item", "data": ["a"], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.2 bookending: initial target has no $dynamicAnchor, so it acts as $ref",
+    "description": "target with only $anchor ignores the outer dynamic anchor",
+    "schema": {"$id": "http://x/root", "$dynamicAnchor": "T", "$ref": "list",
+      "$defs": {"list": {"$id": "list", "type": "array", "items": {"$dynamicRef": "#T"},
+        "$defs": {"default": {"$anchor": "T", "type": "number"}}}}},
+    "tests": [
+      {"description": "numbers", "data": [1], "valid": true},
+      {"description": "array item rejected", "data": [[]], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.2: a fragment that is not a plain name behaves like $ref",
+    "description": "JSON Pointer fragment is never dynamic",
+    "schema": {"$id": "http://x/root", "$dynamicAnchor": "T", "$ref": "list",
+      "$defs": {"list": {"$id": "list", "type": "array", "items": {"$dynamicRef": "#/$defs/default"},
+        "$defs": {"default": {"$dynamicAnchor": "T", "type": "number"}}}}},
+    "tests": [
+      {"description": "numbers", "data": [1], "valid": true},
+      {"description": "array item rejected", "data": [[]], "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.2 recursive extension: the plain tree does not require data",
+    "description": "tree without extension",
+    "schema": {"$id": "https://t.example/tree", "$dynamicAnchor": "node", "type": "object",
+      "properties": {"data": true, "children": {"type": "array", "items": {"$dynamicRef": "#node"}}}},
+    "tests": [
+      {"description": "deep node without data", "data": {"data": 1, "children": [{"data": 2, "children": [{"children": []}]}]}, "valid": true},
+      {"description": "non-object child", "data": {"children": [1]}, "valid": false}
+    ]
+  },
+  {
+    "spec": "2020-12 core, section 8.2.3.2 recursive extension: the extension's constraints apply at every level",
+    "description": "tree with strict extension",
+    "schema": {"$id": "https://t.example/strict", "$dynamicAnchor": "node", "$ref": "tree", "required": ["data"],
+      "$defs": {"tree": {"$id": "https://t.example/tree", "$dynamicAnchor": "node", "type": "object",
+        "properties": {"data": true, "children": {"type": "array", "items": {"$dynamicRef": "#node"}}}}}},
+    "tests": [
+      {"description": "all levels have data", "data": {"data": 1, "children": [{"data": 2, "children": [{"data": 3}]}]}, "valid": true},
+      {"description": "root missing data", "data": {"children": []}, "valid": false},
+      {"description": "deep node missing data", "data": {"data": 1, "children": [{"data": 2, "children": [{"children": []}]}]}, "valid": false}
+    ]
+  }
+]

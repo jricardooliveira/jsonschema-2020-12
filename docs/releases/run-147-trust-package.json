@@ -1,0 +1,381 @@
+{
+  "work_id": "US-0147",
+  "parent_story": "US-0147",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "a6c7777ae8aa4818338b057dc215f4d8b528e594",
+    "base_commit": "b499a85e6785a65a3ecb23c4055a951986e6f7d5"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "$dynamicAnchor defines a plain-name fragment in the same namespace as $anchor (2020-12 core 8.2.2). A $ref to '#name' resolves to a subschema that carries \"$dynamicAnchor\": \"name\".",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A $dynamicRef is first resolved like $ref against the current base URI. When that initially resolved target holds a $dynamicAnchor whose name matches the plain-name fragment, the reference resolves to the outermost schema resource in the dynamic scope that has a matching $dynamicAnchor (2020-12 core 8.2.3.2).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "When the initially resolved target has no matching $dynamicAnchor (bookending), or the fragment is not a plain name, $dynamicRef behaves exactly like $ref.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Dynamic resolution works across embedded schema resources with their own $id. Entering an embedded resource adds it to the dynamic scope.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Dynamic resolution works across schemas supplied through the schema registry (story 187), with the dynamic scope spanning resources from different documents.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A duplicate plain name within one schema resource is a broken schema, with exit code 2 in the CLI and a schema error from the library, never 'invalid'. This covers two $dynamicAnchor with the same name, or a $dynamicAnchor and an $anchor with the same name. The rule is consistent with story 186.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A $dynamicRef whose initial target cannot be resolved locally or from the registry is an unresolved-reference error: exit code 2, never 'invalid', with no network or disk access.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Errors reached through $dynamicRef carry a keywordLocation that contains '/$dynamicRef' at the point of the reference, and the absoluteKeywordLocation of the dynamically resolved target. No instance value is ever quoted.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "$dynamicRef evaluation goes through story 186's evaluation-time loop check: re-entering the same schema location at the same instance location on the current evaluation path is a loop error. A test with a non-terminating $dynamicRef cycle ends with exit code 2 and does not hang.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A spec-derived recursive-extension test passes: a base tree schema whose recursion uses $dynamicRef to '#node' is extended by a schema that $refs it and declares its own \"$dynamicAnchor\": \"node\". The extension's constraints then apply at every level of nesting, with matching positive and negative cases, including the same schema used without extension.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The dynamic scope lives only in the per-call evaluation context. The compiled Schema is not modified during evaluation, and concurrent validation with the same compiled schema passes under go test -race.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Positive and negative cases live as JSON in testdata/core/dynamicRef.json and testdata/core/dynamicAnchor.json, run by the shared table-driven runner, and each case cites its 2020-12 core section.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/dynamicref_cli_test.go",
+        "change": "added",
+        "additions": 58,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/testdata/dynamicref/cycle.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/testdata/dynamicref/duplicate-anchor.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/testdata/dynamicref/strict-tree.json",
+        "change": "added",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/testdata/dynamicref/tree.json",
+        "change": "added",
+        "additions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/testdata/dynamicref/unresolved.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 21,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 76,
+        "deletions": 13
+      },
+      {
+        "path": "internal/eval/dynamicscope.go",
+        "change": "added",
+        "additions": 73,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/dynamicscope_race_test.go",
+        "change": "added",
+        "additions": 38,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/dynamicscope_test.go",
+        "change": "added",
+        "additions": 55,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/refguard.go",
+        "change": "modified",
+        "additions": 8,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/core/dynamicanchor.go",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/dynamicref.go",
+        "change": "added",
+        "additions": 67,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/dynamicref_spec_test.go",
+        "change": "added",
+        "additions": 147,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/dynamicref_test.go",
+        "change": "added",
+        "additions": 101,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 7,
+        "deletions": 2
+      },
+      {
+        "path": "internal/output/basic.go",
+        "change": "modified",
+        "additions": 7,
+        "deletions": 6
+      },
+      {
+        "path": "internal/registry/dynamicanchor.go",
+        "change": "added",
+        "additions": 21,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/dynamicanchor_test.go",
+        "change": "added",
+        "additions": 38,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/dynamicAnchor.json",
+        "change": "added",
+        "additions": 22,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/core/dynamicRef.json",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/registry/anchor.go"
+    ],
+    "design_unplanned": [
+      "internal/compile/compile.go",
+      "internal/compile/refs.go",
+      "internal/eval/refguard.go",
+      "internal/keywords/registry.go",
+      "internal/output/basic.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/compile/compile.go",
+        "granted_by": "operator",
+        "at": "gate-question #1292"
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "granted_by": "operator",
+        "at": "gate-question #1292"
+      },
+      {
+        "path": "internal/eval/refguard.go",
+        "granted_by": "operator",
+        "at": "gate-question #1285"
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "granted_by": "operator",
+        "at": "gate-question #1292"
+      },
+      {
+        "path": "internal/output/basic.go",
+        "granted_by": "operator",
+        "at": "gate-question #1292"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-cba6614cc9a845efb750df7bdcf19a91/docs/architecture/adr/ADR-011-dynamicref-and-dynamicanchor-with-dynamic-scope.md",
+    "summary": "This second pass resolves both earlier coverage gaps, so QA now passes. For AC2, $dynamicRef now resolves to the anchor of the outermost resource in the dynamic scope. It finds that anchor in a table "
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [
+      "low: Resource.AbsoluteLocation in internal/compile/compile.go joins the URI and the raw JSON Pointer as the fragment without percent-encoding it. A schema key with a space, '%', '#' or similar characters gives an absoluteKeywordLocation that is not a valid URI-reference. This is not an injection risk (the value comes from the schema, never from the instance), but tools that parse the report could misread it."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 6.793508,
+    "tokens_in": 6481149,
+    "tokens_out": 77986
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "anchor.go was not needed: the duplicate check in index.go already covers $anchor and $dynamicAnchor in one namespace."
+    },
+    {
+      "task": "T1",
+      "text": "One schema carrying both $anchor and $dynamicAnchor with the same name is not treated as a duplicate, because it is the same subschema."
+    },
+    {
+      "task": "T2",
+      "text": "Planned design: dynamicscope.go defines a DynamicScope type (Push, Pop, Len, Outermost with a predicate over *compile.Node) and ScopeOf(ctx). The scope field goes on callState. eval.go gets 3 lines after enterNode: scope := ScopeOf(ctx); scope.Push(n); defer scope.Pop(). Pop runs on every return, including errors and loop errors."
+    },
+    {
+      "task": "T2",
+      "text": "compile.Node carries no resource or base-URI information, so every entered node is pushed, not only resource roots. T3 filters with the Outermost predicate, for example by checking that the node is a resource root that holds the dynamic anchor. If T3 needs resource identity on Node, that is a compile.go change."
+    },
+    {
+      "task": "T2",
+      "text": "The push and pop live in enterNode in refguard.go rather than eval.go. eval.go already calls enterNode and defers its leave, so it needed no edit."
+    },
+    {
+      "task": "T2",
+      "text": "Only the eval package tests were run (go test ./internal/eval/), and they pass. I did not run the full suite or go test -race."
+    },
+    {
+      "task": "T2",
+      "text": "The tests cover push/pop, outermost lookup (match, no match) and that nothing leaks between two calls. None of them exercises the error or loop-error pop path directly. The pop is tied to the same leave function as the loop guard's active set."
+    },
+    {
+      "task": "T3",
+      "text": "internal/compile/refs.go is outside this task's scope, so $dynamicRef returns a *core.Ref to reuse $ref resolution. Its error messages therefore say '$ref'."
+    },
+    {
+      "task": "T3",
+      "text": "Anchor matching looks only at schema nodes already entered in the dynamic scope. When none matches, it falls back to the initial target."
+    },
+    {
+      "task": "T3",
+      "text": "Dynamic-scope push/pop was already in enterNode from T2, so eval.go needed no change."
+    },
+    {
+      "task": "T4",
+      "text": "Basic output does not emit absoluteKeywordLocation today, so the location test only checks '/$dynamicRef' in keywordLocation and that the instance value is absent. The absoluteKeywordLocation part of the acceptance criteria is not tested."
+    },
+    {
+      "task": "T4",
+      "text": "Recursive extension and outermost resolution use anchors on resource roots, because ResolveDynamic only finds anchors on nodes that were entered."
+    },
+    {
+      "task": "T4",
+      "text": "The cycle test builds the schema through the public API and asserts eval.LoopError, matching the existing unit test."
+    },
+    {
+      "task": "T5",
+      "text": "Fixtures are read by relative path from testdata/dynamicref/, because Go tests run in the package directory."
+    },
+    {
+      "task": "T5",
+      "text": "The basic-output test writes its schema to a temp file instead of using a fixture."
+    },
+    {
+      "task": "T6",
+      "text": "The test is in package eval_test and uses the public jsonschema API. This avoids an import cycle with the root package."
+    },
+    {
+      "task": "T6",
+      "text": "I ran only the touched package under -race, not the full suite."
+    },
+    {
+      "task": "remediation",
+      "text": "F1 needs compile-time data. compile.Node holds only Location and Items, and Location is a pointer inside one document, so nodes from different documents can share it. The registry index (Resource.Anchors and HasDynamicAnchor) is used only while refs.go compiles and never reaches evaluation. So at evaluation time nothing can tell which resource an entered node belongs to, or which compiled node holds that resource's $dynamicAnchor. Walking the opaque keyword data at evaluation time would get around the design the reviewer pointed to. I rejected it."
+    },
+    {
+      "task": "remediation",
+      "text": "Planned fix for F1: add a field to compile.Node in compile.go that points to a read-only per-resource table (dynamic anchor name -> compiled node). refs.go compileDocument fills it at compile time from registry Resource.Anchors and HasDynamicAnchor, for the main document and for registry documents. dynamicscope.go ResolveDynamic then walks the scope outermost first and looks up entry.<table>[name]. No new load happens at evaluation time, and the walk stays linear in scope depth."
+    },
+    {
+      "task": "remediation",
+      "text": "Planned fix for F2: refs.go gives each node its absolute URI, built from the resource base plus the pointer inside that resource. keywords.Unit in internal/keywords/registry.go gains AbsoluteKeywordLocation, which Report fills from the EvalContext. output/basic.go basicUnit emits it with omitempty, so the failing shape of other reports does not change. evalDynamicRef then reports the absolute location of the target it resolved to."
+    },
+    {
+      "task": "remediation",
+      "text": "I did not add the red test case for F1 (an outer resource whose matching $dynamicAnchor sits in an unevaluated $defs entry) to testdata/core/dynamicRef.json yet. It would make the suite red while the pass is blocked. It goes in with the fix, together with a test asserting absoluteKeywordLocation for F2."
+    },
+    {
+      "task": "remediation",
+      "text": "absoluteKeywordLocation is filled only after a $ref or $dynamicRef has been crossed (core 12.3.2 allows leaving it out otherwise). This is why the existing exact-output tests for schemas without references did not change."
+    },
+    {
+      "task": "remediation",
+      "text": "The fragment in absoluteKeywordLocation is the JSON Pointer as written, without percent-encoding."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

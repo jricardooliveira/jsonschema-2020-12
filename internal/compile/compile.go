@@ -27,6 +27,27 @@ type Node struct {
 	// Location is the JSON Pointer of this schema from the schema root.
 	Location string
 	Items    []Item
+	// Resource is the schema resource holding this node; nil when compiled
+	// without a resource index (Compile).
+	Resource *Resource
+}
+
+// Resource is the compiled view of one schema resource, shared by its nodes.
+type Resource struct {
+	URI     string // absolute URI, no fragment
+	Pointer string // JSON Pointer of the resource root in its document
+	// Dynamic maps each $dynamicAnchor name of the resource to its compiled
+	// subschema (core 8.2.2), filled before Compile returns.
+	Dynamic map[string]*Node
+}
+
+// AbsoluteLocation is the absolute keyword location (core 12.3.2) of the
+// schema location loc inside resource r, or "" when r is nil.
+func (r *Resource) AbsoluteLocation(loc string) string {
+	if r == nil {
+		return ""
+	}
+	return r.URI + "#" + strings.TrimPrefix(loc, r.Pointer)
 }
 
 // Compile compiles a decoded schema value. Unknown keywords are ignored.

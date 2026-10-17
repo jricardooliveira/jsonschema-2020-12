@@ -41,6 +41,7 @@ type pathFrame struct {
 	static, dynamic string // node location in the schema / along the evaluation path
 	kw              string // name of the keyword being evaluated in this node
 	kwDynamic       string // its location along the evaluation path
+	viaRef          bool   // the path to this node crossed $ref or $dynamicRef
 }
 
 // callState is the per-call Items record plus the guard's active path. It
@@ -50,6 +51,7 @@ type callState struct {
 	*EvaluatedItems
 	active map[frame]struct{}
 	path   []*pathFrame
+	scope  DynamicScope
 }
 
 // enterNode marks (n, instance location) active, pushes n on the evaluation
@@ -83,11 +85,15 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 	}
 	pf := &pathFrame{static: n.Location, dynamic: n.Location}
 	if k := len(st.path); k > 0 {
-		pf.dynamic = dynamicLocation(st.path[k-1], n.Location)
+		parent := st.path[k-1]
+		pf.dynamic = dynamicLocation(parent, n.Location)
+		pf.viaRef = parent.viaRef || parent.kw == "$ref" || parent.kw == "$dynamicRef"
 	}
 	st.active[f] = struct{}{}
 	st.path = append(st.path, pf)
+	popScope := st.scope.push(n)
 	return pf, func() {
+		popScope()
 		delete(st.active, f)
 		st.path = st.path[:len(st.path)-1]
 	}, nil
@@ -98,7 +104,7 @@ func enterNode(ctx *keywords.EvalContext, n *compile.Node) (*pathFrame, func(), 
 // $ref). A reference target starts at the $ref keyword itself; any other
 // child keeps its path below the parent node.
 func dynamicLocation(parent *pathFrame, loc string) string {
-	if parent.kw == "$ref" {
+	if parent.kw == "$ref" || parent.kw == "$dynamicRef" {
 		return parent.kwDynamic
 	}
 	if rel, ok := strings.CutPrefix(loc, parent.static); ok && (rel == "" || rel[0] == '/') {
