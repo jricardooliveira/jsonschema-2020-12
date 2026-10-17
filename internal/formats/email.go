@@ -58,9 +58,33 @@ func emailDomain(d string, host func(string) bool) bool {
 		if len(in) >= 5 && strings.EqualFold(in[:5], "IPv6:") {
 			return validIPv6(in[5:])
 		}
+		if tag, content, ok := strings.Cut(in, ":"); ok {
+			return generalLiteral(tag, content)
+		}
 		return validIPv4(in)
 	}
 	return host(d)
+}
+
+// generalLiteral checks an RFC 5321 4.1.3 General-address-literal:
+// Standardized-tag (Ldh-str) ":" 1*dcontent (%d33-90 / %d94-126). The tag is
+// not checked against the IANA registry.
+func generalLiteral(tag, content string) bool {
+	if tag == "" || tag[0] == '-' || tag[len(tag)-1] == '-' || content == "" {
+		return false
+	}
+	for i := 0; i < len(tag); i++ {
+		c := tag[i]
+		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-') {
+			return false
+		}
+	}
+	for i := 0; i < len(content); i++ {
+		if c := content[i]; c < 33 || c > 126 || c >= 91 && c <= 93 {
+			return false
+		}
+	}
+	return true
 }
 
 // splitEmail splits at the '@' ending the local part, which may be quoted.

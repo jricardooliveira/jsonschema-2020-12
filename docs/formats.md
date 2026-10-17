@@ -21,7 +21,7 @@ Checks are hand-written, linear-time and use the standard library only.
 | `date` | RFC 3339 5.6 full-date, real calendar days incl. leap years |
 | `time` | RFC 3339 5.6 full-time, offset required, same leap-second rule |
 | `duration` | RFC 3339 appendix A ABNF; `P2W` alone; units chain only to the next one (`P1Y2M3D`, `PT1H2M` pass; `P1Y1D`, `PT1H1S`, `P1W3D`, `P`, `PT` fail) |
-| `email` | RFC 5321 Mailbox: dot-atom or quoted local part (max 64), domain or `[ipv4]` / `[IPv6:...]` literal, max 254 bytes |
+| `email` | RFC 5321 Mailbox: dot-atom or quoted local part (max 64), domain or `[ipv4]` / `[IPv6:...]` / general `[tag:content]` literal (tag not checked against the IANA registry), max 254 bytes |
 | `idn-email` | partly checked, see below |
 | `hostname` | RFC 1123: labels 1-63 of letters, digits, hyphen, no hyphen at an edge, max 253, trailing dot fails |
 | `idn-hostname` | partly checked, see below |
@@ -38,9 +38,11 @@ with non-ASCII characters gets basic checks only:
 - `idn-hostname`: valid UTF-8, at most 253 code points, labels of 1-63 code
   points, no trailing dot, no hyphen at a label edge, no space or control
   characters, ASCII characters limited to letters, digits and `-`.
-- `idn-email`: valid UTF-8, at most 254 bytes, local part of 1-64 bytes without
-  `@`, spaces, control characters or empty dot segments, and a domain that is an
-  address literal or passes `idn-hostname`.
+- `idn-email`: valid UTF-8, at most 254 bytes, an unquoted local part of 1-64
+  bytes whose ASCII characters are atext or `.` (so no stray punctuation such
+  as `,` `(` `)` `<` `>` `;` `:` `[` `]` `\` `"`), with no spaces, control
+  characters or empty dot segments, and a domain that is an address literal or
+  passes `idn-hostname`. A quoted local part with non-ASCII characters fails.
 
 Not checked: IDNA2008 code point categories (PVALID/CONTEXTJ/CONTEXTO),
 normalization, bidi rules, `--` in label positions 3-4, Unicode punctuation,

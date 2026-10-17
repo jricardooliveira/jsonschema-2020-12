@@ -15,4 +15,11 @@ func TestHostname(t *testing.T) {
 		strings.Repeat("a", 64) + ".com": false,
 		strings.Repeat("a.", 127):        false,
 	})
+	// Total length cap alone: labels are within 63, no trailing dot.
+	l := strings.Repeat("a", 63) + "."
+	pre := l + l + l // 192 bytes
+	table(t, "hostname", map[string]bool{
+		pre + strings.Repeat("b", 61): true,  // 253 bytes
+		pre + strings.Repeat("b", 62): false, // 254 bytes
+	})
 }
