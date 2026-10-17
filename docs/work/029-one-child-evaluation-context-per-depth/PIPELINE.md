@@ -3,21 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #164 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 21:44:52 UTC · **Stopped:** 2026-10-17 22:06:00 UTC
+- **Run:** #164 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 21:44:52 UTC · **Stopped:** 2026-10-17 22:09:12 UTC
 - **Story spend:** ~$3.22 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 164` to accept, or `factory reject 164 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-164-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: No test exercises reuse and non-aliasing through EvalChild itself at the call site; childctx unit tests prove the stack property, but a higher-level test over multiple EvalChild calls on siblings would strengthen confidence. Low severity: units detached by reference not copied, so aliasing would cause data corruption or be caught by the poison test.
-  >   ◦ Release-agent note: The per-call context stack lives on its own field (stk *childStack) rather than embedded in the collector. Low severity: design choice for clarity; indirection is minimal.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -54,8 +50,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 22:04:08 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 12; findings: 2 new, 0 persistent, 0 resolved |
 | 2026-10-17 22:04:08 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 22:05:59 | agent | release-agent | ✅ warn · 110.8s · $0.1072 |
-| 2026-10-17 22:06:00 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 22:06:00 | run | run waiting_human | ⏸️ |
+| 2026-10-17 22:06:00 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 22:09:12 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 22:09:12 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
