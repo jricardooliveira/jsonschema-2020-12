@@ -30,7 +30,7 @@ type propRecorder interface {
 // instance location; no instance value is annotated.
 func recordProps(ctx *keywords.EvalContext, names []string, valid bool) error {
 	if rec, ok := ctx.Items.(propRecorder); ok {
-		rec.RecordProperties(ctx.InstanceLocation, ctx.KeywordLocation, names)
+		rec.RecordProperties(ctx.InstanceLocation, ctx.KeywordLoc(), names)
 	}
 	if valid && len(names) > 0 {
 		return ctx.Annotate(append([]string(nil), names...))

@@ -16,6 +16,22 @@ func Evaluate(n *compile.Node, instance any) (bool, error) {
 	return ok, err
 }
 
+// EvaluateValidate is EvaluateLazy for a Validate call: no tree is built, so
+// the evaluated-property/item record is skipped when the root node says no
+// unevaluated* keyword is reachable (NoUnevaluated, set once at Compile).
+// Charging and every limit run as in EvaluateLazy. The switch lives only in
+// this call's own state.
+// ponytail: duplicates EvaluateLazy's few lines; annotation_record.go was
+// outside this task's files. Fold the two together later.
+func EvaluateValidate(n *compile.Node, instance any, lim Limits) (Evaluation, error) {
+	items := newEvaluatedItems(lim.MaxSteps)
+	items.skip = n.NoUnevaluated
+	return evaluateOpt(n, instance, lim.MaxUnits, lim.MaxAnnotations, nil, &callState{
+		EvaluatedItems: items, active: map[frame]struct{}{},
+		maxRefChain: lim.MaxRefChain, maxPath: 4 * lim.MaxDepth,
+	}, true)
+}
+
 // evalNode evaluates a compiled schema into ctx. Units of failing keywords
 // and applicators accumulate in ctx in evaluation order.
 func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
@@ -34,22 +50,15 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	if ctx.Tree != nil {
 		ctx.Tree.KeywordLocation = pf.dynamic
 	}
-	// core 12.3.2: absoluteKeywordLocation only once a reference was crossed.
-	abs := func(loc string) string {
-		if !pf.viaRef {
-			return ""
-		}
-		return n.Resource.AbsoluteLocation(loc)
-	}
 	if n.Bool != nil {
 		if *n.Bool {
 			return true, nil
 		}
-		ctx.KeywordLocation = pf.dynamic
-		ctx.AbsoluteKeywordLocation = abs(n.Location)
+		ctx.Loc = &lazyLoc{pf: pf, res: n.Resource, static: n.Location}
 		return false, ctx.Report("schema is false, no value is valid")
 	}
 	valid := true
+	loc := &lazyLoc{pf: pf, res: n.Resource} // one per node; static is set per keyword
 	// Two passes: keywords flagged AfterSiblings run last, in schema order.
 	for pass := 0; pass < 2; pass++ {
 		for _, it := range n.Items {
@@ -59,7 +68,7 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 			if err := keywordStep(ctx); err != nil { // one step per keyword
 				return false, err
 			}
-			ok, err := evalItem(ctx, pf, abs, it, instance)
+			ok, err := evalItem(ctx, pf, loc, it, instance)
 			if err != nil {
 				return false, err
 			}
@@ -79,6 +88,30 @@ func keywordStep(ctx *keywords.EvalContext) error {
 		return errors.New("internal error: evaluation state missing")
 	}
 	return st.Step()
+}
+
+// lazyLoc is the lazy location of the keyword being evaluated in one node. It
+// reads only data fixed at node entry (path frame), the node's resource and
+// the keyword's static location; static is set before each keyword and the
+// strings are rendered at once, when a unit or annotation is made.
+type lazyLoc struct {
+	pf     *pathFrame
+	res    *compile.Resource
+	static string
+}
+
+// String renders the keyword location along the evaluation path.
+func (k *lazyLoc) String() string {
+	return k.pf.dynamic + strings.TrimPrefix(k.static, k.pf.static)
+}
+
+// Absolute renders the absolute keyword location (core 12.3.2): empty until
+// a reference was crossed.
+func (k *lazyLoc) Absolute() string {
+	if !k.pf.viaRef {
+		return ""
+	}
+	return k.res.AbsoluteLocation(k.static)
 }
 
 // CoveredItems summarises the item annotations recorded at instLoc since
@@ -140,9 +173,15 @@ func (r *EvaluatedItems) since(mark int) []itemEntry {
 // leaves at least one unit. A failing keyword keeps no evaluated-location
 // records (core 7.7.1), so a failing 'not' whose subschema passed covers
 // nothing for a sibling unevaluated* keyword.
-func evalItem(ctx *keywords.EvalContext, pf *pathFrame, abs func(string) string, it compile.Item, instance any) (bool, error) {
-	ctx.KeywordLocation = pf.at(it.Keyword.Name, it.Location)
-	ctx.AbsoluteKeywordLocation = abs(it.Location)
+func evalItem(ctx *keywords.EvalContext, pf *pathFrame, loc *lazyLoc, it compile.Item, instance any) (bool, error) {
+	loc.static = it.Location
+	ctx.Loc = loc
+	// Only a reference needs its location now: its target starts there.
+	if n := it.Keyword.Name; n == "$ref" || n == "$dynamicRef" {
+		pf.at(n, it.Location)
+	} else {
+		pf.kw = n
+	}
 	ctx.Keyword = it.Keyword.Name
 	before := len(ctx.Units())
 	rec, _ := ctx.Items.(keywords.ItemRecorder)
@@ -150,7 +189,15 @@ func evalItem(ctx *keywords.EvalContext, pf *pathFrame, abs func(string) string,
 	if rec != nil {
 		mark = rec.Mark()
 	}
-	ok, err := it.Keyword.Evaluate(ctx, it.Data, instance)
+	var ok bool
+	var err error
+	if discardsAnnotations(ctx, it.Keyword.Name) {
+		leave := enterSink(ctx)
+		ok, err = it.Keyword.Evaluate(ctx, it.Data, instance)
+		leave()
+	} else {
+		ok, err = it.Keyword.Evaluate(ctx, it.Data, instance)
+	}
 	if err != nil {
 		return false, err
 	}

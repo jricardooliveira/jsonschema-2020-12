@@ -49,9 +49,21 @@ func MetaChecks(docs []Doc, ext *registry.Index, run func(Check) error) error {
 		}
 		for i := len(chain) - 1; i >= 0; i-- {
 			// Format assertion is forced off: meta-checks never assert format.
-			_, n, err := compileDocumentOpts(map[string]any{"$ref": chain[i].meta}, StdinBaseURI, ext, 0, false, true)
-			if err != nil {
-				return err
+			var n *Node
+			if chain[i].meta == Draft2020 {
+				// The 2020-12 meta-schema refers only to embedded resources, which
+				// a caller cannot override: reuse the shared compiled one.
+				set, err := sharedBuiltin()
+				if err != nil {
+					return err
+				}
+				n = set.meta
+			} else {
+				var err error
+				_, n, err = compileDocumentOpts(map[string]any{"$ref": chain[i].meta}, StdinBaseURI, ext, 0, false, true)
+				if err != nil {
+					return err
+				}
 			}
 			if err := run(Check{Meta: n, Doc: chain[i].doc}); err != nil {
 				return err

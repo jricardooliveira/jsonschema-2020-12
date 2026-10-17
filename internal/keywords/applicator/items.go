@@ -43,7 +43,7 @@ func evalItems(ctx *keywords.EvalContext, compiled any, instance any) (bool, err
 	}
 	if valid { // core 10.3.1.2: annotation true when items applied
 		if rec, ok := ctx.Items.(keywords.ItemRecorder); ok {
-			rec.RecordItems(ctx.InstanceLocation, ctx.KeywordLocation)
+			rec.RecordItems(ctx.InstanceLocation, ctx.KeywordLoc())
 		}
 		return true, ctx.Annotate(true)
 	}

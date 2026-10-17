@@ -1,0 +1,332 @@
+{
+  "work_id": "US-0157",
+  "parent_story": "US-0157",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "db82bf1eca2a753a0b40aa1dd56a614e836bdf9c",
+    "base_commit": "baa82ed1020605f9696c808d61e1a3f96dd3dcbd"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "During evaluation, a keyword location or absolute keyword location string is produced only when an output unit, error, annotation or library Result that will be shown needs it. Otherwise only a cheap reference to the schema position is kept, and the string is produced from it on demand. Locations are built while a document is checked, not when the schema is loaded.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Results are identical everywhere: the same valid or invalid answer, the same flag, basic, detailed and verbose reports byte for byte, and the same library Result, including instance locations, keyword locations, absolute keyword locations and annotation locations. All existing tests pass unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Verbose output stays correct and keeps its current second evaluation pass.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "One new regression test covers every hostile-input limit: nesting depth, ref chain, evaluation-step charging, output units, report bytes and annotation count. For each limit, a small input built by test code at exactly the limit still gets a normal valid or invalid answer, and one just over the limit gets the same error as today and exit code 2. Limit values are read from the code, not repeated as numbers.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The compiled Schema and everything reachable from it stay immutable after Compile returns. Any location cache lives in the per-call evaluation context. go test -race ./... passes, including the existing concurrency tests.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The project's benchmarks (go test -run '^$' -bench . -benchmem) are run on the same machine before and after the change. Each is run 10 times and the median is recorded. Both sets of numbers are added to docs/benchmarks.md for this story.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "On the validation scenarios, allocs/op or B/op goes down. No scenario's allocs/op or B/op goes up, compiling the schema included. ns/op on the validation scenarios is not worse beyond the \u00b15% run-to-run noise. Any speed gain is recorded but not required.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "This story adds and changes no allocation-limit test. internal/jsonvalue/number_test.go is unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 8,
+    "covered": 8,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/limits_edge_regression_test.go",
+        "change": "added",
+        "additions": 61,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "modified",
+        "additions": 97,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 36,
+        "deletions": 13
+      },
+      {
+        "path": "internal/eval/location.go",
+        "change": "added",
+        "additions": 63,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/location_test.go",
+        "change": "added",
+        "additions": 110,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/annotate.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/contains.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/if.go",
+        "change": "modified",
+        "additions": 18,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/applicator/items.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/properties.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 24,
+        "deletions": 5
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluateditems.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluatedproperties.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/eval/units.go",
+      "internal/eval/annotations.go"
+    ],
+    "design_unplanned": [
+      "internal/keywords/annotate.go",
+      "internal/keywords/applicator/contains.go",
+      "internal/keywords/applicator/if.go",
+      "internal/keywords/applicator/items.go",
+      "internal/keywords/applicator/prefixitems.go",
+      "internal/keywords/applicator/properties.go",
+      "internal/keywords/registry.go",
+      "internal/keywords/unevaluated/unevaluateditems.go",
+      "internal/keywords/unevaluated/unevaluatedproperties.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/keywords/annotate.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/applicator/contains.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/applicator/if.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/applicator/items.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/applicator/properties.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluateditems.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluatedproperties.go",
+        "granted_by": "operator",
+        "at": "gate-question #1439"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-aea73650122b45739b5ee7f12126defa/docs/architecture/adr/ADR-022-build-keyword-locations-only-when-a-report-or-resu.md",
+    "summary": "I recommend warn: nothing blocks, but one medium finding should be fixed. The change replaces eager keyword and absolute location strings with a per-node lazy reference (lazyLoc in eval.go, exposed to"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [
+      "No new security issue. Locations are still built only from schema-static data (pathFrame dynamic/static, Resource, Item.Location) and never from instance values. KeywordLoc() returns \"\" when ctx.Loc is nil, which matches the old zero-value KeywordLocation, so it is not a new way to fail open. The limit error paths are unchanged, and the new edge test pins them to exit 2."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 3.930633,
+    "tokens_in": 4905899,
+    "tokens_out": 52974
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "I ran each package separately (root, internal/jsonvalue, cmd/jsonschema), because the session could not read the output of the full-tree background run."
+    },
+    {
+      "task": "T1",
+      "text": "A full-tree run of the same command was going in the background during part of the measurement. Timings may be slightly noisy: CLI/Errors shows two clusters, about 35 ms and 37.7 ms. Allocation counts and retained heap are stable, and the doc says so."
+    },
+    {
+      "task": "T1",
+      "text": "Medians for 10 values are the mean of the 5th and 6th sorted values, and the 'before' set follows the same method as the story-198 baseline."
+    },
+    {
+      "task": "T1",
+      "text": "The existing story-198 baseline section is left untouched."
+    },
+    {
+      "task": "T2",
+      "text": "Rendering is pure string work and cannot fail, so no error path was added."
+    },
+    {
+      "task": "T2",
+      "text": "No per-call memoisation yet; T3 can add it to the evaluation context if profiling shows it is needed."
+    },
+    {
+      "task": "T2",
+      "text": "The types are not wired into eval.go yet; that is T3."
+    },
+    {
+      "task": "T4",
+      "text": "Each edge is the smallest flag value that gives a normal answer, measured on the pre-T3 code. The edges are 4 (depth), 5 (ref chain), 186 (steps), 4 (output units), 414 (report bytes) and 37 (annotations). These are the limit values the test sets on small generated inputs, not code defaults."
+    },
+    {
+      "task": "T4",
+      "text": "Several edges include the meta-schema check at compile time as well as the document. Steps and annotations are the clearest cases. A shift in either trigger point would still fail the test."
+    },
+    {
+      "task": "T4",
+      "text": "Only the test file was added. The test was run once, on the current code, and only that test; the full suite and `go test -race` were not run. The after-T3 half of the 'done when' check is not done yet."
+    },
+    {
+      "task": "T3",
+      "text": "Keywords read ctx.KeywordLocation and ctx.AbsoluteKeywordLocation as plain string fields. EvalContext.Report copies them into Unit, and Annotate copies KeywordLocation into Annotation."
+    },
+    {
+      "task": "T3",
+      "text": "These strings are also read directly in keyword files: contains.go, if.go, items.go, properties.go, prefixitems.go, unevaluatedproperties.go and unevaluateditems.go."
+    },
+    {
+      "task": "T3",
+      "text": "eval.go can only avoid building the strings if EvalContext holds a lazy reference and renders it on demand, which needs changes in internal/keywords/registry.go and internal/keywords/annotate.go."
+    },
+    {
+      "task": "T3",
+      "text": "Without that, eval.go would have to render the strings before every keyword runs, which is what it does today (pathFrame.at concatenates for every keyword). It would save no allocations."
+    },
+    {
+      "task": "T3",
+      "text": "internal/eval/refguard.go is outside this task's scope. enterNode still builds each node's dynamic path string eagerly, and I did not touch it. Only the per-keyword strings became lazy."
+    },
+    {
+      "task": "T3",
+      "text": "The pf.kwDynamic field is now filled only for $ref and $dynamicRef. For other keywords it is stale, and nothing reads it unless the parent keyword is a reference. The full test suite passes with this."
+    },
+    {
+      "task": "T3",
+      "text": "location.go, its test and the T2 types were left unused by evaluation, because the lazyLoc type in eval.go works from the existing pathFrame. I did not remove them."
+    },
+    {
+      "task": "T3",
+      "text": "Properties, items, prefixItems, contains and unevaluated* still render their keyword location string when they record evaluated locations, because the ItemRecorder methods take strings. Changing that would break existing tests."
+    },
+    {
+      "task": "T3",
+      "text": "Annotate still renders the keyword location when it records an annotation, and still leaves AbsoluteKeywordLocation empty, as before. Story 201 owns annotation collection."
+    },
+    {
+      "task": "T5",
+      "text": "The existing parallel render test and the existing root-package concurrency race tests are enough for this task, so I added no new test."
+    },
+    {
+      "task": "T6",
+      "text": "The median of 10 runs is the mean of the 5th and 6th sorted values. Throughput (MB/s) and some small B/op and allocs/op medians are approximate, as the doc says."
+    },
+    {
+      "task": "T6",
+      "text": "CompileOrder also fell (allocs 28,410 to 25,922, B/op 1,039,896 to 900,985, ns/op about 14%). This task did not touch the compiler, and the doc says that drop is not claimed as a result of this story."
+    },
+    {
+      "task": "T6",
+      "text": "The 'before' set was measured earlier on the code at that time. I did not re-measure it."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

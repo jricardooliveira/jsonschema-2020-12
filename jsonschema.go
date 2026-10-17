@@ -30,7 +30,7 @@ type Schema struct {
 type Result struct {
 	valid       bool
 	units       []keywords.Unit
-	annotations []eval.Annotation
+	annotations *eval.Lazy // sorted on first use
 	maxReport   int
 	// read-only inputs to rebuild the evaluation tree in Output
 	root        *compile.Node
@@ -116,6 +116,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err := metaCheck(docs, ext, el); err != nil {
 		return nil, err
 	}
+	n.NoUnevaluated = !compile.NeedsEvaluated(docs, ext)
 	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input, el: el}, nil
 }
 
@@ -127,7 +128,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 // asserted here, whatever the options say.
 func metaCheck(docs []compile.Doc, ext *registry.Index, el eval.Limits) error {
 	err := compile.MetaChecks(docs, ext, func(c compile.Check) error {
-		ev, err := eval.EvaluateWith(c.Meta, c.Doc.Value, el, false)
+		ev, err := eval.EvaluateNoAnnotations(c.Meta, c.Doc.Value, el)
 		if err != nil {
 			return err
 		}
@@ -158,9 +159,9 @@ func (s *Schema) Validate(document []byte) (Result, error) {
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	ev, err := eval.EvaluateWith(s.root, v, s.el, false)
+	ev, err := eval.EvaluateValidate(s.root, v, s.el)
 	if err != nil {
 		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
-	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn, el: s.el}, nil
+	return Result{valid: ev.Valid, units: ev.Units, annotations: eval.NewLazy(ev.Annotations), maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn, el: s.el}, nil
 }

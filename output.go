@@ -12,7 +12,7 @@ const DefaultMaxOutputUnits = eval.DefaultMaxOutputUnits
 // Output renders the result as a 2020-12 output object. shape is "flag" or
 // "basic"; an unknown shape is an error. The output never holds instance values.
 func (r Result) Output(shape string) ([]byte, error) {
-	rep := output.Report{Valid: r.valid, Units: r.units, Annotations: r.annotations}
+	rep := output.Report{Valid: r.valid, Units: r.units, Annotations: r.annotations.Sorted()}
 	if output.NeedsTree(shape) && r.root != nil {
 		// The tree is rebuilt per call, never cached, so a Result stays immutable.
 		ev, err := eval.EvaluateWith(r.root, r.inst, r.el, true)

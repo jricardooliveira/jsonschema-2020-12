@@ -1,0 +1,282 @@
+{
+  "work_id": "US-0158",
+  "parent_story": "US-0158",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "72870d81e665763e31b8bedb051d478eaa4d0acb",
+    "base_commit": "3d36d644acb9431d9cec310bac31dca438c5fa81"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "There is no new library option and no API change. Annotations are not collected or sorted in any part of an evaluation where no Result accessor and no output shape (flag, basic, detailed, verbose) could ever show them, for example inside a subschema whose annotations the 2020-12 rules always drop. Every caller keeps getting annotations in the Result without asking for them.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Wherever annotations can be shown, every Result accessor and every output shape returns the same content in the same order as before this story. This holds whether the annotations are built during Validate or on demand on first access.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Annotations are sorted without splitting a JSON Pointer on each comparison: the segments are computed once per annotation and compared directly. A unit test compares the new order with the old pointer-splitting order. It covers ~0/~1 escapes, percent-free and numeric segments, prefix pointers, the empty pointer and equal instance locations with different keyword locations, and the two orders match exactly.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Results stay identical everywhere: the same valid or invalid answer, the same flag, basic, detailed and verbose reports, and the same library Result. Verbose keeps its second evaluation pass. All existing tests pass unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every hostile-input limit keeps working exactly as before. That covers nesting depth, ref chain, evaluation-step charging, output units, report bytes and annotation count. Each triggers at exactly the same inputs, with the same error and exit code 2. In particular, the annotation-count limit still fails Validate itself, even when annotation content is built later. One new regression test proves this through both the library and the CLI run entry point. For each limit it checks the input just under the limit and the input just over it.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The compiled Schema stays immutable after Compile. A Result whose annotations are built on demand is immutable from the caller's view and safe to read from several goroutines at the same time. A new test reads annotations and renders every shape concurrently from the same Result and the same Schema, and `go test -race ./...` passes.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The project's benchmarks are run on the same machine before and after the change, and both sets of numbers are added to docs/benchmarks.md. The targeted validation scenarios show lower allocs/op or B/op. No scenario's allocs/op or B/op increases. ns/op does not get worse beyond the normal run-to-run variation of about 5%.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "No allocation-limit test is added or changed. The number-amplification test in internal/jsonvalue/number_test.go stays unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 8,
+    "covered": 8,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "annotations.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 2
+      },
+      {
+        "path": "annotations_ondemand_test.go",
+        "change": "added",
+        "additions": 106,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/annotations_limits_regression_test.go",
+        "change": "added",
+        "additions": 99,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "modified",
+        "additions": 61,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_order.go",
+        "change": "added",
+        "additions": 98,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_order_test.go",
+        "change": "added",
+        "additions": 49,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_record.go",
+        "change": "added",
+        "additions": 40,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_sink.go",
+        "change": "added",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_sink_test.go",
+        "change": "added",
+        "additions": 72,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotations.go",
+        "change": "modified",
+        "additions": 10,
+        "deletions": 36
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/annotate.go",
+        "change": "modified",
+        "additions": 12,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "output.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/eval/units.go"
+    ],
+    "design_unplanned": [
+      "internal/keywords/annotate.go",
+      "output.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/keywords/annotate.go",
+        "granted_by": "operator",
+        "at": "gate-question #1450"
+      },
+      {
+        "path": "output.go",
+        "granted_by": "operator",
+        "at": "gate-question #1448"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-9832d838e2604a50a80cb999597e3751/docs/architecture/adr/ADR-024-collect-and-sort-annotations-only-when-they-can-be.md",
+    "summary": "This story implements fix 3 within its scope and follows the boundary rules, and every criterion has a reading test or a visible diff behind it. Pointer segments are now decoded once per annotation, a"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [
+      "No secrets, network access or file reads are added. Records and built annotations hold only locations, the keyword name and schema-sourced values; the renderers and errors are unchanged, so no instance values leak. Discard mode still counts every Annotate call against the cap before it returns, so 'not' does not open a way around the annotation-count limit.",
+      "Hardening (low): Lazy.Sorted runs sortInPlace inside sync.Once. If the sort ever panicked, the assignment would not happen but the Once would count as done, so every later reader would silently get an empty annotation list. No half-built list is published, but the failure is swallowed rather than repeated. sortInPlace has no realistic panic path, so this is defence-in-depth only."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.465298,
+    "tokens_in": 6270062,
+    "tokens_out": 58492
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The test compares every pair from a set of pointers against the old splitting comparator. The set covers ~0 and ~1 escapes, the empty pointer, the root-slash pointer, numeric segments, prefix pointers, percent characters and different keyword locations at the same instance location."
+    },
+    {
+      "task": "T2",
+      "text": "EvaluateFull and EvaluateTree still sort eagerly, so existing eval tests are unaffected."
+    },
+    {
+      "task": "T2",
+      "text": "EvaluateWith (the Validate path) now returns the unsorted list in the new Evaluation.Raw field instead of sorting it."
+    },
+    {
+      "task": "T2",
+      "text": "I did not change the evaluate signature because budget.go is out of scope. evaluate treats a non-nil state as the signal to defer the sort."
+    },
+    {
+      "task": "T2",
+      "text": "output.go was edited as the operator approved: Output now reads r.annotations.Sorted()."
+    },
+    {
+      "task": "T2",
+      "text": "I added no new tests in this task. Concurrency and on-demand tests belong to T5, and the limit regression test belongs to T4."
+    },
+    {
+      "task": "T2",
+      "text": "I ran only the packages that use annotations, not the full suite."
+    },
+    {
+      "task": "T2",
+      "text": "evaluateOpt carries a lazy flag so the old evaluate signature, which budget.go still calls, is unchanged. EvaluateLazy repeats about 4 lines of callState setup from evaluateWith because budget.go is outside this task's scope."
+    },
+    {
+      "task": "T3",
+      "text": "Only 'not' children are discarded. Their annotations are always rolled back, and discard is never used when a tree is built (detailed/verbose), because tree nodes under a passing 'not' child still show annotations."
+    },
+    {
+      "task": "T3",
+      "text": "`not` is the only keyword whose subtree annotations are always dropped, so it is the only keyword the skip rule covers. A passing child makes `not` fail, and a failing child's annotations are rolled back anyway."
+    },
+    {
+      "task": "T3",
+      "text": "Skipped annotations do not advance the sequence counter. The relative order of the kept annotations is unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "Added the exported method `EvalContext.SetDiscard` in an internal package. It is not part of the public API."
+    },
+    {
+      "task": "T3",
+      "text": "The step-count test compares the minimal passing MaxSteps in discard mode against the tree path, which never discards."
+    },
+    {
+      "task": "T4",
+      "text": "The edge value for the 'annotations in not' case is found by scanning upward from 1 using the library. The compile-time meta-schema check shares the annotation cap, so I did not hard-code it."
+    },
+    {
+      "task": "T4",
+      "text": "I only ran this test and go vet on cmd/jsonschema. I did not run the full suite or go test -race."
+    },
+    {
+      "task": "T5",
+      "text": "The 'same as eagerly built' check compares concurrent and repeated reads against a single-threaded run of the current code. It does not compare against a copy of the pre-story code."
+    },
+    {
+      "task": "T5",
+      "text": "I ran only the two new tests with -race, not the full `go test -race ./...` suite. This task's done-when asks for the full suite, so it still needs a run."
+    },
+    {
+      "task": "T6",
+      "text": "'Before' is the commit just before this story's T1 (386bf22), measured in a temporary git worktree that I removed afterwards."
+    },
+    {
+      "task": "T6",
+      "text": "The two error scenarios in the library table are not strictly equal: a few hundred bytes and 2 to 3 allocations out of 40 MB and 510,000. I treated that as run-to-run noise because the before-runs alone varied by about that much."
+    },
+    {
+      "task": "T6",
+      "text": "The compile figures dropped from 25,922 to 14,072 allocs/op. I recorded them as measured and did not trace which change caused it."
+    },
+    {
+      "task": "T6",
+      "text": "No allocation-limit test was added or changed."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

@@ -1,0 +1,272 @@
+{
+  "work_id": "US-0159",
+  "parent_story": "US-0159",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "warn",
+  "candidate": {
+    "commit": "d7a1b81ca5332e4c09fc739c33abea0cddf7b226",
+    "base_commit": "e69a3df1769d8b6d8954f72e30b5998b0ac32185"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "When a schema is loaded, the compiled Schema records once whether an unevaluatedProperties or unevaluatedItems keyword is reachable. Reachable means in the root schema or in any schema that a $ref or $dynamicRef could land on, counting every registry resource a $dynamicRef could jump to (the cautious rule). The decision covers the whole schema at once. It is fixed when Compile returns and is never changed afterwards.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "During a check, applicators skip recording evaluated properties and items only when two things hold: the load-time decision says no unevaluated keyword is reachable, and the check produces no report shape and no library Result view that shows the record. When either the load-time decision or the check needs it (for example a detailed or verbose report), recording happens exactly as today.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Results stay identical everywhere: the same valid or invalid answer, the same flag, basic, detailed and verbose reports, and the same library Result. All existing tests pass unchanged, including every unevaluatedProperties and unevaluatedItems test through $ref and $dynamicRef.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "One new regression test proves that every hostile-input limit triggers at exactly the same inputs as before, with the same error and exit code 2, on a schema where recording is skipped and on a schema where it is kept. The limits covered are nesting depth, ref chain, evaluation-step charging, output units, report bytes and annotation count.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The compiled Schema stays immutable and safe for concurrent use. A concurrent test validates one compiled schema from several goroutines with mixed report shapes, on schemas that record and schemas that skip recording. go test -race ./... passes.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The unused nodeLoc and kwLoc types in internal/eval/location.go are removed together with their tests in internal/eval/location_test.go. If a file cannot be deleted, only its package clause and a one-line comment remain. A new unit test for lazyLoc proves that its keyword location and absolute keyword location equal the old eagerly built strings in five cases: through $ref, through $dynamicRef, inside if/then/else, with ~0/~1 escaping and percent-encoding, and with an empty absolute location before any reference is crossed.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The project's benchmarks (go test -run '^$' -bench . -benchmem) are run on the same machine before and after the change. Both sets of numbers are added to docs/benchmarks.md. allocs/op or B/op drop on the targeted scenarios, which are flag and basic validation of the order documents. No scenario's allocs/op or B/op rises. ns/op is recorded for both runs, and a change within the \u00b15% noise is acceptable.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "No allocation-limit test is added or changed by this story, and internal/jsonvalue/number_test.go stays unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 8,
+    "covered": 8,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/evaluated_tracking_cli_test.go",
+        "change": "added",
+        "additions": 64,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "modified",
+        "additions": 71,
+        "deletions": 0
+      },
+      {
+        "path": "evaluated_tracking_limits_test.go",
+        "change": "added",
+        "additions": 116,
+        "deletions": 0
+      },
+      {
+        "path": "evaluated_tracking_race_test.go",
+        "change": "added",
+        "additions": 46,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/evaluated_need.go",
+        "change": "added",
+        "additions": 75,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/evaluated_need_test.go",
+        "change": "added",
+        "additions": 52,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 16,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated_items.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/evaluated_skip_test.go",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/lazyloc_test.go",
+        "change": "added",
+        "additions": 90,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/location.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 62
+      },
+      {
+        "path": "internal/eval/location_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 108,
+        "test_losses": [
+          "deleted or renamed: TestLazyLocationEqualsEager, TestLazyLocationParallelRender",
+          "assertions 3 \u2192 0"
+        ]
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 1
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-a4f156cc32f644e387bd5cc845629dd8/docs/architecture/adr/ADR-023-record-evaluated-properties-and-items-only-when-so.md",
+    "summary": "This pass clears every earlier finding. The load-time scan now recurses instead of using a heap stack, so CompileOrder is back at 14,072 allocs/op, and AC7 is met: flag and basic validation drops 17\u20132"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [
+      "No insecure default. The per-call switch is fail-safe: its zero value means recording stays on, and only EvaluateValidate sets it. NeedsEvaluated answers 'needed' when the registry cannot be listed, and checks every registry resource whenever a reference leaves the document. Step, depth, ref-chain, output-unit, report-byte and annotation accounting stay outside the guarded helpers, and both limit tests show the boundaries are unchanged. scan() now recurses, but only over a schema value that was already decoded under MaxDepth (or an embedded meta-schema), and compile and the meta-schema check already walk it to the same depth. It adds no new stack-exhaustion risk. No instance value reaches any output."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 6.326312,
+    "tokens_in": 8176286,
+    "tokens_out": 70646
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The scan is deliberately cautious and whole-document, not a per-subschema reachability walk. The keyword name appearing anywhere in a scanned document counts, even as a property name or inside enum or const. This can only add recording, never remove it wrongly."
+    },
+    {
+      "task": "T1",
+      "text": "The root Node field is named NoUnevaluated so its zero value (false) means recording stays on. T2 combines it with the per-call report-shape need."
+    },
+    {
+      "task": "T1",
+      "text": "The decision is set in jsonschema.go, not compile.go, because only the root package has the document list. compile.go got the field only, not a call. The refs.go function that builds the root node is outside this task's files."
+    },
+    {
+      "task": "T1",
+      "text": "The 'cycle of $refs' test only shows the scan terminates. The scan never follows $ref, so cycles cannot matter."
+    },
+    {
+      "task": "T4",
+      "text": "The files could not be deleted, so location.go and location_test.go keep only a package clause and a one-line comment."
+    },
+    {
+      "task": "T4",
+      "text": "The eager reference strings are built in the test with the existing pathFrame.at, dynamicLocation and Resource.AbsoluteLocation. This is the logic lazyLoc replaced. A few literal expected values are also asserted."
+    },
+    {
+      "task": "T4",
+      "text": "The old TestLazyLocationParallelRender was dropped along with nodeLoc and kwLoc, since it only exercised those types."
+    },
+    {
+      "task": "T2",
+      "text": "The evaluated record is read only by the unevaluatedProperties and unevaluatedItems keywords. No Result accessor or output shape reads it."
+    },
+    {
+      "task": "T2",
+      "text": "Validate builds no tree, so the skip applies only there. Result.Output(shape) re-evaluates through EvaluateTree, which records as today."
+    },
+    {
+      "task": "T2",
+      "text": "I did not touch internal/eval/annotation_record.go because it is outside this task's files. EvaluateValidate therefore repeats EvaluateLazy's few lines."
+    },
+    {
+      "task": "T3",
+      "text": "Exit code 2 is checked at library level (LimitError). The CLI maps LimitError to exit 2 and is covered by existing cmd tests; the main package cannot be imported here."
+    },
+    {
+      "task": "T3",
+      "text": "The keep schema uses an unevaluatedItems key inside an unknown keyword (x-note), because the scan counts the key anywhere. This keeps evaluation cost identical to the skip schema."
+    },
+    {
+      "task": "T3",
+      "text": "Limit values are searched, not hard-coded, so the test reads the real boundary from the code. A search floor of 1 is used because 0 means the default."
+    },
+    {
+      "task": "T5",
+      "text": "The true pre-T2 base commit could not be measured because the session may only work inside this worktree. I used the same tree with NoUnevaluated forced false. That is equivalent to recording being always on. The result matches the story-201 'after' figures to within noise."
+    },
+    {
+      "task": "T5",
+      "text": "Medians of 5 runs (-count=5) on Apple M3 Max, go1.27.2, one session."
+    },
+    {
+      "task": "T5",
+      "text": "The CompileOrder +3 allocs/op is recorded as an exception to 'no scenario rises'. It is a 0.02% change and comes from the load-time scan."
+    },
+    {
+      "task": "remediation",
+      "text": "Recursion in scan() is safe: the main schema and registry files are decoded under MaxDepth, and the embedded meta-schemas are shallow."
+    },
+    {
+      "task": "remediation",
+      "text": "The lazyLoc reference strings are written out by hand from core 12.3.1 and 12.3.2, which is the same output the old eager builder gave. This matches the boundary rule that the reference must be built in the test, not by production code."
+    },
+    {
+      "task": "remediation",
+      "text": "The F4 test sets NoUnevaluated on a node that the test builds itself and never shares. No compiled Schema is changed after Compile."
+    },
+    {
+      "task": "remediation",
+      "text": "No allocation-limit test was added. The scan's zero-allocation result is shown only by the CompileOrder benchmark in docs/benchmarks.md."
+    }
+  ],
+  "blockers": [
+    "Existing tests were changed or deleted by this story \u2014 check that they were not weakened to make a failing check pass: internal/eval/location_test.go (deleted or renamed: TestLazyLocationEqualsEager, TestLazyLocationParallelRender; assertions 3 \u2192 0)"
+  ],
+  "next_authorization": "none"
+}

@@ -75,7 +75,7 @@ func evalUnevaluatedProperties(ctx *keywords.EvalContext, compiled any, instance
 			ctx.Keep(units)
 		}
 	}
-	log.RecordProperties(ctx.InstanceLocation, ctx.KeywordLocation, applied)
+	log.RecordProperties(ctx.InstanceLocation, ctx.KeywordLoc(), applied)
 	if valid && len(applied) > 0 {
 		return true, ctx.Annotate(append([]string(nil), applied...))
 	}
