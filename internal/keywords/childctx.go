@@ -41,6 +41,8 @@ func (c *EvalContext) reset(parent *EvalContext, instLoc string, tree *TreeNode)
 		Items:            parent.Items,
 		count:            parent.count,
 		col:              parent.col,
+		stk:              parent.stk,
+		depth:            parent.depth + 1,
 		max:              parent.max,
 		evalNode:         parent.evalNode,
 	}
