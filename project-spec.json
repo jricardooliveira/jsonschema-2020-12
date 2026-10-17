@@ -1,38 +1,47 @@
 {
   "additional_tech": [
-    "embed: the official 2020-12 meta-schema and vocabulary meta-schemas are compiled into the binary",
-    "math/big (big.Rat / big.Int) for exact JSON number semantics",
+    "embed: the official 2020-12 meta-schema and vocabulary meta-schemas are compiled into the binary, and the compiled meta-schema is built once per process and reused, never reloaded per Compile",
+    "Exact JSON number model in internal/jsonvalue: values that fit exactly use a native int64 or float64 fast path, and math/big (big.Int / big.Rat) takes over whenever exactness requires it (large integers, decimals in multipleOf or comparisons, 1.0 as an integer)",
     "regexp (RE2) behind a small ECMA-262-to-RE2 translation step, with deviations documented",
-    "go test with table-driven, spec-derived test cases stored as testdata JSON files"
+    "go test with table-driven, spec-derived test cases stored as testdata JSON files",
+    "Go benchmarks (testing.B) and allocation-limit tests (testing.AllocsPerRun), using the standard library only"
   ],
   "api_style": "Go library API: compile once (registry, limits and format mode fixed at compile time), then Schema.Validate(instance) returns an immutable Result. The Result can be rendered to the 2020-12 output formats. The CLI is `jsonschema validate` with flags for the schema file, registry files and directories mapped to base URIs, output format, format assertion and limits. Documents come from file paths or stdin. With one document, stdout is exactly one output-format JSON object. With several, it prints one labelled JSON report per line, and the worst result sets the exit code.",
-  "architecture_style": "Keyword plug-in modules behind a small registry. Package `jsonschema` (root) holds the public API: Compiler/Options, Schema, Validate, Result and OutputUnit. Internal packages hold the engine pieces: internal/jsonvalue (exact number model, deep equality), internal/uri (RFC 3986 resolution, JSON Pointer), internal/registry (resource index, $id, $anchor, $dynamicAnchor, embedded meta-schemas), internal/compile (schema compilation, vocabulary handling, limits), internal/eval (evaluation, dynamic scope, annotation collection, unevaluated* tracking), internal/keywords/<vocabulary> (one file per keyword, each registering itself), internal/formats (one file per format, each registering itself) and internal/output (flag/basic/detailed/verbose). There is a thin CLI in cmd/jsonschema.",
+  "architecture_style": "Keyword plug-in modules behind a small registry. Package `jsonschema` (root) holds the public API: Compiler/Options, Schema, Validate, Result and OutputUnit. Internal packages hold the engine pieces: internal/jsonvalue (exact number model with a small-number fast path, deep equality), internal/uri (RFC 3986 resolution, JSON Pointer), internal/registry (resource index, $id, $anchor, $dynamicAnchor, embedded meta-schemas compiled once and cached), internal/compile (schema compilation, vocabulary handling, limits, and static analysis that marks whether a subschema needs evaluated-location or annotation tracking, for example when no unevaluated* keyword can reach it), internal/eval (evaluation, dynamic scope, lazily built locations, annotation collection and unevaluated* tracking only where needed), internal/keywords/<vocabulary> (one file per keyword, each registering itself), internal/formats (one file per format, each registering itself) and internal/output (flag/basic/detailed/verbose). There is a thin CLI in cmd/jsonschema.",
   "auth_model": "none (local library and CLI; no accounts)",
   "conventions": [
     "Each keyword lives in its own file internal/keywords/<vocabulary>/<keyword>.go with its own <keyword>_test.go. It registers itself from an init() call into the keyword registry (internal/keywords/registry.go, written once in the skeleton), giving its name, vocabulary URI, compile function and evaluate function. No central keyword list or switch is ever edited to add a keyword. Each vocabulary package is pulled in once by a single blank import in internal/keywords/all/all.go, created in the skeleton with every vocabulary already listed.",
     "Each format checker lives in its own file internal/formats/<format>.go with its own test file and registers itself from init() into internal/formats/registry.go. Each output shape lives in its own file internal/output/<shape>.go and registers the same way. The CLI's main.go only parses flags and calls the root package, so it is never edited for a new keyword, format or output shape.",
     "go.mod has no require lines. Adding any dependency needs an explicit operator decision. Go discovers new files in a package folder without any manifest edit.",
     "Spec-derived tests are written by this project and kept as JSON cases in testdata/<area>/<keyword>.json, one file per keyword or behaviour, with a shared table-driven runner. Each test cites the 2020-12 core or validation spec section it derives from.",
+    "Performance changes must keep results identical: the same valid/invalid answer, the same flag/basic/detailed/verbose reports and the same library Result. All existing tests pass unchanged. Work is skipped only where no output could ever show it.",
+    "Every number rule (type integer, multipleOf, minimum, maximum, exclusiveMinimum, exclusiveMaximum, enum, const, uniqueItems) has tests covering both the native fast path and the exact math/big path, including the boundary where a value moves from one to the other, to prove answers stay exact.",
+    "Performance guards live in their own files: benchmarks in <package>/bench_test.go and allocation-limit tests in <package>/allocs_test.go, one pair per package measured, so stories adding them never edit another feature's files. Each allocation limit is the measured count after the fixes plus about 10% headroom, recorded next to the test with the measured value.",
+    "Performance fixtures: the order schema and the 0.5 KB order document are stored in testdata/perf/. The large documents (about 0.5 MB, about 0.33 MB with 1,000 errors, and about 5.5 MB) are generated in test code from a fixed, seed-free recipe in testdata-free Go code (internal/perfdata), so they are identical on every run and never committed.",
     "The compiled Schema and everything reachable from it are immutable after Compile returns. Per-evaluation state (dynamic scope, annotations, evaluated locations, limit counters) lives in a per-call evaluation context. This is enforced by tests run with `go test -race`.",
-    "Documentation lives in docs/: regex deviations from ECMA-262, the list of partly checked formats (including idn-hostname and idn-email, which use stdlib-only checks), the CLI contract and the default limits."
+    "Documentation lives in docs/: regex deviations from ECMA-262, the list of partly checked formats (including idn-hostname and idn-email, which use stdlib-only checks), the CLI contract, the default limits and how to run the benchmarks."
   ],
   "database": "none",
   "deployment": "Distributed as a Go module (go get) and as a single static CLI binary built with `go build ./cmd/jsonschema`. No network access at build, test or run time beyond the standard Go toolchain.",
-  "description": "A JSON Schema Draft 2020-12 validator written from scratch in Go. It has two parts: a Go library (load a schema once, then check many documents with it, safely from several goroutines) and a non-interactive command-line tool. It works fully offline. Remote references are resolved only through a caller-supplied schema registry, with the official 2020-12 meta-schema and vocabulary meta-schemas embedded in the binary. It reports the 2020-12 output formats (flag, basic, detailed, verbose), with basic as the default. Exit codes are 0 valid, 1 invalid and 2 tool, usage or schema error. Reports give the failing location and rule, never the instance value. Format is an annotation by default and an assertion in an optional mode. Built-in limits protect against hostile inputs.",
+  "description": "A JSON Schema Draft 2020-12 validator written from scratch in Go. It has two parts: a Go library (load a schema once, then check many documents with it, safely from several goroutines) and a non-interactive command-line tool. It works fully offline. Remote references are resolved only through a caller-supplied schema registry, with the official 2020-12 meta-schema and vocabulary meta-schemas embedded in the binary. It reports the 2020-12 output formats (flag, basic, detailed, verbose), with basic as the default. Exit codes are 0 valid, 1 invalid and 2 tool, usage or schema error. Reports give the failing location and rule, never the instance value. Format is an annotation by default and an assertion in an optional mode. Built-in limits protect against hostile inputs. In the current performance round, work that no result could ever show is skipped: locations are not built up front, evaluated properties and annotations are recorded only when needed, and the meta-schema is not reloaded. Small numbers use a fast native path. Every result stays identical, and benchmarks and allocation-limit tests guard the gains.",
   "existing_apis": [],
   "existing_data_models": [],
   "existing_modules": [],
   "forbidden": [
     "Any existing JSON Schema validation library as a dependency, for example santhosh-tekuri/jsonschema, xeipuuv/gojsonschema, qri-io/jsonschema, google/jsonschema-go or kaptinlin/jsonschema",
+    "Referencing, importing or benchmarking against santhosh-tekuri/jsonschema (tekuri) inside the project: the comparison stays outside it",
     "Copying, vendoring, downloading or referencing the official JSON-Schema-Test-Suite, Bowtie or any copy of them",
     "Network access of any kind at build, test or run time (no HTTP fetching of $ref targets)",
     "Reading files from disk other than those the caller explicitly supplied (no file:// resolution on its own)",
     "Including instance values in error output or logs",
     "Third-party dependencies in go.mod without an explicit operator decision (this includes golang.org/x/net/idna, which the operator declined)",
     "Support for JSON Schema drafts other than 2020-12",
-    "Mutating a compiled Schema after Compile returns"
+    "Mutating a compiled Schema after Compile returns",
+    "Changing any validation result, output report or library Result as part of a performance change",
+    "Committing the large generated performance documents to the repository",
+    "Timing-based assertions in ordinary tests (speed is measured by benchmarks only, while tests check allocation counts)"
   ],
-  "framework": "none (Go standard library only: encoding/json with UseNumber and Decoder for streaming tokens, math/big, regexp, net/url, unicode, embed, flag)",
+  "framework": "none (Go standard library only: encoding/json with UseNumber and Decoder for streaming tokens, math/big, regexp, net/url, unicode, embed, flag, testing)",
   "infra_constraints": [],
   "language": "Go 1.26 (minimum version in go.mod)",
   "layout": [],
@@ -41,14 +50,17 @@
   "nfrs": [
     "Fully offline: the validator never fetches a URI and never reads a file the caller did not list. Unresolvable references are an error with exit code 2.",
     "Hostile-input safe: limits on nesting depth, $ref/$dynamicRef recursion depth and evaluation steps, and input size, with generous defaults that callers can raise through a library option and a CLI flag. Exceeding a limit is an error with exit code 2, never a valid or invalid result. Regex is RE2, which runs in linear time.",
-    "Exact JSON number semantics: 1.0 is an integer, multipleOf is exact on decimals, and big integers and decimals keep full precision.",
+    "Exact JSON number semantics: 1.0 is an integer, multipleOf is exact on decimals, and big integers and decimals keep full precision. The small-number fast path never changes an answer.",
     "String length counts Unicode code points. uniqueItems, enum and const use deep JSON equality.",
     "Output reports never contain instance values, only instance locations, keyword locations and error messages.",
     "A compiled schema is safe for concurrent use by multiple goroutines.",
     "A schema that fails meta-schema validation or uses an unknown required vocabulary is an error (exit code 2), never 'invalid'.",
-    "The CLI exit codes are a contract: 0 valid, 1 invalid, 2 error. With several documents, the worst result wins."
+    "The CLI exit codes are a contract: 0 valid, 1 invalid, 2 error. With several documents, the worst result wins.",
+    "Performance target for this round: roughly match tekuri in speed, memory and schema loading time. This is checked only by the operator's separate comparison outside the project.",
+    "Verbose output keeps its current behaviour this round (it evaluates the document a second time and is about 2\u00d7 slower than the other shapes). It may be improved in a later round.",
+    "Allocation counts for validating the order documents and compiling the order schema are guarded by tests with limits set at the measured count plus about 10% headroom."
   ],
-  "orm": "",
+  "orm": "none",
   "repo_structure": "monorepo",
   "skeleton": [],
   "template": "",
