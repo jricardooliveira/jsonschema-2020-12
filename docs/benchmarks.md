@@ -593,7 +593,82 @@ each of the 4 output shapes. The golden files were not touched by this task.
 when a recorded case's args or stdin size and SHA-256 differ from the current
 case list or the generated stdin.
 
+## Story 208 (annotations in growing chunks, flattened under sync.Once)
+
+Machine and Go as above (Apple M3 Max, 16 logical CPUs, macOS arm64,
+go1.27.2), root package. Both sets were measured in one session, one straight
+after the other, with the same benchmark files:
+
+    go test -run NONE -bench . -benchmem -count=10 .
+
+Median of 10 (mean of the 5th and 6th sorted; a median ending in .5 is
+rounded up). Change is after against before; negative is better.
+
+- **Before**: the code just before this story (base 1525f40, which holds
+  stories 205 to 207, 210 and 211). The production files of this story
+  (`internal/keywords/annotate.go`, `internal/keywords/registry.go`,
+  `internal/eval/annotations.go`, `jsonschema.go`) were set back to their
+  base logic: one growing annotation slice, flattened as is at Validate and
+  sorted in the old `eval.Lazy`. Only comments and one unused accessor
+  differed from 1525f40; the new files (`annotation_chunks.go`) were present
+  but unused.
+- **After**: the finished code, with those files restored. Annotations are
+  kept in growing chunks (16 … 4,096) and handed to the Result unflattened;
+  the first `Annotations()` or `Output()` call flattens, sorts and releases
+  the chunks inside one `sync.Once` (`eval.Pending`).
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CompileOrder | 101,424 → 101,389 (noise) | 127,826 → 127,878 (noise) | 1,203 → 1,203 |
+| ValidateSmall | 20,795 → 20,502 (−1.4%) | 19,295 → 17,942 (−7.0%) | 395 → 392 (−0.8%) |
+| Validate0_5MB | 17,380,310 → 17,316,667 (−0.4%) | 14,735,945 → 12,243,601 (−16.9%) | 300,044 → 300,037 |
+| Validate5_5MB | 179,733,098 → 173,864,549 (−3.3%) | 159,030,455 → 124,672,670 (−21.6%) | 3,000,063 → 3,000,071 (+8) |
+| ValidateErrors | 14,138,448 → 13,829,770 (−2.2%) | 14,103,979 → 11,610,884 (−17.7%) | 241,023 → 241,013 |
+| ValidateErrorsBasic | 15,054,734 → 14,690,494 (−2.4%) | 16,089,749 → 13,597,460 (−15.5%) | 247,050 → 247,040 |
+
+Validate5_5MB needs 8 more allocations of 3 million: past the growing chunks
+it allocates one chunk per 4,096 annotations (plus the `Pending` holder),
+where the old slice regrew by doubling; the bytes fall by 34 MB. The
+benchmarks never call `Annotations()` or `Output()`, so no flat copy is
+made. No allocation limit has to rise for it (see below).
+
+### Computation against v1.1 (f35d9e4, round 2 final, operator's values)
+
+The targets are relative to the code just before this story: the required
+drop is the v1.1 value minus the target (operator's note).
+
+| Target | v1.1 | Required | Before | After | Change | Verdict |
+|---|---|---|---|---|---|---|
+| Validate5_5MB B/op | 368,958,349 | drop at least 26,958,349 (368,958,349 − 342,000,000) | 159,030,455 | 124,672,670 | drop 34,357,785 | met |
+| ValidateErrors B/op | 29,282,834 | drop at least 1,882,834 (29,282,834 − 27,400,000) | 14,103,979 | 11,610,884 | drop 2,493,095 | met |
+| ValidateSmall B/op | 41,682 | rise at most 318 (42,000 − 41,682) | 19,295 | 17,942 | drop 1,353 | met |
+| ValidateSmall allocs/op | 785 | must not rise | 395 | 392 | drop 3 | met |
+
+No scenario is slower by median. All targets are met on this machine.
+
+### Allocation limits lowered (allocs_test.go)
+
+Measured on the finished code with `go test -count=1 -v -run TestAllocs .`;
+limit = measured + about 10%, rounded up. "Old" is the story 204 limit. No
+limit rose. Where measured + 10% rounds to the old limit or just above it,
+the old limit is kept (it is already within about 10% of the measured value).
+
+| Scenario | allocs: old limit → new (measured) | bytes: old limit → new (measured) |
+|---|---|---|
+| Compile order | 1,640 → 1,325 (1,203) | – |
+| Validate small | 615 → 432 (392) | – |
+| Validate 0.5 MB | 507,000 → 331,000 (300,035) | 28,400,000 → 13,468,000 (12,243,154) |
+| Validate 5.5 MB | 5,061,000 → 3,301,000 (3,000,069) | 295,900,000 → 137,141,000 (124,673,165) |
+| Validate errors | 353,000 → 266,000 (240,999) | 23,500,000 → 12,770,000 (11,611,584; +10% would be 12,772,743) |
+| Validate errors + basic | 359,000 → 272,000 (247,028) | – |
+
+The `allocs_<topic>_test.go` files and `docs/benchmarks/r3-*.md` were not
+touched.
+
 ## Allocation and memory limits (story 204)
+
+The limits in the table below are the story 204 values; story 208 lowered
+them (see the table above and the constants in `allocs_test.go`).
 
 Ordinary tests in `allocs_test.go` (root package) fail when a scenario uses
 more allocations, or more total bytes, than its limit. They run with a plain

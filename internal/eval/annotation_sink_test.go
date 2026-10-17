@@ -29,8 +29,9 @@ func TestNotSubtreeRecordsNothing(t *testing.T) {
 	if err != nil || !ev.Valid {
 		t.Fatal(ev, err)
 	}
-	if len(ev.Annotations) != 1 || ev.Annotations[0].Keyword != "x-out" {
-		t.Fatalf("got %+v", ev.Annotations)
+	anns := ev.Pending.Sorted() // lazy: chunks are flattened on first read
+	if len(anns) != 1 || anns[0].Keyword != "x-out" {
+		t.Fatalf("got %+v", anns)
 	}
 	// the tree path never discards: the same child annotates there
 	tr, err := EvaluateWith(n, 5, DefaultLimits(), true)
