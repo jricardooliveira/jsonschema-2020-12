@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #16
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #152, 2026-10-17 01:51 UTC)
 
 ## Decision
 This revises the previous design. Only the work-step charging (H), the tests the reviewer asked for and the file list change; everything else is as reviewed. I read the code first and adjusted to what is already there. Most limits already exist: number caps, registry per-file and total caps (Registry.MaxFileBytes/MaxTotalBytes, flags --max-ref-file-bytes/--max-ref-total-bytes), output units, annotations, report bytes, evaluation steps (eval.DefaultMaxEvalSteps, counted per node entry in refguard.go enterNode) and an evaluation-path backstop (eval.MaxEvalDepth). All of them already return *jsonvalue.LimitError. So the story unifies and exposes these limits rather than building new ones. Decisions:

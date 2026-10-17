@@ -1,7 +1,7 @@
 # PLAN #16: Limits against hostile input and proof of the load-once guarantee
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #152, 2026-10-17 01:51 UTC)
 - Design: see `ADR-016-*.md` under `docs/architecture/adr/`
 
 ## Files that change
