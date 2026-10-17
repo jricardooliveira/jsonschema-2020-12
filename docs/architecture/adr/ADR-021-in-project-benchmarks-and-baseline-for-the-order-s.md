@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #21
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #156, 2026-10-17 10:33 UTC)
 
 ## Decision
 All work goes into new files, following the convention that performance guards live in <package>/bench_test.go. The recipe lives in a new package, internal/perfdata, so stories 199–204 reuse the same bytes. That package imports only the standard library, and it never imports the root package, which avoids an import cycle; validity checks that need the library sit in a root test file. internal/perfdata exposes ValidOrder(n int) []byte, ErrorOrder() []byte, and a helper that reads testdata/perf files by a path relative to the module root (located from the caller's package directory). The retained-heap benchmark sits in internal/jsonvalue because it measures that package's decoded form. Benchmark names should be stable (for example BenchmarkCompileOrder, BenchmarkValidateSmall, BenchmarkValidate0_5MB, BenchmarkValidate5_5MB, BenchmarkValidateErrors, BenchmarkValidateErrorsBasic, BenchmarkRetainedHeap/0.5MB, BenchmarkCLI/...), because later stories compare against them. The CLI benchmarks use the existing run entry point in cmd/jsonschema/run.go, read only. The crowded files run.go and main.go are touched only if that entry point cannot take args, streams and return a code.
