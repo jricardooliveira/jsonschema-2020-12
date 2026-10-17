@@ -45,6 +45,15 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 }
 
 func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
+	s, err := compileChecked(schema, opts, reg)
+	var ise *InvalidSchemaError
+	if errors.As(err, &ise) && ise.Source == "" {
+		ise.Source = opts.SchemaPath // name the main schema file when known
+	}
+	return s, err
+}
+
+func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	lim, err := opts.limits()
 	if err != nil {
 		return nil, err
