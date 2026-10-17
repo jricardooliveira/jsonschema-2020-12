@@ -3,22 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #154 · **Status:** waiting_human · **Stage:** gate-2-human
-- **Started:** 2026-10-17 03:17:13 UTC · **Stopped:** 2026-10-17 03:17:36 UTC
-- **Story spend:** ~$0.17 of $35.00 (estimated at API list prices)
+- **Run:** #154 · **Status:** failed · **Stage:** coder-agent
+- **Started:** 2026-10-17 03:17:13 UTC · **Stopped:** 2026-10-17 03:19:09 UTC
+- **Story spend:** ~$0.98 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-2-architect: `factory approve 154` to accept, or `factory reject 154 "<your answers>"` to send it back.
+None — the run stopped (failed). Nothing proceeds until the cause under Blockers is fixed and a new run is started.
 
 ## Blockers
 
-- Waiting for the operator at **gate-2-architect**:
-  > 🧱 BOUNDARY REVIEW WARNINGS — tenant / authorization / API contract / security concerns found before any code is written:
-  >   • security: Hostile-input depth bound is ambiguous. The design says ECMA parser recursion is 'bounded by pattern length or nesting'. A pattern of millions of '(' or '[' characters, which fits within the default input-size limit, would recurse once per character. Go stack exhaustion is a fatal, non-recoverable crash, not an error. A depth cap is also not a clean fix, because a check function returning bool cannot report a limit error. Returning false would turn a limit hit into a silent 'invalid', which the project forbids. A human should settle the approach; the safe choice is a non-recursive parser (explicit heap stack or iteration) whose work is linear in input length, so no cap is needed.
-  >   • security: The same concern applies to the RFC 3986/3987 and RFC 6570 checkers and to the JSON pointer checkers. The design does not say they are iterative or linear. These formats are simple enough that they must be single-pass with no recursion over input length.
-  >   • security: The ECMA-262-to-RE2 translation step is reused on instance-supplied strings, which are hostile. The design does not say that a panic or error from it is contained. It must be treated as non-authoritative: any error, or a panic from the step, must not change the syntax checker's verdict and must not crash the process.
-  >   → Approve the design with these boundary risks, or reject with the fix?
+- the model call failed: You've hit your session limit · resets 5:50am (Europe/Lisbon) — nothing is wrong with the story; try again later (`factory retry 154`, or `factory status` if no checkpoint was answered yet)
 
 ## Trail
 
@@ -33,8 +28,15 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 03:17:14 | agent | architect-agent | ✅ pass |
 | 2026-10-17 03:17:14 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it touches sensitive areas (security) |
 | 2026-10-17 03:17:36 | agent | boundary-agent | ✅ warn · 21.4s · $0.1737 |
-| 2026-10-17 03:17:36 | gate | gate-2-architect | ⏸️ awaiting human sign-off |
-| 2026-10-17 03:17:36 | run | run waiting_human | ⏸️ |
+| 2026-10-17 03:17:36 | gate | gate-2-architect | ❌ REJECTED: Keep the design and adopt the safe choices: (1) the ECMA-262 u-mode syntax checker for the regex format is non-recursive (explicit heap stack or iteration), linear in input length, so no depth cap is needed;… |
+| 2026-10-17 03:17:53 | boss | authorize architect-agent | ✅ gate-1-spec passed |
+| 2026-10-17 03:18:51 | agent | architect-agent | ✅ pass · 57.8s · $0.6192 |
+| 2026-10-17 03:18:52 | boss | authorize boundary-agent | ✅ the design requires a boundary review: it touches sensitive areas (security) |
+| 2026-10-17 03:19:07 | agent | boundary-agent | ✅ pass · 14.9s · $0.1841 |
+| 2026-10-17 03:19:07 | gate | gate-2-architect | ✅ Architecture approved. 24 modules, 4 risks flagged — the design names files the plan did not claim (internal/formats/assertion_mode_test.go, formatassertion_test.go); no other story holds them, so the plan was widened… |
+| 2026-10-17 03:19:07 | boss | authorize coder-agent:T1 | ✅ gate-2-architect passed |
+| 2026-10-17 03:19:09 | agent | coder-agent | ❌ error |
+| 2026-10-17 03:19:09 | run | run failed | ❌ the model call failed: You've hit your session limit · resets 5:50am (Europe/Lisbon) — nothing is wrong with the story; try again later (`factory retry 154`, or `factory status` if no checkpoint was answered yet) |
 
 ## Warnings (recorded, not blocking)
 
