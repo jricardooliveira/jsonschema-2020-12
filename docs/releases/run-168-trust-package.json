@@ -1,0 +1,291 @@
+{
+  "work_id": "US-0168",
+  "parent_story": "US-0168",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "warn",
+  "candidate": {
+    "commit": "43db6b57cec8ea5169dccc7b52f87129fec33d30",
+    "base_commit": "1525f402842119f2abb37ac265773967a0d52814"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Annotations are collected per check in chunks whose capacities grow 16, 32, 64, \u2026 and are capped at 4,096 entries, never fixed-size. Each check creates its own chunks; nothing is pooled or passed between checks.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Rollback works by mark and truncate, including across chunk boundaries. Chunks emptied by a truncate are kept and reused for later annotations in the same check, and are not reallocated.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Flattening and sorting happen only on the first Annotations() or Output() call on a Result, inside one sync.Once. The chunks are released inside that same Once. A new test calls Annotations() and Output() concurrently on one shared Result under go test -race and gets identical answers.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new randomised test runs about 10,000 add/mark/truncate/flatten steps against a plain slice and checks they agree. It uses a fixed starting seed that is printed in any failure message. It asserts that at least one truncate crossed a chunk boundary and that a chunk at the 4,096-entry cap was reached; a fixed growth sequence past about 8,200 entries is added if the random walk does not get there. It runs well under one second without -race.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Annotations() and Output() stay byte-identical. All existing tests pass unchanged, including the golden CLI test against testdata/golden in flag, basic, detailed and verbose. No golden file is regenerated or edited. Any output difference fails the story, and the story stops.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "go test -race ./... passes, standard library only, and go.mod is unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/benchmarks.md records go test -bench -count=10 medians from the in-repo benchmarks, measured just before and just after this change on the same machine. It shows the computation against v1.1 (f35d9e4, round 2 final), using exact measured values: Validate5_5MB drops by at least 26,958,349 B/op, ValidateErrors drops by at least 1,882,834 B/op, ValidateSmall rises by at most 318 B/op, and ValidateSmall allocs/op does not rise.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The limits in allocs_test.go are re-measured and lowered on purpose: measured value plus about 10%, with the measured value recorded next to each limit, as docs/benchmarks.md describes. If any limit would have to rise, that is a missed target. allocs_<topic>_test.go files and docs/benchmarks/r3-*.md files are left untouched.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "If any target is missed, the numbers are recorded and the story is held for the operator's decision. It is never marked done silently.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "cmd/jsonschema/golden_dbg_test.go (only 'package main', referenced by nothing) is removed with git rm. No other file is deleted, and the removal is named in the release notes.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 10,
+    "covered": 10,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "allocs_test.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 9,
+        "test_losses": []
+      },
+      {
+        "path": "annotations_once_race_test.go",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/golden_dbg_test.go",
+        "change": "deleted",
+        "additions": 0,
+        "deletions": 1
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "modified",
+        "additions": 75,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_chunks.go",
+        "change": "added",
+        "additions": 35,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_chunks_test.go",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/annotation_sink_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/annotations.go",
+        "change": "modified",
+        "additions": 12,
+        "deletions": 7
+      },
+      {
+        "path": "internal/keywords/annotate.go",
+        "change": "modified",
+        "additions": 11,
+        "deletions": 4
+      },
+      {
+        "path": "internal/keywords/annotation_chunks.go",
+        "change": "added",
+        "additions": 80,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/annotation_chunks_random_test.go",
+        "change": "added",
+        "additions": 98,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/annotation_chunks_test.go",
+        "change": "added",
+        "additions": 59,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/eval/annotation_chunks_random_test.go",
+      "internal/eval/annotation_sink.go",
+      "annotations.go"
+    ],
+    "design_unplanned": [
+      "internal/keywords/annotate.go",
+      "internal/keywords/annotation_chunks.go",
+      "internal/keywords/registry.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/keywords/annotate.go",
+        "granted_by": "operator",
+        "at": "gate-question #1560"
+      },
+      {
+        "path": "internal/keywords/annotation_chunks.go",
+        "granted_by": "operator",
+        "at": "gate-question #1560"
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "granted_by": "operator",
+        "at": "gate-question #1560"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-ec0276d47c524bd0b68d85f06d7ecb38/docs/architecture/adr/ADR-031-annotations-collected-in-growing-chunks-flattened.md",
+    "summary": "This second pass resolves both earlier blockers. Annotations are collected in growing chunks (16 up to 4,096) with mark/truncate rollback that reuses emptied chunks. Validate now hands the chunks to t"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 7.273409,
+    "tokens_in": 9822012,
+    "tokens_out": 68475
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The store holds keywords.Annotation directly. It is not generic, because only the annotation sink will use it."
+    },
+    {
+      "task": "T1",
+      "text": "Truncate ignores marks at or above Len and treats a negative mark as 0."
+    },
+    {
+      "task": "T4",
+      "text": "No new test was added. The task only deletes a file, and the existing golden test is the check."
+    },
+    {
+      "task": "T2",
+      "text": "The design says the sink keeps its API and only swaps its backing storage. That does not hold, because the storage and the mark/rollback live in internal/keywords."
+    },
+    {
+      "task": "T2",
+      "text": "The smallest fix is to move or copy `chunkStore` into internal/keywords, for example as internal/keywords/annotation_chunks.go. Then change `collector.list` in annotate.go to the store. In registry.go, use `Mark()` and `Truncate()` for the rollback. `Annotations()` would flatten the store, or the eval layer would receive the store."
+    },
+    {
+      "task": "T2",
+      "text": "registry.go is claimed read-only and annotate.go is not claimed at all. Moving the store also touches the T1 test files, which currently sit in internal/eval."
+    },
+    {
+      "task": "T2",
+      "text": "The chunk store and its three tests moved from internal/eval to internal/keywords, as the operator granted, because eval imports keywords and not the reverse. The tests keep every assertion; only the package name and the type qualifier changed. I removed the old eval copies with git rm to avoid duplicates."
+    },
+    {
+      "task": "T2",
+      "text": "Annotations() now returns an empty non-nil slice when nothing was recorded, where it may have returned nil before. All existing tests pass, so I took this to be unobservable."
+    },
+    {
+      "task": "T3",
+      "text": "annotations.go and jsonschema.go needed no edits: Result.annotations is already an *eval.Lazy sorted under sync.Once, and Output reads r.annotations.Sorted()."
+    },
+    {
+      "task": "T3",
+      "text": "I ran `go test -race -run Annotation .` (matches the existing annotations tests too) and `-run TestAnnotationsOnceConcurrent`; both pass. I did not run the full suite or the golden test."
+    },
+    {
+      "task": "T5",
+      "text": "I could not build the tree from just before story 208. The shell could neither create a directory inside the worktree nor change the checked-out commit, so there is no same-session before run. The only figures with stories 205 to 207 in place are docs/benchmarks/r3-207-objectkeys.md, from a different session. The after run also contains stories 206, 207, 210 and 211, so the isolated effect of story 208 is not measured. docs/benchmarks.md says so. The operator should re-run before and after on the commit before story 208 if an isolated figure is needed."
+    },
+    {
+      "task": "T5",
+      "text": "Because of that, the target verdicts are computed against v1.1, as the operator note defines them. The finished tree is also lower than the story 207 figures on all four scenarios, but story 210 contributes to those allocation counts."
+    },
+    {
+      "task": "T5",
+      "text": "Only the benchmarks that exist in the root package were re-measured. The story 204 table in docs/benchmarks.md was kept as history, with a note pointing to the new limits."
+    },
+    {
+      "task": "remediation",
+      "text": "internal/eval/annotation_sink_test.go is updated: TestNotSubtreeRecordsNothing now reads ev.Pending.Sorted() instead of ev.Annotations, because lazy evaluation deliberately no longer fills Annotations (AC3). Its assertion (exactly one annotation, x-out) is unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "The chunk store stays in internal/keywords/annotation_chunks.go, which was granted at the scope checkpoint (F4 says this is allowed). The new eval-side file internal/eval/annotation_chunks.go holds the Pending type (the Result's Once holder) rather than the store itself."
+    },
+    {
+      "task": "remediation",
+      "text": "Pending is a new type in a file this story may write, because eval.Lazy lives in annotation_record.go, which is read-only for this story. Lazy now has no production caller."
+    },
+    {
+      "task": "remediation",
+      "text": "AnnotationChunks() hands over the backing chunks without copying. This is safe because each evaluation creates its own root context and collector (NewEvalContext), and nothing records into it once evaluateOpt returns."
+    },
+    {
+      "task": "remediation",
+      "text": "How the 'before' set was measured: the same method stories 203 and 205 used. The four production files were edited back to the base logic in place, benchmarked, then restored; `go test` passes on the restored tree. The worktree guard blocks building the base commit anywhere else."
+    },
+    {
+      "task": "remediation",
+      "text": "The root concurrent test annotations_once_race_test.go keeps its assertions. Only its comment changed, and it now points to the internal test that checks the chunks wait unflattened and are released inside the Once (F3)."
+    }
+  ],
+  "blockers": [
+    "Existing tests were changed or deleted by this story \u2014 check that they were not weakened to make a failing check pass: cmd/jsonschema/golden_dbg_test.go (deleted)"
+  ],
+  "next_authorization": "operator-review"
+}
