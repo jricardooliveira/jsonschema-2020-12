@@ -1,0 +1,465 @@
+{
+  "work_id": "US-0151",
+  "parent_story": "US-0151",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "1ce71e02c885d922f47455990ee4e86e4de6db4c",
+    "base_commit": "aeedd56a65d7535a591e4293b7c6d16f4b6d9955"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "When a schema's '$schema' names a meta-schema, from the embedded 2020-12 set or supplied through the registry, the validator reads that meta-schema's '$vocabulary' and fixes the set of active vocabularies for that schema resource at load time.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A required ('true') vocabulary the validator does not recognise refuses the schema with exit code 2. The message names both the vocabulary URI and the meta-schema that required it, for example 'meta-schema https://example.com/my-meta requires unknown vocabulary https://example.com/vocab/money'. The library returns the same facts as a distinct exported error type that callers can detect with errors.As.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "An optional ('false') vocabulary the validator does not recognise is ignored. The schema loads, and documents are checked normally.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Keywords that belong to a standard vocabulary which the meta-schema does not list are treated as unknown keywords. They have no validation effect and are collected as annotations. For example, under a meta-schema that lists core and applicator but not validation, 'minimum: 5' does not reject 3.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A meta-schema without a '$vocabulary' entry activates all standard 2020-12 vocabularies, so the schema behaves exactly as under the official 2020-12 meta-schema.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The format-assertion vocabulary (https://json-schema.org/draft/2020-12/vocab/format-assertion) is recognised. When it is required, the schema loads without error and the loaded schema records that format assertion was requested, readable through the library. 'format' stays annotation-only in this story.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A meta-schema whose '$vocabulary' omits the core vocabulary, or marks it 'false', refuses the schema with a clear message and exit code 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A malformed '$vocabulary' refuses the schema with exit code 2 and a message naming the meta-schema and the bad entry. Malformed means a value that is not a boolean, a key that is not an absolute URI, or '$vocabulary' that is not an object.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "An embedded schema resource with its own '$id' and '$schema' uses the vocabulary set of its own meta-schema. The outer resource keeps its own set. Example: the outer schema checks 'minimum' while the inner one, under a meta-schema without validation, does not.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A '$schema' naming another draft's meta-schema, for example 'http://json-schema.org/draft-07/schema#', refuses the schema with exit code 2 and a message such as 'unsupported $schema: draft-07; only 2020-12 is supported'. The library returns the same facts as an error.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "'$schema', '$vocabulary' and '$comment' are registered core keywords with no validation effect and produce no annotation. A passing basic report for {\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"type\":\"string\"} against \"x\" contains no '$schema' annotation.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Spec-derived tests, each citing the 2020-12 core section (8.1.2 and 8.1.1), cover required known, required unknown, optional unknown, unlisted standard vocabulary, missing '$vocabulary', missing or optional core, malformed entries, embedded-resource vocabularies, format-assertion recording and draft-07 refusal. They run through both the library and the CLI and check exit codes 0, 1 and 2.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 12,
+    "covered": 12,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/metaschema_cli_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/vocabulary_cli_test.go",
+        "change": "added",
+        "additions": 81,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metaschema.go",
+        "change": "modified",
+        "additions": 18,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metaschema_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 12,
+        "deletions": 4
+      },
+      {
+        "path": "internal/compile/vocabulary.go",
+        "change": "added",
+        "additions": 78,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/vocabulary_apply.go",
+        "change": "added",
+        "additions": 60,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/vocabulary_errors.go",
+        "change": "added",
+        "additions": 44,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/vocabulary_test.go",
+        "change": "added",
+        "additions": 100,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/schema.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/schema_keywords_test.go",
+        "change": "added",
+        "additions": 36,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/core/vocabulary.go",
+        "change": "added",
+        "additions": 7,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/vocabularies.go",
+        "change": "added",
+        "additions": 34,
+        "deletions": 0
+      },
+      {
+        "path": "internal/keywords/vocabularies_test.go",
+        "change": "added",
+        "additions": 19,
+        "deletions": 0
+      },
+      {
+        "path": "spec_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "testdata/metaschema/schema_keyword.json",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "testdata/vocabulary/embedded_resource.json",
+        "change": "added",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/core_applicator_only.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/format_assertion_required.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/malformed.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/no_core.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/no_vocabulary.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/optional_core.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/unknown_optional.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/metaschemas/unknown_required.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/required_optional_unknown.json",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/vocabulary/unlisted_vocabulary.json",
+        "change": "added",
+        "additions": 5,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary.go",
+        "change": "added",
+        "additions": 6,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary_apply_test.go",
+        "change": "added",
+        "additions": 60,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary_errors.go",
+        "change": "added",
+        "additions": 16,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary_race_test.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary_ref_test.go",
+        "change": "added",
+        "additions": 45,
+        "deletions": 0
+      },
+      {
+        "path": "vocabulary_test.go",
+        "change": "added",
+        "additions": 199,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/keywords/core/comment.go"
+    ],
+    "design_unplanned": [
+      "internal/compile/refs.go",
+      "testdata/metaschema/schema_keyword.json",
+      "testdata/vocabulary/metaschemas/no_vocabulary.json",
+      "testdata/vocabulary/metaschemas/optional_core.json"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/compile/refs.go",
+        "granted_by": "operator",
+        "at": "gate-question #1342"
+      },
+      {
+        "path": "testdata/metaschema/schema_keyword.json",
+        "granted_by": "operator",
+        "at": "gate-question #1340"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-52385f9f502f4a698b91713f52839157/docs/architecture/adr/ADR-013-honour-vocabulary-from-embedded-and-registry-meta.md",
+    "summary": "I recommend warn: it does not block. The implementation follows the ADR and the boundary rules. Vocabulary parsing and its checks live in new files under internal/compile and fail closed. Each schema "
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [
+      "Basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. Existing tests that expected them would need updating.",
+      "Basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. This is declared and intended. Tests that expected them must be updated in the same change, not skipped."
+    ],
+    "findings": [
+      "Fails closed as required: every parse problem returns an error with no fallback to 'all vocabularies active', and only a missing '$vocabulary' key activates everything. The recognised set is the fixed eight URIs in internal/keywords/vocabularies.go and is not widened by registry contents. Quoted vocabulary keys go through bound() at 80 runes, and the draft name comes from a fixed regex capture. No instance values reach error messages. No network or disk reads beyond the registry were added."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 10.115129,
+    "tokens_in": 9770357,
+    "tokens_out": 110956
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The recognised set is hard-coded to exactly the eight standard URIs, as the boundary rules require. It is not derived from the keyword registry, which would widen it."
+    },
+    {
+      "task": "T1",
+      "text": "The error types were defined in the T1 file vocabulary_errors.go, because ParseVocabulary needs them to compile. T2 will add the root-package exports and the unsupported-$schema error."
+    },
+    {
+      "task": "T1",
+      "text": "Quoted '$vocabulary' keys in error messages are cut at 80 bytes."
+    },
+    {
+      "task": "T4",
+      "text": "The compile function for $schema and $vocabulary accepts any value. The meta-schema check already rejects a wrong type, and the vocabulary parser in internal/compile reads $vocabulary directly from the document."
+    },
+    {
+      "task": "T4",
+      "text": "The full suite was not run. I ran only ./internal/keywords/..., the root package and ./cmd/..."
+    },
+    {
+      "task": "T2",
+      "text": "internal/compile/metaschema_test.go and cmd/jsonschema/metaschema_cli_test.go updated because they asserted the old draft-07 message (story deliberately changes it); every other assertion is kept."
+    },
+    {
+      "task": "T2",
+      "text": "Only known draft URIs (draft-03..07, 2019-09) get the named message; custom meta-schemas supplied via the registry are not rejected."
+    },
+    {
+      "task": "T2",
+      "text": "Updated tests that asserted the old draft-07 message: testdata/metaschema/schema_keyword.json (operator-granted), the draft-07 case in cmd/jsonschema/metaschema_cli_test.go, and the 'error echoes the declared URI' check in internal/compile/metaschema_test.go, which now exempts the unsupported-draft error. All other assertions are unchanged."
+    },
+    {
+      "task": "T2",
+      "text": "The draft name in the message comes from a fixed regexp match on known json-schema.org URIs, never free-form schema text."
+    },
+    {
+      "task": "T2",
+      "text": "A chain from a custom meta-schema that ends in draft-07 stays ErrMetaChain."
+    },
+    {
+      "task": "T2",
+      "text": "I left out a new test for the draft-07 error through the library, since the existing JSON and CLI cases already cover the message."
+    },
+    {
+      "task": "T3",
+      "text": "The real compile path is resolver.compile in internal/compile/refs.go, reached through CompileReached. internal/compile/compile.go only holds compileAt, which the real path calls just for boolean schemas."
+    },
+    {
+      "task": "T3",
+      "text": "The per-resource keyword loop, including the keywords.Lookup call that the inactive-vocabulary routing has to change, is in refs.go. refs.go is not in this task's scope."
+    },
+    {
+      "task": "T3",
+      "text": "Schema is defined in jsonschema.go and is built in compileChecked. The accessor Schema.FormatAssertionRequested() needs a new field there, filled at Compile. jsonschema.go is not in this task's scope either."
+    },
+    {
+      "task": "T3",
+      "text": "The vocabulary step lives in resolver.compile in refs.go, which the operator approved for this run; compileAt in compile.go is the older path and is unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "jsonschema.go is not edited. The flag is stored on the root Node, not on Schema, so no change was needed there."
+    },
+    {
+      "task": "T3",
+      "text": "A keyword whose vocabulary is not one of the eight standard URIs is always active."
+    },
+    {
+      "task": "T3",
+      "text": "The new tests do not cover the error paths (unknown required vocabulary, malformed '$vocabulary', missing core, draft-07). T1 and T2 cover those at the parser level, and T5 will add library and CLI cases."
+    },
+    {
+      "task": "T3",
+      "text": "The new test file is named vocabulary_apply_test.go so it does not collide with vocabulary_test.go, which T5 owns."
+    },
+    {
+      "task": "T5",
+      "text": "spec_test.go globs testdata/*/*.json and treats every file as a spec-group suite. It already skips testdata/metaschema, so I made it skip testdata/vocabulary too. The new case files have their own shape and runner. No assertion was changed."
+    },
+    {
+      "task": "T5",
+      "text": "I added optional_core.json and no_vocabulary.json under testdata/vocabulary/metaschemas/ because the missing-$vocabulary and optional-core cases need them. Both sit in the allowed metaschemas folder."
+    },
+    {
+      "task": "T5",
+      "text": "The malformed-$vocabulary case checks only that the error names malformed.json, because the meta-schema check of the supplied meta-schema itself reports it first. The MalformedVocabularyError path is covered by the unit tests in internal/compile."
+    },
+    {
+      "task": "remediation",
+      "text": "I tested the exact F3 message at the internal/compile level (ParseVocabulary). Through the library, malformed.json fails the official meta-schema check first and comes back as InvalidSchemaError, which is still exit 2. So MalformedVocabularyError cannot be reached that way for this file."
+    },
+    {
+      "task": "remediation",
+      "text": "I did not add a separate CLI test for the $ref-reached case. The CLI already gives exit 2 for every compile error, and the wrapped message is unchanged."
+    },
+    {
+      "task": "remediation",
+      "text": "Only the vocabulary_test.go change touches an existing test file. It adds one message assertion and removes nothing."
+    },
+    {
+      "task": "remediation",
+      "text": "The http 2020-12 case is spotted inside UnsupportedSchemaError.Error() by Draft == \"2020-12\", the value otherDraft returns for that URI. The draft-07 message is unchanged, so metaschema_cli_test.go and schema_keyword.json still pass."
+    },
+    {
+      "task": "remediation",
+      "text": "The new tests go in vocabulary_test.go, which is in scope, rather than vocabulary_apply_test.go, which is outside the reserved file list."
+    },
+    {
+      "task": "remediation",
+      "text": "I updated testdata/vocabulary/required_optional_unknown.json, a test file this story owns, to make one assertion stricter. The new expected text still contains the old 'malformed.json'. No other case changed."
+    },
+    {
+      "task": "remediation",
+      "text": "For this meta-schema, the meta-schema check runs before ParseVocabulary and reports the failure first. The message therefore gives the bad entry as a JSON Pointer with escaped characters (~1 for '/'), and the test expects exactly that text, which matches the CLI output the operator saw."
+    },
+    {
+      "task": "remediation",
+      "text": "bound() keeps at most 80 characters (maxEntryQuote) instead of 80 bytes, so for non-ASCII text the quote can now be up to about 4 times as many bytes. The existing 300-byte check in TestUnknownVocabularyErrorBounded still passes."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

@@ -21,7 +21,7 @@ func TestCLIMetaSchemaErrors(t *testing.T) {
 		{"invalid schema (core 8.1.1)", []string{"validate", metaCLI + "invalid_schema.json", doc},
 			[]string{"invalid_schema.json", `"/enum"`, `rule "type"`}, []string{"secret-value-123"}},
 		{"unsupported draft (core 8.1.1)", []string{"validate", metaCLI + "draft07_schema.json", doc},
-			[]string{"not supported"}, []string{"draft-07"}},
+			[]string{"unsupported $schema: draft-07; only 2020-12 is supported"}, nil},
 		{"custom meta-schema failure (core 8.1.1)",
 			[]string{"validate", "--ref", "https://x.test/meta=" + metaCLI + "custom_meta_schema.json", metaCLI + "custom_meta.json", doc},
 			[]string{"custom_meta.json", `"required"`}, nil},

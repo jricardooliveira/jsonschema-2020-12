@@ -1,0 +1,5 @@
+[
+ {"name":"minimum of an unlisted validation vocabulary is ignored","spec":"core 8.1.2","meta":"core_applicator_only.json","schema":{"$schema":"https://example.com/meta/core-applicator","minimum":5},"want":"ok","docs":[{"doc":3,"valid":true}]},
+ {"name":"type of an unlisted validation vocabulary is ignored","spec":"core 8.1.2","meta":"core_applicator_only.json","schema":{"$schema":"https://example.com/meta/core-applicator","type":"string"},"want":"ok","docs":[{"doc":3,"valid":true}]},
+ {"name":"listed validation vocabulary still applies","spec":"core 8.1.2","meta":"unknown_optional.json","schema":{"$schema":"https://example.com/meta/unknown-optional","type":"string"},"want":"ok","docs":[{"doc":3,"valid":false},{"doc":"x","valid":true}]}
+]

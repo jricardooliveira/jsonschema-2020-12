@@ -30,6 +30,9 @@ type Node struct {
 	// Resource is the schema resource holding this node; nil when compiled
 	// without a resource index (Compile).
 	Resource *Resource
+	// FormatAssertion is set on the root node only: some resource's
+	// meta-schema requires the format-assertion vocabulary.
+	FormatAssertion bool
 }
 
 // Resource is the compiled view of one schema resource, shared by its nodes.

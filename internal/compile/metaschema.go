@@ -2,6 +2,8 @@ package compile
 
 import (
 	"errors"
+	"regexp"
+	"strings"
 
 	"github.com/neoface/jsonschema/internal/registry"
 	"github.com/neoface/jsonschema/internal/uri"
@@ -40,6 +42,19 @@ func declared(v any) (string, error) {
 	return n, nil
 }
 
+// otherDraft names the draft of a known json-schema.org non-2020-12
+// meta-schema URI ("draft-07", "2019-09"), or "" for any other URI.
+// The result is a slice of a fixed pattern match, never free-form text.
+var draftRe = regexp.MustCompile(`^https?://json-schema\.org/(draft-\d{2}|draft/\d{4}-\d{2})/(hyper-)?schema$`)
+
+func otherDraft(u string) string {
+	m := draftRe.FindStringSubmatch(u)
+	if m == nil {
+		return ""
+	}
+	return strings.TrimPrefix(m[1], "draft/")
+}
+
 // ResolveMetaSchema picks the meta-schema URI a schema is checked against
 // (core 8.1.1): Draft2020 when '$schema' is absent or names 2020-12, or the
 // URI of a custom meta-schema found in idx whose own chain ends in 2020-12.
@@ -68,6 +83,9 @@ func ResolveMetaSchema(idx *registry.Index, schema any) (string, error) {
 		}
 		if r == nil {
 			if len(seen) == 1 {
+				if d := otherDraft(cur); d != "" {
+					return "", &UnsupportedSchemaError{Draft: d}
+				}
 				return "", ErrUnsupportedSchema
 			}
 			return "", ErrMetaChain
