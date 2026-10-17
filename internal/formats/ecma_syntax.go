@@ -3,6 +3,7 @@ package formats
 import (
 	"strings"
 	"unicode"
+	"unicode/utf16"
 	"unicode/utf8"
 )
 
@@ -292,6 +293,14 @@ func parseUnicodeEscape(r []rune, i int) (rune, int, bool) {
 		return rune(v), j + 1, true
 	}
 	v, ok := hexN(r, i, 4)
+	// u flag: \uLead\uTrail is one code point (HexLeadSurrogate \u HexTrailSurrogate).
+	if ok && utf16.IsSurrogate(v) && i+5 < len(r) && r[i+4] == '\\' && r[i+5] == 'u' {
+		if t, ok2 := hexN(r, i+6, 4); ok2 {
+			if c := utf16.DecodeRune(v, t); c != utf8.RuneError {
+				return c, i + 10, true
+			}
+		}
+	}
 	return v, i + 4, ok
 }
 

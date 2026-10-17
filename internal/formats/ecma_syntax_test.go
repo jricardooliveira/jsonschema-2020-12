@@ -7,11 +7,15 @@ import (
 
 // ECMA-262 22.2.1 (Pattern grammar, u flag).
 func TestECMAPattern(t *testing.T) {
+	lead := "\\" + "uD83D" // lead surrogate escape, spelled to survive editors
 	good := []string{
 		"", "a", "a|b|", "^a+$", "a*?", "a{2}", "a{2,}", "a{2,5}?", `\d+\.\w*`, `[a-z0-9_-]`, `[^\]]`, `[\d-]`, `[-a]`, `[a-]`,
 		"(?=a)b", "(?!a)", "(?<=a)b", "(?<!a)b", "(?:a)", `(a)\1`, `\1(a)`, `(?<n>a)\k<n>`, `\k<n>(?<n>a)`,
 		"(?<n>a)|(?<n>b)", `\/`, `A`, `\u{1F600}`, `😀`, `\x41`, `\cA`, `\0`, `\p{Letter}`, `\P{Script=Greek}`,
 		`[\p{L}\d]`, `\b\B`, `[\b]`, `[\-]`, "(a(b)(?<x>c))\\3", "(?<$_é>a)",
+		// 22.2.1 RegExpUnicodeEscapeSequence: a lead+trail surrogate pair is one code point.
+		"[" + lead + "\\" + "uDE00-" + lead + "\\" + "uDE01]", "[" + lead + "\\" + "uDE00-\\" + "u{1F601}]",
+		lead + "\\" + "uDE00+", "[" + lead + "]", "[\\" + "uDE00-\\" + "uFFFF]",
 		"a{", // placeholder replaced below
 	}
 	good = good[:len(good)-1]
@@ -20,6 +24,7 @@ func TestECMAPattern(t *testing.T) {
 		"(?<n>a)(?<n>b)", "(?<n>a(?<n>b))", `\2(a)`, `\1`, `\k<n>`, `(?<n>a)\k<m>`, `\k`, "*", "+a", "a**", "a|*", "(*)",
 		"(?=a)*", "(?<=a)+", "^*", `\b+`, "(?", "(?x)", "(?<>a)", "(?<1>a)", "(?<n", `\c`, `\c1`, `\u12`, `\u{110000}`, `\u{}`, `\x4`,
 		`\00`, `\p{Lettter}`, `\p`, `\p{L`, `\-`, `\B+`, `[\B]`, `[\1]`, `[\k]`, "a{3,2}", "a{99999999999999999999,1}", "\xff", `\`,
+		"[" + lead + "\\" + "uDE01-" + lead + "\\" + "uDE00]", "[\\" + "u{1F600}-" + lead + "]",
 	}
 	for _, s := range good {
 		if !validECMAPattern(s) {

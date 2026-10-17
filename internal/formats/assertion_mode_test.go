@@ -11,10 +11,14 @@ import (
 
 // assertionSamples holds one value per format that breaks it.
 var assertionSamples = map[string]string{
-	"uri":           `"/a b"`,
-	"uri-reference": `"a b"`,
-	"iri":           `"/ü "`,
-	"iri-reference": `"/%zz"`,
+	"uri":                   `"/a b"`,
+	"uri-reference":         `"a b"`,
+	"iri":                   `"/ü "`,
+	"iri-reference":         `"/%zz"`,
+	"uri-template":          `"{"`,
+	"json-pointer":          `"a"`,
+	"relative-json-pointer": `"01"`,
+	"regex":                 `"("`,
 }
 
 // validation 7.2.1/7.2.2: outside assertion mode a format is an annotation
