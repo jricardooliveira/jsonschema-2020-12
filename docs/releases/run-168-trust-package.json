@@ -287,5 +287,5 @@
   "blockers": [
     "Existing tests were changed or deleted by this story \u2014 check that they were not weakened to make a failing check pass: cmd/jsonschema/golden_dbg_test.go (deleted)"
   ],
-  "next_authorization": "operator-review"
+  "next_authorization": "none"
 }
