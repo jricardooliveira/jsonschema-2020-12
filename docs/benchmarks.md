@@ -593,7 +593,70 @@ each of the 4 output shapes. The golden files were not touched by this task.
 when a recorded case's args or stdin size and SHA-256 differ from the current
 case list or the generated stdin.
 
+## Story 208 (annotations in growing chunks, flattened under sync.Once)
+
+Machine and Go as above (Apple M3 Max, macOS arm64, go1.27.2), root package,
+`go test -run NONE -bench . -benchmem -count=10 .`, median of 10 (all 10
+B/op and allocs/op values agreed within 0.01%).
+
+**Limitation of the "before" set (reported, not hidden).** The session that
+measured this had no way to build the pre-story tree (it could not create a
+directory or check out another commit), so there is no same-session "just
+before story 208" run. The after set below is the finished tree, which also
+contains stories 206, 207, 210 and 211. The only earlier figures with
+stories 205 to 207 in place are those recorded by story 207 in
+`docs/benchmarks/r3-207-objectkeys.md` (a different session). The comparison
+with that file mixes in story 210 (multipleOf) and 211, so it does not
+isolate story 208; the operator should re-run the benchmarks on the commit
+before story 208 if an isolated figure is wanted.
+
+### After (finished tree), medians of 10
+
+| Benchmark | ns/op | B/op | allocs/op |
+|---|---|---|---|
+| CompileOrder | 101,835 | 127,846 | 1,203 |
+| ValidateSmall | 20,799 | 19,095 | 393 |
+| Validate0_5MB | 17,570,000 | 13,128,600 | 300,038 |
+| Validate5_5MB | 170,556,000 | 133,479,200 | 3,000,072 |
+| ValidateErrors | 13,835,000 | 11,611,000 | 241,014 |
+| ValidateErrorsBasic | 14,770,000 | 13,597,500 | 247,041 |
+
+### Computation against v1.1 (f35d9e4, round 2 final, operator's values)
+
+| Target | v1.1 | Measured now | Drop | Required | Verdict |
+|---|---|---|---|---|---|
+| Validate5_5MB B/op | 368,958,349 | 133,479,200 | 235,479,149 | at least 26,958,349 (limit 342,000,000) | met |
+| ValidateErrors B/op | 29,282,834 | 11,611,000 | 17,671,834 | at least 1,882,834 (limit 27,400,000) | met |
+| ValidateSmall B/op | 41,682 | 19,095 | 22,587 lower | rise at most 318 (limit 42,000) | met |
+| ValidateSmall allocs/op | 785 | 393 | 392 lower | must not rise | met |
+
+Those drops include stories 205 to 207, 210 and 211. Isolated against the
+story 207 figures (Validate5_5MB 164,949,700 B/op; ValidateErrors 14,103,800;
+ValidateSmall 19,855 B/op and 435 allocs/op), the finished tree is lower on
+all four (133,479,200; 11,611,000; 19,095; 393), but story 210's
+multipleOf change contributes to the allocation counts there.
+
+### Allocation limits lowered (allocs_test.go)
+
+Measured with `go test -count=1 -v -run TestAllocs .`; limit = measured +
+about 10%. No limit rose.
+
+| Scenario | allocs: old limit → new (measured) | bytes: old limit → new (measured) |
+|---|---|---|
+| Compile order | 1,640 → 1,325 (1,203) | – |
+| Validate small | 615 → 433 (393) | – |
+| Validate 0.5 MB | 507,000 → 331,000 (300,037) | 28,400,000 → 14,442,000 (13,128,768) |
+| Validate 5.5 MB | 5,061,000 → 3,301,000 (3,000,069) | 295,900,000 → 146,900,000 (133,478,624) |
+| Validate errors | 353,000 → 266,000 (240,996) | 23,500,000 → 12,770,000 (11,608,629) |
+| Validate errors + basic | 359,000 → 272,000 (247,029) | – |
+
+The `allocs_<topic>_test.go` files and `docs/benchmarks/r3-*.md` were not
+touched.
+
 ## Allocation and memory limits (story 204)
+
+The limits in the table below are the story 204 values; story 208 lowered
+them (see the table above and the constants in `allocs_test.go`).
 
 Ordinary tests in `allocs_test.go` (root package) fail when a scenario uses
 more allocations, or more total bytes, than its limit. They run with a plain

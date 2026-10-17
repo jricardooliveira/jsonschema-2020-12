@@ -11,12 +11,12 @@ import (
 // bytes, see docs/benchmarks.md) plus about 10% headroom. One limit applies on
 // every platform; if a newer Go exceeds one, re-measure on purpose and record why.
 const (
-	allocLimitCompile     = 1640    // measured: 1490
-	allocLimitSmall       = 615     // measured: 558
-	allocLimitMedium      = 507000  // measured: 460045
-	allocLimitLarge       = 5061000 // measured: 4600065
-	allocLimitErrors      = 353000  // measured: 320005
-	allocLimitErrorsBasic = 359000  // measured: 326032
+	allocLimitCompile     = 1325    // measured: 1203
+	allocLimitSmall       = 433     // measured: 393
+	allocLimitMedium      = 331000  // measured: 300037
+	allocLimitLarge       = 3301000 // measured: 3000069
+	allocLimitErrors      = 266000  // measured: 240996
+	allocLimitErrorsBasic = 272000  // measured: 247029
 )
 
 // Total-bytes limits: the runtime.MemStats TotalAlloc delta of one operation
@@ -24,9 +24,9 @@ const (
 // after a warm-up, plus about 10% headroom.
 const (
 	bytesRuns        = 3
-	bytesLimitMedium = 28400000  // measured: 25777949
-	bytesLimitLarge  = 295900000 // measured: 268954661
-	bytesLimitErrors = 23500000  // measured: 21277448
+	bytesLimitMedium = 14442000  // measured: 13128768
+	bytesLimitLarge  = 146900000 // measured: 133478624
+	bytesLimitErrors = 12770000  // measured: 11608629
 )
 
 func checkBytes(t *testing.T, limit uint64, op func()) {
