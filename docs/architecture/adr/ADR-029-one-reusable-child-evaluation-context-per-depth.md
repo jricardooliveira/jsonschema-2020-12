@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #29
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #164, 2026-10-17 21:44 UTC)
 
 ## Decision
 The per-call collector gets a slice of *EvalContext indexed by child depth. EvalChild(depth d) takes stack[d], growing the stack only on a new maximum depth. It resets the context for the child (clearing errors, units, annotation marks and evaluated state while keeping capacity), evaluates, hands the units slice to the caller (detached so the next reset cannot overwrite it), and releases the context. Because evaluation is strictly last-in first-out, one context per depth is enough. The stack lives in per-call state only, so a compiled Schema stays immutable and goroutine-safe. A test-only poison step marks a released context as dead, so accessors panic if a keyword kept it; it is active only when testing.Testing() is true, which no CLI or golden output can observe. Any keyword that genuinely needs its child context afterwards is served a fresh context from registry.go, without editing that keyword's file.
