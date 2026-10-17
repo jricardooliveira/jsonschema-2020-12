@@ -12,7 +12,7 @@
 | 8 | Combining schemas | released | [008-combining-schemas/](008-combining-schemas/) | 142 |
 | 9 | Base URIs, anchors and local references | released | [009-base-uris-anchors-and-local-references/](009-base-uris-anchors-and-local-references/) | 143 |
 | 10 | Schema registry for external references | released | [010-schema-registry-for-external-references/](010-schema-registry-for-external-references/) | 145 |
-| 11 | Dynamic references | to do |  |  |
+| 11 | Dynamic references | released | [011-dynamic-references/](011-dynamic-references/) | 146, 147 |
 | 12 | Embedded meta-schemas and schema validation | to do |  |  |
 | 13 | $vocabulary handling | to do |  |  |
 | 14 | Annotation collection | released | [014-annotation-collection/](014-annotation-collection/) | 144 |
@@ -63,7 +63,7 @@
    Add a controlled schema registry. Through a library option and CLI flags, the caller supplies extra schemas as individual files or as whole directories, each mapped to a base URI. '$ref' to another resource is found by that resource's $id or by its mapped URI, after RFC 3986 resolution. The validator never accesses the network and never reads any file or folder the caller did not list, including file:// addresses. Anything not found in the registry is an unresolved-reference error with exit code 2. The registry is fixed when the schema is loaded. Add library tests and CLI contract tests for file mapping, directory mapping and unresolved references.
    Why: Delivers offline external references as soon as local referencing exists, and is independent of the keyword stories.
 
-11. **Dynamic references** — to do
+11. **Dynamic references** — released
    Add 2020-12 '$dynamicRef' and '$dynamicAnchor' with dynamic scope, as the core specification describes. A $dynamicRef whose initial target holds a matching $dynamicAnchor resolves to the outermost matching $dynamicAnchor in the dynamic scope. Otherwise it behaves like $ref. This works across embedded resources and across schemas supplied through the registry. Write spec-derived positive and negative tests, including recursive extension of a schema.
    Why: Must come before meta-schema validation, because the official meta-schemas reach every subschema through "$dynamicRef": "#meta".
 
