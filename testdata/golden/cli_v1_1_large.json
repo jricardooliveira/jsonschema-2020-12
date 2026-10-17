@@ -1,0 +1,261 @@
+{
+ "header": {
+  "provenance": "captured from base d7198b7, production code identical to v1.1 f35d9e4",
+  "goVersion": "go1.27.2",
+  "cases": 12
+ },
+ "cases": [
+  {
+   "id": "perf/gen-0.5MB-stdin|flag",
+   "shape": "flag",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-0.5MB",
+   "stdinSize": 516732,
+   "stdinSha256": "f77f4621ec9080b65d45467e4fa211a554aa00269fbebd38b601c02f5e4bc55a",
+   "exit": 0,
+   "stdout": {
+    "text": "{\"valid\":true}\n",
+    "size": 15
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-0.5MB-stdin|basic",
+   "shape": "basic",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-0.5MB",
+   "stdinSize": 516732,
+   "stdinSha256": "f77f4621ec9080b65d45467e4fa211a554aa00269fbebd38b601c02f5e4bc55a",
+   "exit": 0,
+   "stdout": {
+    "size": 1429240,
+    "sha256": "bff905d6b161dd547248163ab0dab75339cd6f3fd68daa594276e29cd5145553"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-0.5MB-stdin|detailed",
+   "shape": "detailed",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-0.5MB",
+   "stdinSize": 516732,
+   "stdinSha256": "f77f4621ec9080b65d45467e4fa211a554aa00269fbebd38b601c02f5e4bc55a",
+   "exit": 0,
+   "stdout": {
+    "size": 2558365,
+    "sha256": "027b7f3f138feccf6d6e3c8bfa63771c693395040cf44469ed6dfe860f4dd539"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-0.5MB-stdin|verbose",
+   "shape": "verbose",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-0.5MB",
+   "stdinSize": 516732,
+   "stdinSha256": "f77f4621ec9080b65d45467e4fa211a554aa00269fbebd38b601c02f5e4bc55a",
+   "exit": 0,
+   "stdout": {
+    "size": 7154340,
+    "sha256": "7ae4cffc8bbca9770c879242db8bdecf3564412e6030a2a4135c155cb085af18"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-errors-stdin|flag",
+   "shape": "flag",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:errors-0.33MB",
+   "stdinSize": 332911,
+   "stdinSha256": "e4115be3575c798ff4f63415cdaeb11348b3456ed04004f55db1792b18c3fe7f",
+   "exit": 1,
+   "stdout": {
+    "text": "{\"valid\":false}\n",
+    "size": 16
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-errors-stdin|basic",
+   "shape": "basic",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:errors-0.33MB",
+   "stdinSize": 332911,
+   "stdinSha256": "e4115be3575c798ff4f63415cdaeb11348b3456ed04004f55db1792b18c3fe7f",
+   "exit": 1,
+   "stdout": {
+    "size": 384805,
+    "sha256": "5e89a054f54d919710456541b9fab0407864449a5bf5e735fdac073c7143c945"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-errors-stdin|detailed",
+   "shape": "detailed",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:errors-0.33MB",
+   "stdinSize": 332911,
+   "stdinSha256": "e4115be3575c798ff4f63415cdaeb11348b3456ed04004f55db1792b18c3fe7f",
+   "exit": 1,
+   "stdout": {
+    "size": 2126942,
+    "sha256": "0a6b0e17422c3fae3e3c606442ade3cce1f5e1af743720c413f60b6a89f44dc8"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-errors-stdin|verbose",
+   "shape": "verbose",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:errors-0.33MB",
+   "stdinSize": 332911,
+   "stdinSha256": "e4115be3575c798ff4f63415cdaeb11348b3456ed04004f55db1792b18c3fe7f",
+   "exit": 1,
+   "stdout": {
+    "size": 6315910,
+    "sha256": "2f21ef551e22dd1a6a47cde1e2969af069020624004bcd768261d2e559fbc0fd"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-5.5MB-stdin|flag",
+   "shape": "flag",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-5.5MB",
+   "stdinSize": 5466732,
+   "stdinSha256": "e36bac7ab38de824b46f26bf6e4493566f2f7a4907ba7afc8852e0a4f59da1da",
+   "exit": 0,
+   "stdout": {
+    "text": "{\"valid\":true}\n",
+    "size": 15
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-5.5MB-stdin|basic",
+   "shape": "basic",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-5.5MB",
+   "stdinSize": 5466732,
+   "stdinSha256": "e36bac7ab38de824b46f26bf6e4493566f2f7a4907ba7afc8852e0a4f59da1da",
+   "exit": 0,
+   "stdout": {
+    "size": 14389240,
+    "sha256": "c5c5ffad8acddf02d2e78a44f444a1e8236b9b21e246f70e212da34364bf97ae"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-5.5MB-stdin|detailed",
+   "shape": "detailed",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-5.5MB",
+   "stdinSize": 5466732,
+   "stdinSha256": "e36bac7ab38de824b46f26bf6e4493566f2f7a4907ba7afc8852e0a4f59da1da",
+   "exit": 0,
+   "stdout": {
+    "size": 25778365,
+    "sha256": "f4378fd01a35630b2698bd8536ec4f04921fd00ebc2ffec87f4ce2f5ed70c33a"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  },
+  {
+   "id": "perf/gen-5.5MB-stdin|verbose",
+   "shape": "verbose",
+   "args": [
+    "--base-uri",
+    "https://golden.example/schema.json",
+    "testdata/perf/order_schema.json"
+   ],
+   "stdin": "gen:valid-5.5MB",
+   "stdinSize": 5466732,
+   "stdinSha256": "e36bac7ab38de824b46f26bf6e4493566f2f7a4907ba7afc8852e0a4f59da1da",
+   "exit": 0,
+   "stdout": {
+    "size": 72134340,
+    "sha256": "4cdadfb3b4a7cebebea106788e9031e02c989755d2b3e93cf61cb30bf5b337d0"
+   },
+   "stderr": {
+    "text": "",
+    "size": 0
+   }
+  }
+ ]
+}
