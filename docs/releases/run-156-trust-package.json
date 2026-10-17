@@ -1,0 +1,227 @@
+{
+  "work_id": "US-0156",
+  "parent_story": "US-0156",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "de57399924bedea7dd648bc2fc7e7a24715eb22f",
+    "base_commit": "bc2ba8410f6bdbc511da0eebd873c3335a51709b"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "testdata/perf/order_schema.json holds the order schema from the request, unchanged in meaning: same keywords, values, $defs and $ref. The library compiles it without error.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "testdata/perf/order_small.json is the valid document of 10 items, exactly 492 bytes. Its bytes are exactly what the recipe produces, with separators \", \" and \": \" and no trailing newline. Item i (from 0) is {\"sku\": \"ABC-i\", \"qty\": i, \"price\": i.99}.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Package internal/perfdata uses only the standard library and generates, deterministically and without randomness, the valid document for any item count (used with 10, 10,000 and 100,000 items) and the error document. The error document is {\"id\": 1, \"items\": [...]} with 10,000 items {\"sku\": \"ABC-i\", \"qty\": i}, where sku is \"bad\" when i is divisible by 10. Repeated calls return identical bytes. No large document is committed to the repository.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Ordinary tests, not benchmarks, check the inputs. The recipe for 10 items equals the stored small document byte for byte and is 492 bytes long. The generated 10,000-item and 100,000-item valid documents are valid against the order schema. The error document is invalid, with exactly 1,000 failing 'pattern' errors in the basic report. These tests run in well under a second apart from the 5.5 MB check and use no timing assertions.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Library benchmarks in bench_test.go at the module root cover these scenarios: compiling the order schema; validating the small, 0.5 MB and 5.5 MB valid documents; validating the 1,000-error document; and validating the 1,000-error document plus rendering the basic report. Each document benchmark includes parsing the JSON in its timed loop and calls b.SetBytes with the document size, so MB/s is reported. Large documents are generated once, outside the timer.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A benchmark reports the retained heap of a decoded 0.5 MB and 5.5 MB valid document, in the validator's own decoded form (internal/jsonvalue), as a custom metric with b.ReportMetric. The measurement uses runtime.ReadMemStats after runtime.GC before and after decoding, and keeps the value alive with runtime.KeepAlive.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "In-process CLI benchmarks in cmd/jsonschema/bench_test.go call the CLI's run entry point directly, with no subprocess, for these runs: the 0.5 MB valid document; the 5.5 MB valid document; the 1,000-error document; and the 0.5 MB document with the verbose output format. Each document is written to a temporary file once before the timer starts and passed as a file path. The report output is discarded with io.Discard, and each run's exit code is checked to be the expected 0 or 1.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "If the CLI does not already have an entry point that takes arguments, input and output streams and returns the exit code, a thin one is added. main.go only calls it, so exit codes and output stay identical, and all existing CLI tests pass unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/benchmarks.md gives the exact command (go test -run '^$' -bench . -benchmem ./..., with -count=10 for baselines) and explains how to read ns/op, MB/s, B/op, allocs/op and the retained-heap metric. It records this story's baseline, measured before any fix: each benchmark run 10 times, with the middle value and the spread, plus the machine, OS, CPU count, Go version and run count. It has a separate, clearly labelled table with the operator's own Mac baseline numbers from the brief, and the two baselines are never mixed.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "No other validator appears in go.mod, go.sum or any test. go.mod is unchanged and gains no require line. No test or benchmark uses the network. Validator behaviour is unchanged, and go test ./... and go test -race ./... pass.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 10,
+    "covered": 10,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "bench_test.go",
+        "change": "added",
+        "additions": 73,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/bench_test.go",
+        "change": "added",
+        "additions": 53,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "added",
+        "additions": 131,
+        "deletions": 0
+      },
+      {
+        "path": "internal/jsonvalue/bench_test.go",
+        "change": "added",
+        "additions": 49,
+        "deletions": 0
+      },
+      {
+        "path": "internal/perfdata/perfdata.go",
+        "change": "added",
+        "additions": 62,
+        "deletions": 0
+      },
+      {
+        "path": "internal/perfdata/perfdata_test.go",
+        "change": "added",
+        "additions": 42,
+        "deletions": 0
+      },
+      {
+        "path": "perf_fixtures_test.go",
+        "change": "added",
+        "additions": 71,
+        "deletions": 0
+      },
+      {
+        "path": "spec_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "testdata/perf/order_schema.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/perf/order_small.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-7eb55a2963864f338ec5b952b9da1723/docs/architecture/adr/ADR-021-in-project-benchmarks-and-baseline-for-the-order-s.md",
+    "summary": "I recommend passing this story: every acceptance criterion is met. The order schema matches the request exactly. The 492-byte small document is proven equal to the recipe output byte for byte. interna"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 3.143778,
+    "tokens_in": 3088104,
+    "tokens_out": 27606
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The schema file is the single-line text from the request, with no trailing newline."
+    },
+    {
+      "task": "T1",
+      "text": "The shell blocked the check that the small fixture is 492 bytes on disk. The test compares the file with the generated bytes and asserts the generated length is 492, so it passes only if the file is exactly that."
+    },
+    {
+      "task": "T1",
+      "text": "docs/benchmarks.md is left to T6."
+    },
+    {
+      "task": "T1",
+      "text": "spec_test.go was changed only to skip testdata/perf, which holds benchmark fixtures and not spec-case groups. Every existing assertion is kept, and the other testdata directories still run exactly as before."
+    },
+    {
+      "task": "T1",
+      "text": "order_schema.json is stored as the single-line text from the request."
+    },
+    {
+      "task": "T2",
+      "text": "Pattern errors are counted by keywordLocation suffix /pattern in the basic report's errors array, as the story's open points allow."
+    },
+    {
+      "task": "T3",
+      "text": "Schema.Validate takes raw bytes and parses them, so no separate parse step is needed to include parsing in the timing."
+    },
+    {
+      "task": "T3",
+      "text": "The large documents are rebuilt per benchmark function, outside the timed section, rather than shared across them. They are generated after the b.N=1 probe run but before b.ResetTimer, so they are not timed."
+    },
+    {
+      "task": "T4",
+      "text": "Three GC calls before each reading make the HeapAlloc numbers stable enough; I did not check run-to-run spread."
+    },
+    {
+      "task": "T4",
+      "text": "The metric is the average over b.N iterations. GC and ReadMemStats happen with the timer stopped, so ns/op covers only the decode."
+    },
+    {
+      "task": "T5",
+      "text": "run() already takes args, streams and returns the exit code, so run.go and main.go were not touched."
+    },
+    {
+      "task": "T5",
+      "text": "The CLI flag is spelled -output, matching the existing tests. The verbose benchmark uses it."
+    },
+    {
+      "task": "T6",
+      "text": "I ran each package's benchmarks separately in the foreground with -count=10. A full-tree run of the same command was also going in the background at the start. I could not read its output, so I did not use it. It may have made a few timings slightly high, and the doc says so. Allocation counts and retained heap are not affected."
+    },
+    {
+      "task": "T6",
+      "text": "Medians are the mean of the 5th and 6th sorted values of the 10 runs. B/op and allocs/op are rounded medians; they varied by under 1%."
+    },
+    {
+      "task": "T6",
+      "text": "The CLI benchmarks run in process and report allocated bytes. The operator's CLI figures are peak process memory, so only the trend compares between them. The doc notes this."
+    },
+    {
+      "task": "T6",
+      "text": "docs/benchmarks.md is not picked up by the existing docs tests: go test ./... passed with the file in place."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
