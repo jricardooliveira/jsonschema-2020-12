@@ -3,18 +3,23 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #169 · **Status:** waiting_human · **Stage:** gate-question
-- **Started:** 2026-10-17 23:21:17 UTC · **Stopped:** 2026-10-17 23:44:47 UTC
-- **Story spend:** ~$6.49 of $35.00 (estimated at API list prices)
+- **Run:** #169 · **Status:** waiting_human · **Stage:** gate-release-human
+- **Started:** 2026-10-17 23:21:17 UTC · **Stopped:** 2026-10-17 23:58:14 UTC
+- **Story spend:** ~$8.26 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-question: `factory approve 169` to accept, or `factory reject 169 "<your answers>"` to send it back.
+The operator decides at gate-release: `factory approve 169` to accept, or `factory reject 169 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-question**:
-  > Product decision for the operator: BenchmarkCLI/5.5MB B/op dropped by 33,053,943 against a required 49,252,608. The story is held per acceptance criterion 8. Either accept the result given the lower starting point or ask for further rendering changes.
+- Waiting for the operator at **gate-release**:
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: Tester assigned 'warn' on test rigor: the reportbytes_boundary_test verifies the limit fails at size−1 but does not assert the exact error message, only exit code 2 and 'report' in stderr (F1). Reviewer should decide whether this test should be strengthened.
+  >   ◦ Release-agent note: sizeHint counts fixed JSON wrapper bytes + location string lengths + annotation value estimates (F2), covering the full rendered size. This exceeds AC2 wording ('location lengths') but is operator-approved and safe; the B/op drop is measured evidence.
+  >   ◦ Release-agent note: Valid document render (no errors) lacks an explicit alloc-count test after pre-sizing (F3); however, B/op and allocs/op drops (21% and 37.5%) are measured on the perf documents, providing confidence.
+  >   ◦ Release-agent note: All targets are measured on Apple M3 Max, Go 1.27.2. On other hardware, compare relative to the before numbers in docs/benchmarks.md.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -54,8 +59,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 23:38:42 | gate | gate-build | ✅ [T4] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
 | 2026-10-17 23:38:42 | boss | authorize coder-agent:T5 | ✅ gate-2-architect passed |
 | 2026-10-17 23:44:47 | agent | coder-agent | ✅ product-question · T5 · 364.8s · $0.6385 |
-| 2026-10-17 23:44:47 | gate | gate-question | ⏸️ awaiting human sign-off |
-| 2026-10-17 23:44:47 | run | run waiting_human | ⏸️ |
+| 2026-10-17 23:44:47 | gate | gate-question | ❌ REJECTED: Decision: do NOT accept yet; make one more rendering change, then measure again. Operator profile of BenchmarkCLI/5.5MB on your current code (go test -bench 'CLI/5.5MB' -memprofile): the basic report buffer … |
+| 2026-10-17 23:48:55 | boss | authorize coder-agent:T5 | ✅ gate-2-architect passed |
+| 2026-10-17 23:54:52 | agent | coder-agent | ✅ complete · T5 · 356.6s · $0.9226 |
+| 2026-10-17 23:56:26 | gate | gate-build | ✅ [T5] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 23:56:26 | boss | authorize tester-agent | ✅ gate-build passed with all 5 task(s) implemented |
+| 2026-10-17 23:57:23 | agent | tester-agent | ✅ warn · 56.5s · $0.7679 |
+| 2026-10-17 23:57:23 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 8; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 23:57:23 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 23:58:13 | agent | release-agent | ✅ warn · 49.2s · $0.0868 |
+| 2026-10-17 23:58:14 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 23:58:14 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
