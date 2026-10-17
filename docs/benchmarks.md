@@ -510,6 +510,71 @@ Runs varied by about ±3% (5.5 MB before: 214.7 to 223.9 MB; after: 205.1 to
 - CLI peak memory is recorded above for information.
 - No allocation-limit test was added or changed.
 
+## Story 205 (path frames reused): before and after
+
+Same machine, Go version and method as above (Apple M3 Max, 16 logical CPUs,
+macOS arm64, go1.27.2). "After" is the finished story: `-count=10`, one
+package at a time, median of 10 (mean of the 5th and 6th sorted). "Before" is
+the code just before this story's evaluation change, taken from the story 203
+"after" tables above (`-count=5` medians, same machine): nothing else changed
+the benchmarked code between them (story 204 only added tests). The "before"
+tree could not be rebuilt in this session (git is inspection-only), so the
+before figures are the recorded ones. Change is after against before.
+
+Command:
+
+    go test -run '^$' -bench . -benchmem -count=10 . ./internal/jsonvalue ./cmd/jsonschema
+
+### Library (package root)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CompileOrder | 124,464 → 107,696 (−13.5%) | 209,249 → 159,808 (−23.6%) | 2,482 → 1,490 (−40.0%) |
+| ValidateSmall | 28,242 → 24,194 (−14.3%) | 41,682 → 30,712 (−26.3%) | 785 → 558 (−28.9%) |
+| Validate0_5MB | 25,649,156 → 21,329,582 (−16.8%) | 35,783,591 → 25,779,400 (−28.0%) | 660,084 → 460,052 (−30.3%) |
+| Validate5_5MB | 253,744,833 → 214,791,329 (−15.4%) | 368,958,400 → 268,954,238 (−27.1%) | 6,600,106 → 4,600,073 (−30.3%) |
+| ValidateErrors | 19,456,277 → 16,184,334 (−16.8%) | 29,283,397 → 21,276,892 (−27.3%) | 480,050 → 320,030 (−33.3%) |
+| ValidateErrorsBasic | 20,304,891 → 16,960,042 (−16.5%) | 31,270,190 → 23,263,599 (−25.6%) | 486,079 → 326,058 (−32.9%) |
+
+### Decoded document (package internal/jsonvalue)
+
+Not touched by this story: RetainedHeap/0.5MB 5.5 ms, retained 4,340,754 B;
+RetainedHeap/5.5MB 59 ms, retained 44,924,645 B; RetainedHeapExact/0.5MB
+6.1 ms, retained 5,300,8xx B; RetainedHeapExact/5.5MB 65 ms, retained
+54,524,69x B. All equal the story 203 "after" figures within noise.
+
+### CLI, in process (package cmd/jsonschema)
+
+| Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
+|---|---|---|---|
+| CLI/0.5MB | 36,830,701 → 32,389,449 (−12.1%) | 50,043,284 → 39,990,300 (−20.1%) | 922,755 → 721,732 (−21.8%) |
+| CLI/5.5MB | 355,866,111 → 305,042,927 (−14.3%) | 499,252,978 → 399,200,000 (−20.0%) | 9,202,786 → 7,201,760 (−21.8%) |
+| CLI/Errors | 23,303,234 → 18,407,647 (−21.0%) | 32,622,777 → 24,570,000 (−24.7%) | 488,678 → 327,665 (−32.9%) |
+| CLI/Verbose0.5MB | 85,369,327 → 70,660,430 (−17.2%) | 129,630,004 → 109,575,500 (−15.5%) | 1,882,895 → 1,481,842 (−21.3%) |
+
+### Slowdown judgement (reported, not asserted)
+
+No scenario is slower: every ns/op median is lower (−12% to −21%), so none is
+more than 5% slower.
+
+### Targets
+
+| Target | Measured | Status |
+|---|---|---|
+| Validate5_5MB B/op at most 280 MB | 268.95 MB | met |
+| Validate5_5MB allocs/op at most 4.8 M | 4,600,073 | met |
+| ValidateErrors B/op at most 22.5 MB | 21.28 MB | met |
+| CompileOrder allocs/op at most 1,600 | 1,490 | met |
+| No scenario more than 5% slower | all faster | met |
+
+All targets are met; nothing is held for the operator.
+
+### Golden files
+
+`testdata/golden/cli_v1_1.json` holds 2,512 entries and
+`cli_v1_1_large.json` holds 12, so 2,524 entries in total: 631 base cases in
+each of the 4 output shapes. The golden files were not touched by this task.
+
 ## Allocation and memory limits (story 204)
 
 Ordinary tests in `allocs_test.go` (root package) fail when a scenario uses
@@ -539,12 +604,16 @@ Method:
 
 | Scenario | Measured allocs | Allocs limit | Measured bytes | Bytes limit |
 |---|---|---|---|---|
-| Compile order schema | 2,481 | 2,730 | – | – |
-| Validate small | 785 | 864 | – | – |
-| Validate 0.5 MB | 660,073 | 726,000 | 35,785,669 | 39,400,000 |
-| Validate 5.5 MB | 6,600,096 | 7,260,000 | 368,958,280 | 405,900,000 |
-| Validate errors (1,000) | 480,018 | 528,000 | 29,282,834 | 32,200,000 |
-| Validate errors + basic report | 486,042 | 534,700 | – | – |
+| Compile order schema | 1,490 | 1,640 | – | – |
+| Validate small | 558 | 615 | – | – |
+| Validate 0.5 MB | 460,045 | 507,000 | 25,777,949 | 28,400,000 |
+| Validate 5.5 MB | 4,600,065 | 5,061,000 | 268,954,661 | 295,900,000 |
+| Validate errors (1,000) | 320,005 | 353,000 | 21,277,448 | 23,500,000 |
+| Validate errors + basic report | 326,032 | 359,000 | – | – |
+
+Re-measured and lowered on purpose by story 205 (path frames reused); the
+previous limits were 2,730 / 864 / 726,000 / 7,260,000 / 528,000 / 534,700
+allocs and 39.4 M / 405.9 M / 32.2 M bytes.
 
 Policy: one limit applies on every platform. If a limit is exceeded on a newer
 Go or another OS, the limit is re-measured on purpose and the reason recorded
