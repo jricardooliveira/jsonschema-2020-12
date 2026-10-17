@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #150 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 00:39:58 UTC · **Stopped:** 2026-10-17 00:48:53 UTC
-- **Story spend:** ~$3.11 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 00:39:58 UTC · **Stopped:** 2026-10-17 00:56:00 UTC
+- **Story spend:** ~$5.47 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,12 +14,13 @@ The operator decides at gate-release: `factory approve 150` to accept, or `facto
 ## Blockers
 
 - Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: F3 (medium): the boundary rule requires a test asserting that no error OR annotation output contains a sentinel instance value. The tests only scan units. The unevaluatedProperties annotation also carries the applied property names, which come from the document. ADR-014 rule 4 allows this exemption only for properties, patternProperties and additionalProperties. No test checks Annotations() for the sentinel, and unevaluatedProperties is not added to the documented exemption.; F4 (low): the fail-closed branches ('evaluated-property/item record unavailable') in unevaluatedproperties.go and unevaluateditems.go have no test. They cannot currently run, because evalNode's attachItems always sets ctx.Items. This is a note, not a live defect.
-  >   ◦ Release-agent note: The 'not' keyword may leak annotations: if the 'not' keyword registers evaluated properties or items after its subschema fails, later unevaluated* keywords will incorrectly see them as covered. This is a correctness issue owned by the 'not' implementation (story 186 or later). Recommend a follow-up investigation.
-  >   ◦ Release-agent note: Keyword location and absolute keyword location in error units are not explicitly tested in unevaluated*_test.go files; they are only checked indirectly through pass/fail outcome. Recommend a spot-check of actual error output from one failing case.
-  >   ◦ Release-agent note: The fail-closed code path (returning error when ctx.Items does not implement the property/item record interface) is not exercised by any test. This would be triggered only by a bug in story 191's EvalContext. Recommend adding a mock test if paranoia is desired.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: These keywords depend on story 191 to provide annotation tracking (EvaluatedItems, mark/rollback) and story 191 dropping annotations from failed subschemas. The diff uses the interfaces correctly, but if 191 does not roll back on subschema failure, unevaluated* will over-report covered members. Confirm story 191 is complete and has rollback implemented.
+  >   ◦ Release-agent note: anyOf and oneOf must evaluate all branches to collect complete annotations (per core 10.3). If story 185 short-circuits after the first passing branch, later branches' annotations will be missing. Verify story 185 does not short-circuit.
+  >   ◦ Release-agent note: The $dynamicRef test cases depend on story 188 propagating annotations from dynamically resolved targets; confirm story 188 is in place.
+  >   ◦ Release-agent note: QA noted three low findings (out-of-range mark handling, caps testing gaps, linear scan performance): these are not blocking, but reviewers should know these improvements could be made in follow-up stories (mark validation stricter, output limits tested, indexed lookup on deep nesting).
+  >   ◦ Security note (low): Fail-closed rule (low): both keywords return an error when the evaluated-location record is missing. But EvaluatedItems.since() returns nil when the mark is out of range (internal/eval/eval.go), so an inconsistent Scope is silently read as 'nothing evaluated'. That path never passes wrongly: the document is reported invalid, or the subschema is applied to every property or item. Still, the boundary rule says an inconsistent state should return an error rather than give a result.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -55,8 +56,17 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:48:11 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 8; findings: 6 new, 0 persistent, 0 resolved |
 | 2026-10-17 00:48:12 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 00:48:53 | agent | release-agent | ✅ warn · 40.9s · $0.0707 |
-| 2026-10-17 00:48:53 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:48:53 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:48:53 | gate | gate-release | ❌ REJECTED: Functional defect, verified by the operator on this candidate: schema {"allOf":[{"properties":{"a":{}}},{"unevaluatedProperties":false}]} with document {"a":1} returns valid; 2020-12 requires invalid, becaus… |
+| 2026-10-17 00:49:34 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 00:53:46 | agent | coder-agent | ✅ complete · remediation · 252.1s · $1.6169 |
+| 2026-10-17 00:53:54 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 00:53:55 | boss | authorize tester-agent | ✅ gate-build passed with all 4 task(s) implemented |
+| 2026-10-17 00:54:56 | agent | tester-agent | ✅ pass · 61.5s · $0.6473 |
+| 2026-10-17 00:54:56 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 8; findings: 3 new, 0 persistent, 0 resolved |
+| 2026-10-17 00:54:56 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 00:55:59 | agent | release-agent | ✅ pass · 62.8s · $0.0900 |
+| 2026-10-17 00:56:00 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 00:56:00 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
