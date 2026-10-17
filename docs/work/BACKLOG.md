@@ -19,7 +19,7 @@
 | 15 | unevaluatedProperties and unevaluatedItems | released | [015-unevaluatedproperties-and-unevaluateditems/](015-unevaluatedproperties-and-unevaluateditems/) | 150 |
 | 16 | Limits against hostile input | released | [016-limits-against-hostile-input/](016-limits-against-hostile-input/) | 152 |
 | 17 | Detailed and verbose output | released | [017-detailed-and-verbose-output/](017-detailed-and-verbose-output/) | 149 |
-| 18 | Format assertion: mode, dates, email, hostnames, IP and UUID | to do |  |  |
+| 18 | Format assertion: mode, dates, email, hostnames, IP and UUID | released | [018-format-assertion-mode-dates-email-hostnames-ip-and/](018-format-assertion-mode-dates-email-hostnames-ip-and/) | 153 |
 | 19 | Format assertion: URI, IRI, templates, pointers and regex | to do |  |  |
 | 20 | User documentation: CLI contract and scope | to do |  |  |
 
@@ -91,7 +91,7 @@
    Add the 2020-12 'detailed' and 'verbose' output formats, as far as practical, as new formats registered through the output-format registration point. Both the library and the CLI output-format option can select them. The nested reports carry the instance location, keyword location and absolute keyword location, and they include annotations where the shapes call for them. They never quote document values. When one document is checked, stdout is exactly one output object. With several documents, each line holds the unchanged output object. Document in the code any part of the shapes that is only partly produced. Write tests for both shapes.
    Why: An optional feature that plugs into the existing output registration point without touching the keywords.
 
-18. **Format assertion: mode, dates, email, hostnames, IP and UUID** — to do
+18. **Format assertion: mode, dates, email, hostnames, IP and UUID** — released
    Add the optional format-assertion mode. It is enabled by an opt-in library option, by a CLI flag, or when a meta-schema declares the format-assertion vocabulary as required. In this mode, 'format' fails validation when the value does not match. Default behaviour stays annotation-only, and unknown formats are never an error. Implement these format checks from the 2020-12 validation spec, as far as practical, using only the standard library: date-time, date, time, duration, email, idn-email, hostname, idn-hostname, ipv4, ipv6 and uuid. Give format checks one registration point so each check lives in its own file. idn-hostname and idn-email get basic checks only, and the code records what they miss. Write positive and negative tests for each format and for each way of turning the mode on.
    Why: Adds the optional assertion mode with the first half of the formats, sized to fit alongside the shared format registration point.
 
