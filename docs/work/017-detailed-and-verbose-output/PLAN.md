@@ -1,7 +1,7 @@
 # PLAN #17: Detailed and verbose output formats, with URI-safe absoluteKeywordLocation
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #149, 2026-10-17 00:43 UTC)
 - Design: see `ADR-017-*.md` under `docs/architecture/adr/`
 
 ## Files that change

@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #17
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #149, 2026-10-17 00:43 UTC)
 
 ## Decision
 I changed only the point the reviewer settled: where detailed and verbose get their data. Everything else is the same as the reviewed design (percent-encoded fragment, shapes in their own files, the report byte cap, no new CLI flag, run.go and main.go not edited).
