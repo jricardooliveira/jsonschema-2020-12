@@ -1,0 +1,436 @@
+{
+  "work_id": "US-0148",
+  "parent_story": "US-0148",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "warn",
+  "candidate": {
+    "commit": "8e2ad4652ece8d66b1031bfb434a52218438e379",
+    "base_commit": "f2eadf3819086ba930909dbdb26fea021fd51c77"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "The official 2020-12 meta-schema (https://json-schema.org/draft/2020-12/schema) and its eight vocabulary meta-schemas (meta/core, meta/applicator, meta/unevaluated, meta/validation, meta/meta-data, meta/format-annotation, meta/format-assertion, meta/content) are embedded in the binary with go:embed. They are indexed in the registry under their official $id and resolve with no network or disk access.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A schema with no '$schema', or with '$schema' equal to https://json-schema.org/draft/2020-12/schema after URI normalisation (an empty fragment '#' is accepted), is validated against the embedded 2020-12 meta-schema at load time, before any document is checked.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A schema whose '$schema' names a different version, for example http://json-schema.org/draft-07/schema#, is a schema error that says the declared version is not supported (exit code 2). Nothing is checked.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A schema whose '$schema' points to a custom meta-schema supplied through the registry is validated against that meta-schema. The custom meta-schema is itself validated against its own meta-schema, and that chain must end in the official 2020-12 meta-schema, otherwise it is a schema error (exit code 2). '$vocabulary' contents are not interpreted by this story.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Meta-schema validation uses '$dynamicRef': '#meta', so every nested subschema of the loaded schema is checked, including subschemas under properties, items, $defs, allOf and similar applicators.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Meta-schema checking applies to the main schema and to every registry schema the main schema actually reaches through its references, all at load time. A supplied schema that is never referenced is not meta-schema-checked and never causes a meta-schema error. Parse errors in any supplied file remain exit code 2, as story 187 defines.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The meta-schema check never asserts 'format', whether or not format-assertion mode is on, so enabling format assertion never makes a previously accepted schema fail.",
+        "covered_by": [],
+        "status": "flagged_missing"
+      },
+      {
+        "criterion": "A registry file that uses a built-in meta-schema address is accepted only when it is deep-JSON-equal to the embedded meta-schema, and the embedded one is then used. A different schema at that address is a schema error (exit code 2) that names the address and the file. Built-in meta-schemas can never be replaced.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The library returns a distinct invalid-schema error type for meta-schema failures. It carries the schema location (JSON Pointer) and the failing keyword or rule, and it never includes schema or instance values. It is never reported as a validation result of 'invalid'.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "CLI: when the schema fails its meta-schema check, the exit code is 2, stdout is empty, and stderr holds one clear message. The message names the schema file, the location in the schema and the failing rule, without quoting values.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Tests cover valid and invalid schemas through both the library and the CLI. They include: no $schema, the 2020-12 $schema with and without '#', an unsupported draft, a custom registry meta-schema, a nested invalid subschema reached through $dynamicRef, an unreferenced invalid registry schema, format mode on and off, and a built-in address with equal and with different content. Each case cites the 2020-12 core section it derives from. No test uses the network.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 11,
+    "covered": 10,
+    "flagged_missing": [
+      "The meta-schema check never asserts 'format', whether or not format-assertion mode is on, so enabling format assertion never makes a previously accepted schema fail."
+    ],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "cmd/jsonschema/metaschema_cli_test.go",
+        "change": "added",
+        "additions": 54,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacheck.go",
+        "change": "added",
+        "additions": 50,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacheck_test.go",
+        "change": "added",
+        "additions": 90,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metaschema.go",
+        "change": "added",
+        "additions": 85,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metaschema_test.go",
+        "change": "added",
+        "additions": 81,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 19,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/embedded.go",
+        "change": "added",
+        "additions": 55,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/embedded_test.go",
+        "change": "added",
+        "additions": 69,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/applicator.json",
+        "change": "added",
+        "additions": 48,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/content.json",
+        "change": "added",
+        "additions": 17,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/core.json",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/format-annotation.json",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/format-assertion.json",
+        "change": "added",
+        "additions": 14,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/meta-data.json",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/unevaluated.json",
+        "change": "added",
+        "additions": 15,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/meta/validation.json",
+        "change": "added",
+        "additions": 98,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/metaschemas/schema.json",
+        "change": "added",
+        "additions": 58,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/registry.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "invalid_schema_error.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 59,
+        "deletions": 1
+      },
+      {
+        "path": "metaschema_test.go",
+        "change": "added",
+        "additions": 105,
+        "deletions": 0
+      },
+      {
+        "path": "spec_test.go",
+        "change": "modified",
+        "additions": 11,
+        "deletions": 0,
+        "test_losses": []
+      },
+      {
+        "path": "testdata/metaschema/builtin_address.json",
+        "change": "added",
+        "additions": 4,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/builtin_address_mismatch.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/custom_meta.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/custom_meta_schema.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/document.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/draft07_schema.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/invalid_schema.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/cli/valid_schema.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/custom_metaschema.json",
+        "change": "added",
+        "additions": 8,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/invalid_schemas.json",
+        "change": "added",
+        "additions": 10,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/metaschema/schema_keyword.json",
+        "change": "added",
+        "additions": 8,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/compile/compile.go"
+    ],
+    "design_unplanned": [
+      "internal/compile/refs.go",
+      "jsonschema.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "internal/compile/refs.go",
+        "granted_by": "operator",
+        "at": "gate-question #1300"
+      },
+      {
+        "path": "jsonschema.go",
+        "granted_by": "operator",
+        "at": "gate-question #1300"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-d7189a0f7a6f4c87aafe06f444a0b9e7/docs/architecture/adr/ADR-012-embedded-2020-12-meta-schemas-and-meta-schema-vali.md",
+    "summary": "The embedded meta-schemas, '$schema' resolution (unsupported draft, custom chain, cycle and self-reference bounds), the $dynamicRef-based nested checks, the reached-only rule and the built-in address "
+  },
+  "security_boundary": {
+    "overall": "warn",
+    "highest_severity": "medium",
+    "breaking_changes": [
+      "Schemas that were previously accepted but are invalid against the 2020-12 meta-schema now fail to compile. Existing tests that compile such schemas would break.",
+      "Compile now returns an error for any schema that fails its meta-schema check. These schemas were previously accepted. The operator approved this in scope item (6).",
+      "Compile now returns an error for a '$schema' that names an unsupported draft. These schemas were previously accepted."
+    ],
+    "findings": [
+      "F1 (medium) A failure in a supplied schema is not always reported as InvalidSchemaError, and that error path can quote schema values. In jsonschema.go compileChecked, when compile.CompileReached fails, only the main schema is re-run through metaCheck. A reached registry schema, or a custom meta-schema, that a keyword rejects at compile time (for example {\"type\":\"nope\"} or {\"minLength\":-1}) is returned as the plain error 'schema: ...'. That message carries the keyword compile text, such as validation/type.go 'type: unknown type name %q', which echoes the schema value. This breaks the boundary rule that meta-schema failures never quote schema values. It also breaks the rule that a reached registry schema failing its meta-schema is an InvalidSchemaError naming the file. The test 'custom meta-schema itself invalid' in custom_metaschema.json only asserts want:\"error\", so it passes in this state. No test covers a reached registry schema with a compile-level meta-schema violation.",
+      "F3 (low) The meta-check uses eval.DefaultMaxAnnotations instead of the caller's MaxAnnotations (jsonschema.go metaCheck). Step limits do apply, and limit errors stay plain errors with exit 2 (fail-closed). But the boundary rule asks for the same limits as normal evaluation, annotation count included."
+    ],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.104447,
+    "tokens_in": 6105645,
+    "tokens_out": 72113
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "I wrote the meta-schema JSON from memory of the official 2020-12 texts, since nothing may be downloaded. Nothing was compared against the official files, so a diff against them is worth doing."
+    },
+    {
+      "task": "T1",
+      "text": "AddBuiltins must run before supplied documents are added, or the conflict check does not apply. T3 wiring in compile must follow that order."
+    },
+    {
+      "task": "T1",
+      "text": "The built-in address check goes through AddExternal's existing duplicate-address logic, so internal/registry/index.go is unchanged."
+    },
+    {
+      "task": "T1",
+      "text": "The conflict message reads 'duplicate address \"<uri>\" claimed by built-in meta-schema and <file>'."
+    },
+    {
+      "task": "T2",
+      "text": "A custom meta-schema with no '$schema' of its own counts as 2020-12, which follows the operator rule that an absent '$schema' means 2020-12."
+    },
+    {
+      "task": "T2",
+      "text": "A non-string '$schema' resolves to the 2020-12 default, so the later meta-check reports it."
+    },
+    {
+      "task": "T2",
+      "text": "A custom meta-schema that is an embedded subschema (resource pointer other than the root) is treated as an ErrMetaChain."
+    },
+    {
+      "task": "T2",
+      "text": "Both new errors are plain sentinel errors in internal/compile. T3 should wrap them in or alongside InvalidSchemaError so that errors.As is consistent."
+    },
+    {
+      "task": "T2",
+      "text": "'$schema' is normalised with uri.Normalize and a trailing '#' is dropped before comparing."
+    },
+    {
+      "task": "T3",
+      "text": "Plan once refs.go is granted: metacheck.go adds an unexported (sh *shared) metaCheck() and a type InvalidSchemaError{SchemaURI, SchemaLocation, Keyword, Message} with no values. invalid_schema_error.go re-exports it as `type InvalidSchemaError = compile.InvalidSchemaError`, so errors.As works at the root."
+    },
+    {
+      "task": "T3",
+      "text": "ResolveMetaSchema (T2) picks the meta-schema URI. The check compiles the chosen meta-schema from an index that has AddBuiltins applied plus the supplied registry. It evaluates each reached document with eval, so $dynamicRef '#meta' applies. A limit error is passed through unchanged, never turned into InvalidSchemaError."
+    },
+    {
+      "task": "T3",
+      "text": "refs.go needs one added line at the end of compileDocument, before it returns: call sh.metaCheck()."
+    },
+    {
+      "task": "T3",
+      "text": "Format is already annotation-only in the evaluator (no assertion code exists yet), so the check is format-independent and no eval.go edit is needed."
+    },
+    {
+      "task": "T3",
+      "text": "internal/eval imports internal/compile, so metacheck.go in compile cannot call eval directly (import cycle). The check will need either an injected evaluate function registered from the eval or root package, or the call placed in the root package (jsonschema.go). I am requesting both refs.go and jsonschema.go to cover this."
+    },
+    {
+      "task": "T3",
+      "text": "registry_options.go is outside this task's scope, so jsonschema.go adds the built-ins to the loaded registry index (or a new one) after the supplied files. A supplied file at a built-in address is still accepted when equal and refused when different, naming both sources."
+    },
+    {
+      "task": "T3",
+      "text": "internal/registry/embedded.go now decodes with DecodeLimited so numbers are *Number like supplied schemas. The old Decode left json.Number, which made keywords like exclusiveMinimum fail to compile."
+    },
+    {
+      "task": "T3",
+      "text": "The meta-check uses the schema's output-unit cap, but the default annotation cap. Annotations from the check are discarded, and the caller's cap is meant for documents. Limit errors still surface as errors and never as InvalidSchemaError."
+    },
+    {
+      "task": "T3",
+      "text": "spec_test.go was updated because three existing cases (negative maxItems, fractional minItems, negative minItems) are now rejected by the meta-schema. The runner skips a case that fails with InvalidSchemaError and logs it. Every other assertion is unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "The unsupported '$schema' and meta-schema chain errors stay as ErrUnsupportedSchema and ErrMetaChain. They are not InvalidSchemaError, and the godoc says so."
+    },
+    {
+      "task": "T3",
+      "text": "cmd/jsonschema/main.go is not touched. I did not check whether the CLI message names the schema file, so the stderr criterion is untested here (T5 covers it)."
+    },
+    {
+      "task": "T4",
+      "text": "spec_test.go was edited so its shared testdata/*/*.json runner skips testdata/metaschema/. That folder uses a different case shape and has its own runner. No assertion was changed."
+    },
+    {
+      "task": "T4",
+      "text": "A custom meta-schema that is itself invalid, for example {\"type\":\"nope\"}, still gives a plain compile error rather than *InvalidSchemaError. It is a schema error either way, so the CLI exits 2. The test expects a plain error for that case."
+    },
+    {
+      "task": "T4",
+      "text": "Options has no format-assertion switch yet, so the format-mode on/off case is not tested here. Format is never asserted by the meta-check."
+    },
+    {
+      "task": "T5",
+      "text": "jsonschema.go is in the granted scope for this run. I edited it, rather than the crowded cmd/jsonschema/run.go, so the CLI error names the schema file."
+    },
+    {
+      "task": "T5",
+      "text": "The built-in address mismatch case supplies the file with --ref and no URI mapping, so it is found by its own $id."
+    }
+  ],
+  "blockers": [
+    "1 acceptance criteria are not proven by any test the tester could see (\u00a75.1) \u2014 verify them yourself or send the story back: [\"The meta-schema check never asserts 'format', whether or not format-assertion mode is on, so enabling format assertion never makes a previously accepted schema fail.\"]"
+  ],
+  "next_authorization": "operator-review"
+}
