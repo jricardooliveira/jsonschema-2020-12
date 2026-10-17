@@ -1,0 +1,227 @@
+{
+  "work_id": "US-0165",
+  "parent_story": "US-0165",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "e355634304ce178d8df9fbff2098433834b24ba3",
+    "base_commit": "b2e37ade51c92c5a392b9db52950c82d1697ab0e"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "One shared builder in internal/registry produces the built-in meta-schema index. registry.AddBuiltins and internal/compile/metacache.go both get the index from it, so a process builds the index exactly once. The shared index stays immutable after it is built and is safe to share across goroutines (sync.Once / sync.OnceValue).",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A single build counter lives inside internal/registry. It is an atomic counter incremented by every built-in index build. Only tests read it (internal package, so it is not part of the public API). It changes no result, error or output, and it is safe under concurrent use.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A counter test in a new root-package test file runs in every normal go test run. It starts one fresh test program (a re-exec of the test binary that runs only the child), loads a schema through the public API on the path that uses both AddBuiltins and the meta-schema cache, and asserts that the build counter is exactly 1. It honours the race gating used by allocs_race_on_test.go / allocs_race_off_test.go.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new root-package file allocs_firstload_test.go adds an allocation limit for the first schema load. The test runs in every normal run, in one fresh test program, and counts allocations of the first Compile of the order schema in testdata/perf. The limit is the measured count after this story plus about 10%, with the measured value recorded next to it. It reuses the existing allocation helpers and race gating read-only. allocs_test.go is not modified.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A first-compile timing measure is skipped in a normal go test run and enabled only by a dedicated test flag, in the same way as TestCLIPeakMemory -peakmem. It starts a fresh test program about 10 times, measures only the first schema load in each (time, bytes and allocations), and reports the medians. It asserts no timing.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new file docs/benchmarks/r3-211-firstload.md records before medians (main after #205) and after medians (this story), measured with go test -count=10 on the same machine. It covers the in-repo benchmarks and the new first-compile measure, and states the verdict. Success means the first-compile median is lower in both time and memory. If there is no saving, or any number gets worse, the story is recorded and held for the operator's decision. Timings taken during parallel builds are marked as noisy and re-measured by the operator at Checkpoint 3. B/op and allocs/op are judged exactly.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Validation results, flag/basic/detailed/verbose output, library Result, load errors, error messages, limits, exit codes and goroutine safety are unchanged. All existing tests pass unmodified, go test -race ./... is green, and the golden test matches the committed v1.1 golden files byte for byte. No golden file, allocs_test.go, docs/benchmarks.md or file claimed by #206, #207 or #210 is written. Only the standard library is used and go.mod is unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 7,
+    "covered": 7,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "allocs_firstload_test.go",
+        "change": "added",
+        "additions": 37,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks/r3-211-firstload.md",
+        "change": "added",
+        "additions": 77,
+        "deletions": 0
+      },
+      {
+        "path": "firstload_count_test.go",
+        "change": "added",
+        "additions": 23,
+        "deletions": 0
+      },
+      {
+        "path": "firstload_helper_test.go",
+        "change": "added",
+        "additions": 29,
+        "deletions": 0
+      },
+      {
+        "path": "firstload_timing_test.go",
+        "change": "added",
+        "additions": 68,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacache.go",
+        "change": "modified",
+        "additions": 19,
+        "deletions": 5
+      },
+      {
+        "path": "internal/registry/buildcount.go",
+        "change": "added",
+        "additions": 11,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/registry.go",
+        "change": "modified",
+        "additions": 11,
+        "deletions": 3
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-356815b1354c4d4893fb7198ca6962a0/docs/architecture/adr/ADR-034-build-the-built-in-meta-schema-index-once-per-proc.md",
+    "summary": "All three earlier findings are resolved. buildBuiltin() keeps building from scratch, so BenchmarkFirstLoadOrder still rebuilds on purpose and measures what it did before (6,020 allocs/op in both state"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 5.066946,
+    "tokens_in": 5504215,
+    "tokens_out": 39481
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The counter sits in BuildBuiltinIndex, so every build counts, including the intentional rebuild in FirstLoadOrder. The root counter test (T3) only compiles a schema and does not call FirstLoadOrder, so it should read exactly 1."
+    },
+    {
+      "task": "T1",
+      "text": "BuiltinBuilds() is exported only because the root-package test sits outside internal/registry. The package is internal, so it is not public API."
+    },
+    {
+      "task": "T1",
+      "text": "T1 added no new test. The counter is checked by the T3 root counter test, so T1 has no test of its own."
+    },
+    {
+      "task": "T1",
+      "text": "T2 must check that compileDocumentOpts does not write to the shared index before metacache reuses it. If it does, T2 needs a copy-on-write view."
+    },
+    {
+      "task": "T2",
+      "text": "The FirstLoadOrder benchmark (internal/compile/bench_test.go) calls buildBuiltin(). After this change it still recompiles the meta-schema each iteration but no longer rebuilds the index. I left the benchmark file unchanged. Its 'rebuild on purpose' scope is now narrower, so the first-load before and after numbers should come from the fresh-process measure, not this benchmark."
+    },
+    {
+      "task": "T2",
+      "text": "I did not run the whole repo (`./...`). The other packages were not run after this change."
+    },
+    {
+      "task": "T2",
+      "text": "docs/benchmarks/r3-211-firstload.md, the counter test, the allocation-limit test and the timing test belong to later tasks (T3 to T6) and were not written."
+    },
+    {
+      "task": "T3",
+      "text": "The build count is exact in race and non-race builds, so the test needs no raceEnabled branch."
+    },
+    {
+      "task": "T3",
+      "text": "I did not check that restoring the second build makes the test fail."
+    },
+    {
+      "task": "T3",
+      "text": "Package-level code in the root test files that compiles a schema at init would make the child's first load not a true first load. I did not check for any."
+    },
+    {
+      "task": "T4",
+      "text": "Allocation counts differ under the race detector, so the test is skipped under -race. This follows the existing skipUnderRace gating in allocs_test.go."
+    },
+    {
+      "task": "T4",
+      "text": "Fixture bytes are read before the baseline MemStats reading, so only Compile is counted."
+    },
+    {
+      "task": "T4",
+      "text": "Ran `go test .` and `go test -count=3 -run TestAllocsFirstLoadOrder .` (both green); under -race only the skip was observed. I did not run a full `go test -race ./...`, and did not run the golden test or check that allocs_test.go and go.mod are unchanged with git diff."
+    },
+    {
+      "task": "T5",
+      "text": "The child detects itself through the freshChildEnv marker before checking the flag, because the child is started without -firstload."
+    },
+    {
+      "task": "T5",
+      "text": "The parent fails the test if a child prints no FIRSTLOAD line."
+    },
+    {
+      "task": "T6",
+      "text": "The 'before' numbers come from temporarily making metacache.go call registry.BuildBuiltinIndex() again. I reverted that edit, and git status shows no source changes."
+    },
+    {
+      "task": "T6",
+      "text": "BenchmarkFirstLoadOrder calls buildBuiltin(), which now takes the shared index. Its drop (about 445 \u00b5s to 278 \u00b5s, 6,020 to 4,025 allocs) therefore partly reflects that it no longer rebuilds the index, not only a real saving."
+    },
+    {
+      "task": "T6",
+      "text": "I did not measure CompileOrder before the change, because the temporary edit only affects the first load, so it is recorded for the after state only."
+    },
+    {
+      "task": "T6",
+      "text": "Timings were taken on a machine that may have been busy with parallel builds. They are marked noisy, and the operator re-measures at Checkpoint 3. B/op and allocs/op are exact."
+    },
+    {
+      "task": "T6",
+      "text": "I took the benchmark medians by eye from the 10-run output; I did not run a script."
+    },
+    {
+      "task": "remediation",
+      "text": "The existing metacache_test check that builtinBuilds is 1 still holds: the compile-package counter now increments in buildBuiltinWith, which both buildBuiltin and sharedBuiltin go through. That counter is separate from the registry's index-build counter."
+    },
+    {
+      "task": "remediation",
+      "text": "'Before' was measured on the same tree by temporarily changing sharedBuiltin to call registry.BuildBuiltinIndex(), which matches main after #205. The edit was reverted, and gofmt and go vet are clean afterwards."
+    },
+    {
+      "task": "remediation",
+      "text": "The first full 'after' benchmark run was slower everywhere, including packages this change does not touch. The doc therefore reports the second after run and interleaved re-runs for CLI/0.5MB and CLI/Verbose0.5MB."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

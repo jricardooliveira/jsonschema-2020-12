@@ -24,14 +24,20 @@ var (
 	builtinBuilds atomic.Int32
 )
 
-// buildBuiltin builds the set from scratch (the first-load benchmark calls it
-// directly). Meta-checks never assert format, so noFormat is on.
+// buildBuiltin builds the set from scratch, index included (the first-load
+// benchmark calls it directly and rebuilds on purpose).
 func buildBuiltin() (*builtinSet, error) {
-	builtinBuilds.Add(1)
 	idx, err := registry.BuildBuiltinIndex()
 	if err != nil {
 		return nil, err
 	}
+	return buildBuiltinWith(idx)
+}
+
+// buildBuiltinWith compiles the 2020-12 meta-schema against idx, which it
+// never writes. Meta-checks never assert format, so noFormat is on.
+func buildBuiltinWith(idx *registry.Index) (*builtinSet, error) {
+	builtinBuilds.Add(1)
 	_, n, err := compileDocumentOpts(map[string]any{"$ref": Draft2020}, StdinBaseURI, idx, 0, false, true)
 	if err != nil {
 		return nil, err
@@ -39,9 +45,17 @@ func buildBuiltin() (*builtinSet, error) {
 	return &builtinSet{idx: idx, meta: n}, nil
 }
 
-// sharedBuiltin returns the process-wide set, building it on first use.
+// sharedBuiltin returns the process-wide set, building it on first use from
+// the registry's shared built-in index, so the process builds that index once.
 func sharedBuiltin() (*builtinSet, error) {
-	builtinOnce.Do(func() { builtinShare, builtinErr = buildBuiltin() })
+	builtinOnce.Do(func() {
+		idx, err := registry.SharedBuiltinIndex()
+		if err != nil {
+			builtinErr = err
+			return
+		}
+		builtinShare, builtinErr = buildBuiltinWith(idx)
+	})
 	if builtinShare == nil && builtinErr == nil { // build panicked
 		return nil, errors.New("built-in meta-schemas are unavailable")
 	}
