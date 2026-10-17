@@ -1,0 +1,263 @@
+{
+  "work_id": "US-0160",
+  "parent_story": "US-0160",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "warn",
+  "candidate": {
+    "commit": "0c8bc91af0465b29c7f7a84fcc9726456b4a60cf",
+    "base_commit": "fee5a4e33f8f68a6a5e9f1e1d80644a0a202e210"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "The embedded 2020-12 meta-schema, all its vocabulary meta-schemas and their registry index are built and compiled at most once per process, lazily on the first Compile and not at package import. Every later Compile reuses that shared result. Caller-supplied registry schemas are indexed per Compile on top of the shared built-in index, exactly as before.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The shared built-in result and every compiled Schema are immutable after they are built and safe for concurrent use. A new test that runs many concurrent Compile and Validate calls from separate goroutines, including the very first Compile in the process, passes under go test -race.",
+        "covered_by": [],
+        "status": "unassessed"
+      },
+      {
+        "criterion": "The meta-schema check of a loaded schema runs without collecting or sorting annotations. It gives the same pass or fail answer as before, and a schema that fails its meta-schema is still an invalid-schema error with the same message and exit code 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Caller-supplied registry schemas, custom meta-schemas (including ones that use $dynamicRef into the embedded vocabularies) and $vocabulary handling behave exactly as before: the same required and optional vocabulary decisions, the same unknown-required-vocabulary error and the same format-assertion vocabulary handling.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Results stay identical everywhere: the same valid or invalid answer, the same flag, basic, detailed and verbose reports, the same library Result and the same load errors. All existing tests pass unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "One new regression test proves that every hostile-input limit (nesting depth, ref chain, evaluation-step charging, output units, report bytes and annotation count) triggers at exactly the same inputs as before, with the same error and exit code 2. It checks both the first Compile in the process and a repeated Compile that uses the cached meta-schema.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The project's benchmarks are run on the same machine before and after the change, and both sets of numbers are added to docs/benchmarks.md. The compile benchmark shows a reduction in allocs/op, B/op and ns/op, and no scenario's allocs/op or B/op increases.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A separate first-load benchmark measures building the built-in meta-schemas plus compiling the order schema. It reports what a one-shot CLI run pays, and its before and after numbers are recorded in docs/benchmarks.md next to the repeated-compile numbers.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "No allocation-limit test is added or changed by this story. Allocation limits are left to the story 'Allocation limits in tests'.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 9,
+    "covered": 8,
+    "flagged_missing": [],
+    "unassessed": [
+      "The shared built-in result and every compiled Schema are immutable after they are built and safe for concurrent use. A new test that runs many concurrent Compile and Validate calls from separate goroutines, including the very first Compile in the process, passes under go test -race."
+    ]
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "compile_cache_limits_test.go",
+        "change": "added",
+        "additions": 125,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "modified",
+        "additions": 67,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/bench_test.go",
+        "change": "added",
+        "additions": 45,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacache.go",
+        "change": "added",
+        "additions": 49,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacache_test.go",
+        "change": "added",
+        "additions": 62,
+        "deletions": 0
+      },
+      {
+        "path": "internal/compile/metacheck.go",
+        "change": "modified",
+        "additions": 15,
+        "deletions": 3
+      },
+      {
+        "path": "internal/eval/collect_option.go",
+        "change": "added",
+        "additions": 26,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/collect_option_test.go",
+        "change": "added",
+        "additions": 43,
+        "deletions": 0
+      },
+      {
+        "path": "internal/registry/registry.go",
+        "change": "modified",
+        "additions": 55,
+        "deletions": 9
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "metacache_race_test.go",
+        "change": "added",
+        "additions": 36,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/compile/metaschema.go",
+      "internal/compile/compile.go",
+      "internal/registry/builtin.go",
+      "internal/eval/annotations.go"
+    ],
+    "design_unplanned": [
+      "jsonschema.go"
+    ],
+    "scope_granted": [
+      {
+        "path": "jsonschema.go",
+        "granted_by": "operator",
+        "at": "gate-question #1472"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-aa398765809c4b92b9c1cabd204c4ea8/docs/architecture/adr/ADR-025-faster-schema-loading-build-the-embedded-2020-12-m.md",
+    "summary": "I found no security issues and no performance regressions; QA is a warn with three medium test gaps. The change does what US-0202 asks: the 2020-12 meta-schema and its index are built lazily once (syn"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "medium",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 4.006932,
+    "tokens_in": 4933509,
+    "tokens_out": 46651
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "buildBuiltin does not exist before T2, so the benchmark uses a local helper, buildBuiltinForBench, that repeats today's build steps (registry.Build, AddBuiltins, compile of the meta-schema). T2 should replace its body with a call to buildBuiltin."
+    },
+    {
+      "task": "T1",
+      "text": "BenchmarkFirstLoadOrder does not run the meta-schema check evaluation, so its figures are lower than CompileOrder's."
+    },
+    {
+      "task": "T1",
+      "text": "Only CompileOrder and FirstLoadOrder were re-measured, with -count=5. The task text asked for every benchmark, and the other rows keep the story 201 'after' figures."
+    },
+    {
+      "task": "T2",
+      "text": "The compiled 2020-12 meta-schema depends only on the embedded resources, because a caller-supplied document at a built-in address must equal the embedded one. Caching it therefore cannot change results."
+    },
+    {
+      "task": "T2",
+      "text": "I changed AddBuiltins instead of registry_options.go (outside this task's scope). The root package benefits without any edit there."
+    },
+    {
+      "task": "T2",
+      "text": "If the shared build panics, later callers get an 'unavailable' error rather than a half-built set."
+    },
+    {
+      "task": "T2",
+      "text": "The format-assertion override is already forced off in the meta-check, so the shared compile uses noFormat=true, the same as before."
+    },
+    {
+      "task": "T3",
+      "text": "Discard mode does not affect unevaluatedProperties or unevaluatedItems, because those use the separate ItemRecorder record and not the annotation list. I did not check this with a custom meta-schema test."
+    },
+    {
+      "task": "T3",
+      "text": "Nothing in the evaluation path reads the annotation list. I did not run the existing tests to confirm this."
+    },
+    {
+      "task": "T3",
+      "text": "Reused the existing keywords.EvalContext.SetDiscard mode instead of adding a new flag, so no change to internal/eval/annotations.go or internal/compile/metacheck.go was needed."
+    },
+    {
+      "task": "T3",
+      "text": "The annotation cap is still enforced in the meta check, so load errors from that limit are unchanged."
+    },
+    {
+      "task": "T3",
+      "text": "The new test shows the no-annotation path records none and still hits the cap. It does not exercise a custom meta-schema with unevaluated*; that is not covered by this task's test."
+    },
+    {
+      "task": "T4",
+      "text": "The 'first Compile in the process' is only guaranteed in a fresh test binary. The race test does not reset the sync.Once."
+    },
+    {
+      "task": "T4",
+      "text": "The shared-index check copies built-ins via AddBuiltins and adds a caller resource. It does not exercise a registry schema or a custom meta-schema with $vocabulary through Compile. The task's wording on those was only partly covered."
+    },
+    {
+      "task": "T5",
+      "text": "Edge values are copied from cmd/jsonschema/limits_edge_regression_test.go, which measured them on the code before this story. The default limit constants are not read; the edges depend on the small fixed inputs, not on the defaults."
+    },
+    {
+      "task": "T5",
+      "text": "The 'first Compile' check uses a built CLI binary in a fresh process, because test order inside one process can't guarantee a first Compile. The test runs `go build`, which works offline."
+    },
+    {
+      "task": "T5",
+      "text": "The library test can't call the CLI `run` function from the root package, so the CLI exit code is checked through the built binary instead."
+    },
+    {
+      "task": "T6",
+      "text": "The 'before' figures for the non-compile scenarios are the story 200 'after' tables, since nothing else changed in between; I did not re-measure them before the change."
+    },
+    {
+      "task": "T6",
+      "text": "ValidateErrors shows +2 allocs of 500,000 and a few hundred bytes more, which I treated as noise."
+    },
+    {
+      "task": "T6",
+      "text": "FirstLoadOrder is unchanged by design (6,019 to 6,020 allocs/op) because it calls the build function on every iteration. I did not run the full test suite; this task only edits docs."
+    }
+  ],
+  "blockers": [
+    "1 acceptance criteria were never assessed by the tester (\u00a75.1): ['The shared built-in result and every compiled Schema are immutable after they are built and safe for concurrent use. A new test that runs many concurrent Compile and Validate calls from separate goroutines, including the very first Compile in the process, passes under go test -race.']"
+  ],
+  "next_authorization": "operator-review"
+}
