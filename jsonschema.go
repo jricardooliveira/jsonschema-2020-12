@@ -22,6 +22,7 @@ type Schema struct {
 	maxAnn int // annotation cap
 	// maxReport is the rendered-report byte cap.
 	maxReport int
+	maxInput  int // per-input byte cap
 }
 
 // Result is the outcome of one Validate call.
@@ -50,6 +51,7 @@ func CompileWithOptions(schema []byte, opts Options) (*Schema, error) {
 
 func compileWith(schema []byte, opts Options, reg Registry) (*Schema, error) {
 	s, err := compileChecked(schema, opts, reg)
+	err = asLimit(err)
 	var ise *InvalidSchemaError
 	if errors.As(err, &ise) && ise.Source == "" {
 		ise.Source = opts.SchemaPath // name the main schema file when known
@@ -74,9 +76,16 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err != nil {
 		return nil, err
 	}
+	rl, err := opts.resolveLimits()
+	if err != nil {
+		return nil, err
+	}
 	base, err := opts.baseURI()
 	if err != nil {
 		return nil, fmt.Errorf("options: %w", err)
+	}
+	if err := checkInput(schema, rl.input); err != nil {
+		return nil, err
 	}
 	v, err := jsonvalue.DecodeLimited(schema, lim)
 	if err != nil {
@@ -100,7 +109,7 @@ func compileChecked(schema []byte, opts Options, reg Registry) (*Schema, error) 
 	if err := metaCheck(docs, ext, max, maxAnn); err != nil {
 		return nil, err
 	}
-	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep}, nil
+	return &Schema{root: n, lim: lim, max: max, maxAnn: maxAnn, maxReport: maxRep, maxInput: rl.input}, nil
 }
 
 // metaCheck validates the main schema and every reached supplied schema,
@@ -135,13 +144,16 @@ func metaCheck(docs []compile.Doc, ext *registry.Index, max, maxAnn int) error {
 
 // Validate checks a JSON document. An error means it could not be checked.
 func (s *Schema) Validate(document []byte) (Result, error) {
+	if err := checkInput(document, s.maxInput); err != nil {
+		return Result{}, err
+	}
 	v, err := jsonvalue.DecodeLimited(document, s.lim)
 	if err != nil {
-		return Result{}, fmt.Errorf("document: %w", err)
+		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
 	ev, err := eval.EvaluateFull(s.root, v, s.max, s.maxAnn)
 	if err != nil {
-		return Result{}, fmt.Errorf("document: %w", err)
+		return Result{}, asLimit(fmt.Errorf("document: %w", err))
 	}
 	return Result{valid: ev.Valid, units: ev.Units, annotations: ev.Annotations, maxReport: s.maxReport, root: s.root, inst: v, max: s.max, maxAnn: s.maxAnn}, nil
 }
