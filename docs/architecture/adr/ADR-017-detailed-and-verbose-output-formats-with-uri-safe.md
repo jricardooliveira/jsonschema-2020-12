@@ -5,7 +5,14 @@
 - Status: proposed (pending architecture sign-off)
 
 ## Decision
-The new shapes are new files in internal/output that register through the existing output registry, the same way flag.go and basic.go do. The library's render path and the CLI output-format option resolve shapes by name, so neither jsonschema.go nor cmd/jsonschema/run.go nor main.go should need editing (read-only claims). A shared builder, internal/output/tree.go, turns the per-call evaluation units and annotations into the 2020-12 unit tree and enforces the existing DefaultMaxReportBytes cap while building. The only edit to a crowded file is a one-line call in internal/compile/compile.go (Resource.AbsoluteLocation) to a new helper in internal/compile/fragment.go. eval.go is not touched. If verbose needs passing units that are not recorded today, the change goes into internal/eval/units.go, which is not crowded.
+The design is unchanged except for one point the reviewer settled: the report byte cap. This story uses only the existing library option Options.MaxReportBytes (numberlimits.go) and the existing constant DefaultMaxReportBytes (internal/output/registry.go, re-exported in output.go). It adds no CLI flag for the cap and does not edit cmd/jsonschema/run.go. Story 193 owns that flag and its 'raise the cap through the CLI' test. Acceptance criterion 6 is met here by library-level tests: the cap is enforced for detailed and verbose, and raising Options.MaxReportBytes lets a large report through. The CLI tests in this story only check that going over the default cap gives exit 2 with an empty stdout. The percent-encoding breaking change is accepted.
+
+The rest is as reviewed:
+- The new shapes are new files in internal/output. They register through the existing output registry with RegisterReport and render through RenderReport, which already applies the cap through the Budget writer. This is the same way basic.go works.
+- The library's render path (Result.Output) and the CLI output-format option look shapes up by name, so jsonschema.go, cmd/jsonschema/run.go and main.go are only read, not edited.
+- A shared builder, internal/output/tree.go, turns the per-call evaluation units and annotations into the 2020-12 unit tree. It writes each unit through the Budget as it goes, so the cap is enforced while building.
+- The only edit to a crowded file is a one-line call in Resource.AbsoluteLocation (internal/compile/compile.go) to a new helper in internal/compile/fragment.go.
+- eval.go is not touched. If verbose needs passing units that are not recorded today, the change goes into internal/eval/units.go, which is not crowded.
 
 ## Affected modules
 - internal/compile/compile.go
@@ -25,25 +32,26 @@ The new shapes are new files in internal/output that register through the existi
 
 ## Data / API impact
 - DB impact: no
-- API impact: yes: two new output-format values; absoluteKeywordLocation fragment encoding changes in all shapes
+- API impact: yes
 - Migration needed: no
 
 ## Constraints for implementation
 - Standard library only; go.mod unchanged
-- Each shape is its own file registered from init(); no central list or switch edit
-- Never emit instance values; property names only where an annotation lists matched names
-- Enforce DefaultMaxReportBytes during building, not after building the whole tree in memory
+- Each shape is its own file, registered from init() with output.RegisterReport; no edit to a central list or switch
+- Never emit instance values; property names appear only where an annotation lists matched names
+- Enforce the cap while building, by writing through the existing output.Budget, not after building the whole tree in memory
 - Do not edit internal/eval/eval.go; touch internal/compile/compile.go only for the one-line call
-- Tests read limits and defaults from code constants
-- Compiled Schema stays immutable; per-call state only (go test -race)
+- Do not edit cmd/jsonschema/run.go and do not add a report-bytes CLI flag (story 193 owns it)
+- Cap tests use DefaultMaxReportBytes and Options.MaxReportBytes from the code instead of repeating the number; the 'raise the cap' test is library-level (output_nested_test.go, internal/output/nested_limit_test.go)
+- The compiled Schema stays immutable; all state is per call (go test -race)
 
 ## Risks
-- Encoding the fragment changes absoluteKeywordLocation for schemas with special characters in keys. Existing tests that assert the unencoded form will need updating.
-- Verbose may need passing units that the evaluator does not currently record, which would grow the per-call memory cost.
-- Verbose output for large documents can hit the report cap. That is intended, but users may need the raise flag.
+- Encoding the fragment changes absoluteKeywordLocation for schemas with special characters in their keys. Existing tests that assert the unencoded form will need updating.
+- Verbose may need passing units that the evaluator does not record today, which would raise the memory cost of each call.
+- Verbose output for large documents can hit the report cap. That is intended. Until story 193 adds the CLI flag, CLI users cannot raise the cap; only library callers can, through Options.MaxReportBytes.
 
 ## Breaking changes
-- absoluteKeywordLocation for schema keys with spaces, '%' or non-ASCII characters is now percent-encoded in flag/basic output too
+- absoluteKeywordLocation for schema keys that contain spaces, '%' or non-ASCII characters is now percent-encoded, in flag and basic output too (accepted by the reviewer)
 
 ## Sensitivity
 - security
