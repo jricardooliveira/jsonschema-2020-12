@@ -17,7 +17,7 @@
 | 13 | $vocabulary handling | released | [013-vocabulary-handling/](013-vocabulary-handling/) | 151 |
 | 14 | Annotation collection | released | [014-annotation-collection/](014-annotation-collection/) | 144 |
 | 15 | unevaluatedProperties and unevaluatedItems | released | [015-unevaluatedproperties-and-unevaluateditems/](015-unevaluatedproperties-and-unevaluateditems/) | 150 |
-| 16 | Limits against hostile input | to do |  |  |
+| 16 | Limits against hostile input | released | [016-limits-against-hostile-input/](016-limits-against-hostile-input/) | 152 |
 | 17 | Detailed and verbose output | released | [017-detailed-and-verbose-output/](017-detailed-and-verbose-output/) | 149 |
 | 18 | Format assertion: mode, dates, email, hostnames, IP and UUID | to do |  |  |
 | 19 | Format assertion: URI, IRI, templates, pointers and regex | to do |  |  |
@@ -83,7 +83,7 @@
    Add the 2020-12 'unevaluatedProperties' and 'unevaluatedItems' keywords, each in its own file and registered through the keyword registry. They use the collected annotations from every adjacent applicator and from nested ones: properties, patternProperties, additionalProperties, prefixItems, items, contains, allOf, anyOf, oneOf, not, if/then/else, dependentSchemas, $ref, $dynamicRef, and nested unevaluated keywords. Only successful subschemas count. Write spec-derived positive and negative tests, including cases that go through $ref and $dynamicRef.
    Why: Needs every applicator, references and annotation collection in place, so it comes after all of them.
 
-16. **Limits against hostile input** — to do
+16. **Limits against hostile input** — released
    Add built-in limits on nesting depth, input size, and $ref/$dynamicRef recursion that never terminates, so a crafted schema or document cannot hang or crash the tool. Exceeding a limit is a clear error with exit code 2, never a silent valid or invalid result. The defaults are generous enough that ordinary, spec-conformant schemas and documents are never affected. The caller can raise each limit through a library option and a CLI flag. Also prove the load-once guarantee: a loaded schema is never changed after loading and is safe to use from several goroutines at the same time. Cover this with tests run under the race detector. Add tests for each limit and CLI contract tests for the limit flags.
    Why: Hardens the finished engine against untrusted input once all recursive features exist.
 
