@@ -335,6 +335,30 @@ second pass (the tree) records, as designed.
   gain is recorded, not required. Changes within ±5% are noise.
 - No allocation-limit test was added or changed.
 
+## Story 202 (meta-schema built once per process): before
+
+Measured before any change of this story, on the same machine as above
+(Apple M3 Max, 16 logical CPUs, macOS arm64, go1.27.2), `-count=5`, median of 5.
+The other scenarios keep the story 201 "after" figures above. The "after" set
+is added next to this one when the change is done.
+
+Commands:
+
+    go test -run '^$' -bench CompileOrder -benchmem -count=5 .
+    go test -run '^$' -bench FirstLoad -benchmem -count=5 ./internal/compile
+
+| Benchmark | Package | ns/op | B/op | allocs/op |
+|---|---|---|---|---|
+| CompileOrder (repeated compile) | root | 689,619 | 696,549 | 14,072 |
+| FirstLoadOrder (one-shot) | internal/compile | 422,503 | 339,838 | 6,019 |
+
+`BenchmarkFirstLoadOrder` rebuilds the built-in meta-schema index and compiles
+the 2020-12 meta-schema from scratch on every iteration, then compiles the
+order schema against it. It does not run the meta-schema check evaluation, so
+it is smaller than `CompileOrder`. Before the change it runs the build steps
+`Compile` runs on every call; once the shared build function exists it calls
+that function instead, so the "after" figure is comparable.
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a
