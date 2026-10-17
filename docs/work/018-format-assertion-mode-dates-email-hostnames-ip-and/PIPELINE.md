@@ -4,8 +4,8 @@
 
 - **Project:** jsonschema-2020-12
 - **Run:** #153 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 03:03:17 UTC
-- **Story spend:** ~$8.51 of $35.00 (estimated at API list prices)
+- **Started:** 2026-10-17 02:32:34 UTC · **Stopped:** 2026-10-17 03:12:33 UTC
+- **Story spend:** ~$12.70 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
@@ -14,12 +14,13 @@ The operator decides at gate-release: `factory approve 153` to accept, or `facto
 ## Blockers
 
 - Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 1 gap(s) in the evidence:
-  >   • Security finding (medium) not resolved: None blocking. Format errors carry only the locations and a fixed message with the format name from the schema, never the instance value. Every check is hand-written, single-pass and linear, with no regexp and no net/netip/mail parsers. Each check is charged with ctx.ChargeBytes(len(s)) before it runs, and TestFormatAssertionChargesSteps shows this. The registry is written only from init(). The only fail-open paths are the specified ones: an unknown or deferred format, a non-string instance, or a non-string format value.
-  >   ◦ Release-agent note: F1 (medium): The guard forcing meta-schema validation to annotation-only (noFormat=true in metacheck.go) is exercised by formatassertion_test.go::TestFormatAssertionMetaCheckAnnotationOnly, but the test only verifies compile succeeds. It does not fail without the guard; it would pass if the guard were removed and the meta-schema itself did not assert format-assertion on keywords like $id. An explicit test verifying the guard's effect (e.g., mocking or inspecting the compile path) would strengthen assurance that meta-checks stay annotation-only in all modes.
-  >   ◦ Release-agent note: F3 (low): No test covers an embedded resource with a different $schema than the root, which could have a different format-assertion vocabulary flag recorded by story 190. This edge case is not in the acceptance criteria but is a potential interaction point.
-  >   ◦ Release-agent note: F2 (low): IPv6 address literals in email must use the 'IPv6:' prefix per RFC 5321 section 4.1.3; user@[::1] is invalid, user@[IPv6:::1] is valid. This is standard-conformant but differs from some real-world email parsers that tolerate the bare form.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
+  >   ◦ Release-agent note: Leap-second rule (23:59:60 UTC only) applies offset-adjusted UTC; tested for positive and negative offsets.
+  >   ◦ Release-agent note: RFC 5321 email: quoted-string and domain-literal parsing is intricate; length limits (64-byte local part, 254 bytes overall) applied after parsing; fully tested with boundary cases.
+  >   ◦ Release-agent note: Format assertion mode is decided at compile time and read from story 190's per-resource recorded vocabulary flag. If the flag is per-meta-schema rather than per-resource, embedded resources with a different $schema must be tested separately; tests confirm per-resource behaviour.
+  >   ◦ Release-agent note: Depends on story 190's vocabulary flag being correctly recorded in vocab.FormatAssertion and read without re-parsing $vocabulary.
+  >   ◦ Security note (none): No insecure default found. Format assertion is off by default (the option's zero value is false and the CLI flag defaults to off). The only ways a check is skipped are the specified ones: unknown or deferred formats, a missing check, and non-string instances. Checks return a plain bool, with no error or recover path. The error message names only the format from the schema, never the instance value. Meta-schema compilation forces assertion off (noFormat). The format registry is written only from init(). Each check is charged to the step budget with ChargeBytes before it runs, and TestFormatAssertionChargesSteps proves it.
+  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
 
 ## Trail
 
@@ -82,8 +83,23 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 03:02:15 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 17; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 03:02:16 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 03:03:16 | agent | release-agent | ✅ warn · 60.5s · $0.1021 |
-| 2026-10-17 03:03:17 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 03:03:17 | run | run waiting_human | ⏸️ |
+| 2026-10-17 03:03:17 | gate | gate-release | ❌ REJECTED: Tests only, nothing else: (F1) a test that calls the meta-check path with format assertion ON (pass the caller option through to MetaChecks or test metacheck.go directly) so the forced-off branch is exercise… |
+| 2026-10-17 03:04:14 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 03:05:54 | agent | coder-agent | ✅ complete · remediation · 99.9s · $1.2215 |
+| 2026-10-17 03:06:13 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 03:06:13 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 03:07:33 | agent | tester-agent | ❌ fail · 79.7s · $0.7618 |
+| 2026-10-17 03:07:33 | gate | gate-test | ❌ Tester overall verdict is 'fail'; QA failed; missing coverage: ['AC11 hostname total length of at most 253 is not proven. The only overlong case, strings.Repeat("a.",127) in internal/formats/hostname_test.go, also end… |
+| 2026-10-17 03:07:33 | boss | authorize coder-agent:remediation | ✅ gate-test failed with 8 finding(s) |
+| 2026-10-17 03:09:32 | agent | coder-agent | ✅ complete · remediation · 118.5s · $1.3535 |
+| 2026-10-17 03:11:06 | gate | gate-build | ✅ [remediation] go_build:pass, go_vet:pass, go_test:pass, go_race:pass |
+| 2026-10-17 03:11:06 | boss | authorize tester-agent | ✅ gate-build passed with all 6 task(s) implemented |
+| 2026-10-17 03:12:04 | agent | tester-agent | ✅ pass · 57.8s · $0.7632 |
+| 2026-10-17 03:12:04 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 17; findings: 0 new, 0 persistent, 8 resolved |
+| 2026-10-17 03:12:04 | boss | authorize release-agent | ✅ gate-test passed |
+| 2026-10-17 03:12:33 | agent | release-agent | ✅ pass · 28.3s · $0.0895 |
+| 2026-10-17 03:12:33 | gate | gate-release | ⏸️ awaiting human sign-off |
+| 2026-10-17 03:12:33 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
