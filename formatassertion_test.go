@@ -90,6 +90,72 @@ func TestFormatAssertionChargesSteps(t *testing.T) {
 	}
 }
 
+// faCompile compiles schema with each of metas supplied as a registry file.
+func faCompile(t *testing.T, opts jsonschema.Options, schema string, metas ...string) (*jsonschema.Schema, error) {
+	t.Helper()
+	var reg jsonschema.Registry
+	for i, m := range metas {
+		p := filepath.Join(t.TempDir(), "meta"+string(rune('a'+i))+".json")
+		if err := os.WriteFile(p, []byte(m), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		reg.Files = append(reg.Files, jsonschema.RegistryFile{Path: p})
+	}
+	return jsonschema.CompileWithRegistry([]byte(schema), opts, reg)
+}
+
+const (
+	appl = `"https://json-schema.org/draft/2020-12/vocab/applicator":true`
+	// faRequired requires format-assertion (plus core and applicator).
+	faRequired = `{"$id":"https://example.com/fa","$schema":"https://json-schema.org/draft/2020-12/schema","$vocabulary":{` + core + `,` + appl + `,` + fa + `:true}}`
+)
+
+// core 8.1.1: a meta-schema whose own meta-schema requires format-assertion
+// still never asserts format when it checks a schema. Meta-schema B is
+// governed by faRequired and says property "x" has format ipv4; a schema
+// holding "x":"1.2.3.04" must still compile, with the caller's mode on or off.
+func TestFormatAssertionMetaCheckForcedOff(t *testing.T) {
+	const metaB = `{"$id":"https://example.com/b","$schema":"https://example.com/fa","properties":{"x":{"format":"ipv4"}}}`
+	for _, on := range []bool{false, true} {
+		if _, err := faCompile(t, jsonschema.Options{FormatAssertion: on}, `{"$schema":"https://example.com/b","x":"1.2.3.04"}`, faRequired, metaB); err != nil {
+			t.Errorf("mode %v: meta-check asserted format: %v", on, err)
+		}
+	}
+}
+
+// validation 7.2.2, core 8.1.2: the mode follows each resource's own
+// $schema. An embedded resource under faRequired asserts inside a root that
+// does not, and an embedded 2020-12 resource stays annotation-only inside a
+// root under faRequired.
+func TestFormatAssertionPerEmbeddedResource(t *testing.T) {
+	const embedded = `{"$schema":"%s","properties":{"a":{"format":"ipv4"},"b":{"$ref":"https://example.com/e"}},
+		"$defs":{"e":{"$id":"https://example.com/e","$schema":"%s","format":"ipv4"}}}`
+	const d2020 = "https://json-schema.org/draft/2020-12/schema"
+	const dFA = "https://example.com/fa"
+	sub := func(root, emb string) string {
+		return strings.Replace(strings.Replace(embedded, "%s", root, 1), "%s", emb, 1)
+	}
+	cases := []struct {
+		name, schema, doc string
+		valid             bool
+	}{
+		{"root annotation-only", sub(d2020, dFA), `{"a":"1.2.3.04"}`, true},
+		{"embedded asserts", sub(d2020, dFA), `{"b":"1.2.3.04"}`, false},
+		{"embedded well-formed", sub(d2020, dFA), `{"b":"1.2.3.4"}`, true},
+		{"root asserts", sub(dFA, d2020), `{"a":"1.2.3.04"}`, false},
+		{"embedded annotation-only", sub(dFA, d2020), `{"b":"1.2.3.04"}`, true},
+	}
+	for _, c := range cases {
+		s, err := faCompile(t, jsonschema.Options{}, c.schema, faRequired)
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if got := faValid(t, s, c.doc); got != c.valid {
+			t.Errorf("%s: valid = %v, want %v", c.name, got, c.valid)
+		}
+	}
+}
+
 // core 8.1.1: the meta-schema check never asserts format, in either mode.
 func TestFormatAssertionMetaCheckAnnotationOnly(t *testing.T) {
 	for _, on := range []bool{false, true} {
