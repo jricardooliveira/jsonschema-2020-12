@@ -510,11 +510,51 @@ Runs varied by about ±3% (5.5 MB before: 214.7 to 223.9 MB; after: 205.1 to
 - CLI peak memory is recorded above for information.
 - No allocation-limit test was added or changed.
 
+## Allocation and memory limits (story 204)
+
+Ordinary tests in `allocs_test.go` (root package) fail when a scenario uses
+more allocations, or more total bytes, than its limit. They run with a plain
+`go test ./...`, including the 5.5 MB document; there is no `-short` or
+environment skip. Under `-race` they skip, because the race detector adds
+allocations the validator did not cause (`allocs_race_on_test.go` and
+`allocs_race_off_test.go` set `raceEnabled`).
+
+Measured on: Apple M3 Max, 16 logical CPUs, macOS (Darwin 25.6.0) arm64,
+go1.27.2 darwin/arm64.
+
+Method:
+
+- Every scenario starts from raw bytes: the schema from
+  `testdata/perf/order_schema.json`, the small document from
+  `testdata/perf/order_small.json`, the large ones from `internal/perfdata`.
+- Compile: `Compile(schemaBytes)` (includes the built-in meta-schema). One
+  warm-up call, then `testing.AllocsPerRun` with 20 runs.
+- Validate: `Schema.Validate(docBytes)` (decoding included), plus
+  `Result.Output("basic")` for the last scenario. One warm-up call, then
+  `testing.AllocsPerRun` with 50 runs (small), 3 runs (0.5 MB, errors, errors
+  plus basic) or 2 runs (5.5 MB).
+- Bytes: the `runtime.MemStats.TotalAlloc` delta (every byte requested, even
+  if freed at once) around 3 runs after a warm-up, divided by 3.
+- Limit = measured value plus about 10%, rounded up.
+
+| Scenario | Measured allocs | Allocs limit | Measured bytes | Bytes limit |
+|---|---|---|---|---|
+| Compile order schema | 2,481 | 2,730 | – | – |
+| Validate small | 785 | 864 | – | – |
+| Validate 0.5 MB | 660,073 | 726,000 | 35,785,669 | 39,400,000 |
+| Validate 5.5 MB | 6,600,096 | 7,260,000 | 368,958,280 | 405,900,000 |
+| Validate errors (1,000) | 480,018 | 528,000 | 29,282,834 | 32,200,000 |
+| Validate errors + basic report | 486,042 | 534,700 | – | – |
+
+Policy: one limit applies on every platform. If a limit is exceeded on a newer
+Go or another OS, the limit is re-measured on purpose and the reason recorded
+here and next to the constant; it is not raised silently.
+
 ## Operator baseline (the operator's Mac, from the brief)
 
 These are the operator's own measurements, copied from the brief. They are a
-different machine and a different Go version, so do not compare them directly
-with the table above. Hardware: one Mac, 16 cores, Go 1.27.2. Timings vary
+different machine but the same Go version (Go 1.27.2, the version of the build
+machine), so do not compare the timings directly with the table above. Hardware: one Mac, 16 cores, Go 1.27.2. Timings vary
 about ±5%; allocation counts are reliable. The brief gives no spread.
 
 | Scenario | Time | Memory / allocations |

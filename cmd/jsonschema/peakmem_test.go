@@ -1,7 +1,8 @@
+//go:build unix
+
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -13,11 +14,6 @@ import (
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/perfdata"
-)
-
-var (
-	peakMem      = flag.Bool("peakmem", false, "measure CLI peak memory (TestCLIPeakMemory)")
-	peakMemChild = flag.String("peakmem-child", "", "internal: schema|doc|exit for one child run")
 )
 
 // TestCLIPeakMemory reports the peak resident memory of one CLI run per
