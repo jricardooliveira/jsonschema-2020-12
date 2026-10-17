@@ -22,10 +22,27 @@ var equalCases = []struct {
 	{`[1,{"a":2.0}]`, `[1.0,{"a":2.1}]`, false},
 }
 
+// equalCapCases: equalCases at the exponent and digit caps (values from
+// type_numberpath_test.go).
+func equalCapCases() []struct {
+	val, doc string
+	want     bool
+} {
+	return []struct {
+		val, doc string
+		want     bool
+	}{
+		{"1e" + capExp, "10e" + capExpM1, true}, {fastAtExp, fastAtExp0, true},
+		{fastAtExp, bigAtExp, false}, {nines, "9." + nines[1:] + "e" + capExpM1, true},
+		{nines, "1e" + capExp, false}, {tinyAtExp, "0", false}, {tinyAtExp, "0.1e-" + capExpM1, true},
+	}
+}
+
 func TestEnumNumberPaths(t *testing.T) {
-	for _, c := range equalCases {
+	for _, c := range append(equalCases, equalCapCases()...) {
 		if got := npValid(t, `{"enum":[`+c.val+`]}`, c.doc); got != c.want {
-			t.Errorf("enum [%s] doc %s: got %v want %v", c.val, c.doc, got, c.want)
+			t.Errorf("enum [%.30s] doc %.30s: got %v want %v", c.val, c.doc, got, c.want)
 		}
 	}
+	npLimit(t, `{"enum":[1]}`)
 }

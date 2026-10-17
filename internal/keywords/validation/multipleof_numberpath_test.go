@@ -32,3 +32,21 @@ func TestMultipleOfNumberPaths(t *testing.T) {
 		}
 	}
 }
+
+// Exponents and digits at the caps (values from type_numberpath_test.go).
+func TestMultipleOfCaps(t *testing.T) {
+	cases := []struct {
+		div, doc string
+		want     bool
+	}{
+		{"0.1", fastAtExp, true}, {"0.1", bigAtExp, true}, {"7", fastAtExp0, true},
+		{"0.1", tinyAtExp, false}, {tinyAtExp, "1", true}, {tinyAtExp, "0.3", true},
+		{"9", nines, true}, {"2", nines, false}, {"3", fastAtExp, false},
+	}
+	for _, c := range cases {
+		if got := npValid(t, `{"multipleOf":`+c.div+`}`, c.doc); got != c.want {
+			t.Errorf("%.30s multipleOf %.30s: got %v want %v", c.doc, c.div, got, c.want)
+		}
+	}
+	npLimit(t, `{"multipleOf":0.1}`)
+}

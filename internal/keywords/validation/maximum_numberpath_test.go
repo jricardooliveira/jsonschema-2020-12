@@ -27,11 +27,22 @@ var boundCases = []struct {
 // runBoundCases checks keyword against boundCases; ok maps cmp to validity.
 func runBoundCases(t *testing.T, keyword string, ok func(cmp int) bool) {
 	t.Helper()
-	for _, c := range boundCases {
+	// Exponents and digits at the caps (values from type_numberpath_test.go).
+	caps := append(boundCases[:0:0], boundCases...)
+	caps = append(caps, []struct {
+		bound, doc string
+		cmp        int
+	}{
+		{fastAtExp, bigAtExp, 1}, {bigAtExp, fastAtExp, -1}, {fastAtExp, fastAtExp0, 0},
+		{"1e" + capExp, nines, -1}, {"1e" + capExp, "10e" + capExpM1, 0},
+		{tinyAtExp, "0", -1}, {"0", tinyAtExp, 1}, {nines, fastAtExp, 1},
+	}...)
+	for _, c := range caps {
 		if got := npValid(t, `{"`+keyword+`":`+c.bound+`}`, c.doc); got != ok(c.cmp) {
-			t.Errorf("%s %s with %s: got %v want %v", c.doc, keyword, c.bound, got, ok(c.cmp))
+			t.Errorf("%.30s %s with %.30s: got %v want %v", c.doc, keyword, c.bound, got, ok(c.cmp))
 		}
 	}
+	npLimit(t, `{"`+keyword+`":0}`)
 }
 
 func TestMaximumNumberPaths(t *testing.T) {

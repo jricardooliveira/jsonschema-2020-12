@@ -37,7 +37,8 @@ recipe, so they are identical on every run and are not committed:
 | `BenchmarkValidate5_5MB` | root | Parse and validate the 5.5 MB document |
 | `BenchmarkValidateErrors` | root | Parse and validate the error document |
 | `BenchmarkValidateErrorsBasic` | root | The same, plus rendering the basic report |
-| `BenchmarkRetainedHeap/0.5MB`, `/5.5MB` | internal/jsonvalue | Heap kept alive by the decoded document |
+| `BenchmarkRetainedHeap/0.5MB`, `/5.5MB` | internal/jsonvalue | Heap kept alive by the decoded document (`Decode`, `json.Number` leaves) |
+| `BenchmarkRetainedHeapExact/0.5MB`, `/5.5MB` | internal/jsonvalue | The same on the validator's decode path (`DecodeLimited`, `*Number` leaves) |
 | `BenchmarkCLI/0.5MB`, `/5.5MB`, `/Errors`, `/Verbose0.5MB` | cmd/jsonschema | One in-process `run` call on a file, output discarded |
 
 ## How to read the numbers
@@ -405,16 +406,20 @@ the shared set.
 ## Story 203 (compact exact number storage): before and after
 
 Same machine, Go version and method as above (Apple M3 Max, 16 logical CPUs,
-macOS arm64, go1.27.2), `-count=5`, median of 5, one run of the command below
-on the finished code. Change is after against before; negative is better.
+macOS arm64, go1.27.2), `-count=5`, median of 5. Both sets were measured in
+the same session, one straight after the other, with the same benchmark
+files. Change is after against before; negative is better.
 
-- **Before**: the "Story 202 after" figures above. That is the code just
-  before this story, measured on the same machine earlier in the same round.
-  It was not re-run in this session: the session may only touch its own
-  worktree, so the old tree could not be built next to the new one.
-- **After**: the finished code (tasks T1 to T4 of this story).
+- **Before**: the code just before this story. `internal/jsonvalue/number.go`
+  and `number_canonical.go` were set back to their content at the commit
+  before the story (`big.Int` mantissa in every `Number`), with the story's
+  new white-box test `number_fastpath_test.go` emptied so the package built.
+  Every other file was the finished one. All tests passed on that tree,
+  including the story's new per-rule, limit and race tests.
+- **After**: the finished code, with the three files restored exactly
+  (`git diff` shows no change to them).
 
-Command:
+Command (both sets):
 
     go test -run '^$' -bench . -benchmem -count=5 . ./internal/jsonvalue ./cmd/jsonschema
 
@@ -422,68 +427,87 @@ Command:
 
 | Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
 |---|---|---|---|
-| CompileOrder | 125,328 → 135,561 (+8.2%, see note) | 209,407 → 209,327 (noise) | 2,489 → 2,482 (noise) |
-| ValidateSmall | 29,123 → 29,408 (noise) | 42,643 → 41,682 (−2.3%) | 829 → 785 (−5.3%) |
-| Validate0_5MB | 26,792,761 → 26,166,658 (−2.3%) | 36,742,889 → 35,783,468 (−2.6%) | 700,087 → 660,084 (−5.7%) |
-| Validate5_5MB | 254,783,750 → 254,773,354 (0%) | 377,118,316 → 368,958,882 (−2.2%) | 7,000,109 → 6,600,105 (−5.7%) |
-| ValidateErrors | 20,477,864 → 20,142,337 (−1.6%) | 29,849,586 → 29,283,690 (−1.9%) | 500,051 → 480,050 (−4.0%) |
-| ValidateErrorsBasic | 21,140,034 → 20,653,792 (−2.3%) | 31,834,696 → 31,270,281 (−1.8%) | 506,076 → 486,079 (−4.0%) |
+| CompileOrder | 131,433 → 124,464 (−5.3%) | 209,160 → 209,249 (noise, see note) | 2,489 → 2,482 (−0.3%) |
+| ValidateSmall | 29,817 → 28,242 (−5.3%) | 42,643 → 41,682 (−2.3%) | 829 → 785 (−5.3%) |
+| Validate0_5MB | 27,195,606 → 25,649,156 (−5.7%) | 36,742,738 → 35,783,591 (−2.6%) | 700,087 → 660,084 (−5.7%) |
+| Validate5_5MB | 260,193,136 → 253,744,833 (−2.5%) | 377,118,280 → 368,958,400 (−2.2%) | 7,000,108 → 6,600,106 (−5.7%) |
+| ValidateErrors | 19,973,389 → 19,456,277 (−2.6%) | 29,849,143 → 29,283,397 (−1.9%) | 500,049 → 480,050 (−4.0%) |
+| ValidateErrorsBasic | 20,702,509 → 20,304,891 (−1.9%) | 31,835,034 → 31,270,190 (−1.8%) | 506,076 → 486,079 (−4.0%) |
 
-Note on CompileOrder: it compiles a schema, which holds few numbers; B/op and
-allocs/op are unchanged. The ns/op difference is a single-digit-percent
-spread between sessions (its five runs here were 132,173 to 138,533), inside
-the 10% rule.
+Note on CompileOrder B/op: +89 bytes of 209,000 (0.04%). Its five before-runs
+ranged 208,703 to 209,495 and its after-runs 208,582 to 209,382, so this is
+run-to-run spread; allocs/op fell by 7 (the schema's own numbers no longer
+allocate a `big.Int` word).
 
 ### Decoded document (package internal/jsonvalue)
 
+`RetainedHeap` decodes with `Decode`, which keeps `json.Number` leaves and
+never builds a `*Number`, so it cannot show this story's change; it is listed
+only to confirm nothing else moved. `RetainedHeapExact` (new, in
+`internal/jsonvalue/retained_exact_bench_test.go`) measures the same thing on
+the validator's own decode path, `DecodeLimited`, which builds `*Number`.
+
 | Benchmark | ns/op before → after | retained-B before → after | B/op before → after | allocs/op before → after |
 |---|---|---|---|---|
-| RetainedHeap/0.5MB | 5,976,054 → 6,042,609 (noise) | 4,340,752 → 4,340,755 (no change) | 6,282,026 → 6,282,058 | 170,198 → 170,198 |
-| RetainedHeap/5.5MB | 61,137,884 → 61,699,884 (noise) | 44,924,641 → 44,924,637 (no change) | 67,382,576 → 67,382,575 | 1,715,811 → 1,715,811 |
+| RetainedHeapExact/0.5MB | 8,215,172 → 6,780,282 (−17.5%) | 5,940,707 → 5,300,807 (−10.8%) | 8,524,450 → 7,243,177 (−15.0%) | 220,254 → 170,223 (−22.7%) |
+| RetainedHeapExact/5.5MB | 83,973,500 → 68,860,998 (−18.0%) | 59,484,716 → 54,524,704 (−8.3%) | 88,931,526 → 77,171,933 (−13.2%) | 2,224,999 → 1,718,765 (−22.8%) |
+| RetainedHeap/0.5MB | 5,954,634 → 5,938,769 (noise) | 4,340,754 → 4,340,754 (no change) | 6,282,024 → 6,282,193 (noise) | 170,198 → 170,201 (noise) |
+| RetainedHeap/5.5MB | 62,157,023 → 62,326,363 (noise) | 44,924,643 → 44,924,641 (no change) | 67,382,582 → 67,382,586 (noise) | 1,715,812 → 1,715,811 |
 
-The retained-heap metric and the decode allocation counts did not change.
-The number representation this story describes (inline mantissa, `big.Int`
-only for wide mantissas) is already what the decoder built when these
-figures were taken, so the decoded document costs the same to hold. The
-saving in this story therefore shows in validation allocations (equality,
-comparison and `multipleOf` no longer allocate on the fast path), not in
-retained heap. The acceptance line "lower retained heap" is **not met** by
-these measurements; this is recorded as measured, not hidden.
+On the `*Number` path a fast-path number is now one allocation (the
+`Number`, 64-byte size class instead of 80); before, `big.Int.SetString` also
+allocated the word slice and its own scratch. The 0.5 MB document holds
+20,001 numbers and lost 50,031 allocations and 639,900 retained bytes, about
+2.5 allocations and 32 bytes per number.
+
+Where the validation saving comes from: decoding, and fast-path `Cmp` and
+equality, which no longer copy mantissas into `big.Int`. `multipleOf` is not
+changed by this story: `multipleof.go` still calls `Decimal()`, which builds
+a fresh `big.Int` on every evaluation, fast path included.
 
 ### CLI, in process (package cmd/jsonschema)
 
 | Benchmark | ns/op before → after | B/op before → after | allocs/op before → after |
 |---|---|---|---|
-| CLI/0.5MB | 39,090,659 → 38,847,625 (−0.6%) | 51,001,696 → 50,044,121 (−1.9%) | 962,762 → 922,754 (−4.2%) |
-| CLI/5.5MB | 351,065,708 → 361,231,319 (+2.9%, noise) | 507,413,272 → 499,253,986 (−1.6%) | 9,602,792 → 9,202,788 (−4.2%) |
-| CLI/Errors | 21,834,825 → 23,375,042 (+7.1%, see note) | 33,187,324 → 32,621,601 (−1.7%) | 508,685 → 488,677 (−3.9%) |
-| CLI/Verbose0.5MB | 82,405,022 → 85,953,968 (+4.3%) | 130,269,925 → 129,629,954 (−0.5%) | 1,912,909 → 1,882,893 (−1.6%) |
+| CLI/0.5MB | 37,394,113 → 36,830,701 (−1.5%) | 51,001,946 → 50,043,284 (−1.9%) | 962,763 → 922,755 (−4.2%) |
+| CLI/5.5MB | 355,032,097 → 355,866,111 (+0.2%, noise) | 507,412,722 → 499,252,978 (−1.6%) | 9,602,795 → 9,202,786 (−4.2%) |
+| CLI/Errors | 22,801,719 → 23,303,234 (+2.2%, noise) | 33,187,774 → 32,622,777 (−1.7%) | 508,686 → 488,678 (−3.9%) |
+| CLI/Verbose0.5MB | 83,873,962 → 85,369,327 (+1.8%, noise) | 130,269,298 → 129,630,004 (−0.5%) | 1,912,908 → 1,882,895 (−1.6%) |
 
-Note on CLI/Errors: the story 202 "before" run (21.8 ms) is faster than the
-story 200 "after" run of the same code path (23.9 ms), so +7.1% is mostly the
-spread between sessions. It is under the 10% limit.
+### CLI peak memory (information only)
 
-### CLI peak memory
+Peak resident memory (getrusage `maxrss`) of one CLI run per document, each
+in a fresh process, measured with the same before and after trees as above,
+5 runs each, median. "floor" is the same process on a 22-byte document, so
+the start-up cost can be read off. Command:
 
-Not measured in this session. The 0.5 MB, 5.5 MB and 0.33 MB documents are
-generated in test code and are not committed, and the session could not write
-them to disk or run a before binary outside its worktree. To record it by
-hand, on the operator's machine, write the documents from `internal/perfdata`
-to files, build `./cmd/jsonschema` at the commit before this story and at the
-finished one, and run each with `/usr/bin/time -l` (maximum resident set
-size). The in-process allocated bytes above (CLI rows) are the available
-stand-in. This is for information only and does not decide the story.
+    go test -count=5 -run 'TestCLIPeakMemory$' -v ./cmd/jsonschema -args -peakmem
+
+The test (`cmd/jsonschema/peakmem_test.go`) writes the generated documents to
+a temporary directory and re-runs its own test binary as the child, which
+calls `run` once; it asserts nothing and is skipped without `-peakmem`.
+
+| Document | before | after | change |
+|---|---|---|---|
+| floor (22 B) | 8.63 MB | 8.81 MB | noise |
+| 0.5 MB valid | 33.88 MB | 32.82 MB | −3.1% |
+| 5.5 MB valid | 223.28 MB | 209.21 MB | −6.3% |
+| 0.33 MB, 1,000 errors | 26.43 MB | 26.00 MB | −1.6% |
+
+Runs varied by about ±3% (5.5 MB before: 214.7 to 223.9 MB; after: 205.1 to
+213.6 MB), so only the 5.5 MB drop is clearly outside the spread.
 
 ### Acceptance check
 
 - allocs/op is lower on every document scenario (library 4.0% to 5.7%, CLI
-  1.6% to 4.2%); B/op is lower on every document scenario (0.5% to 2.6%).
-  No scenario's allocs/op or B/op rose beyond a few allocations of noise
-  (CompileOrder).
-- No scenario is more than 10% slower (largest: CLI/Errors +7.1%, a
-  session spread).
-- Retained heap is unchanged, not lower (see above).
-- CLI peak memory: not measured (see above).
+  1.6% to 4.2%, decoded `*Number` document 22.7% to 22.8%); B/op is lower on
+  every document scenario (0.5% to 15.0%).
+- Retained heap on the `*Number` decode path is lower: −10.8% (0.5 MB) and
+  −8.3% (5.5 MB). The `json.Number` path is unchanged, as expected.
+- No scenario's allocs/op or B/op rose beyond run-to-run noise (CompileOrder
+  B/op +89 bytes, inside its spread; its allocs/op fell).
+- No scenario is more than 10% slower (largest: CLI/Errors +2.2%).
+- CLI peak memory is recorded above for information.
 - No allocation-limit test was added or changed.
 
 ## Operator baseline (the operator's Mac, from the brief)

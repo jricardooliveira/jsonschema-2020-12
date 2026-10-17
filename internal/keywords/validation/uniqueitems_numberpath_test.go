@@ -25,3 +25,20 @@ func TestUniqueItemsNumberPaths(t *testing.T) {
 		}
 	}
 }
+
+// Exponents and digits at the caps (values from type_numberpath_test.go).
+func TestUniqueItemsCaps(t *testing.T) {
+	for _, c := range []struct {
+		a, b string
+		want bool
+	}{
+		{"1e" + capExp, "10e" + capExpM1, false}, {fastAtExp, fastAtExp0, false},
+		{fastAtExp, bigAtExp, true}, {nines, "9." + nines[1:] + "e" + capExpM1, false},
+		{nines, "1e" + capExp, true}, {tinyAtExp, "0", true}, {tinyAtExp, "0.1e-" + capExpM1, false},
+	} {
+		if got := npValid(t, `{"uniqueItems":true}`, "["+c.a+","+c.b+"]"); got != c.want {
+			t.Errorf("uniqueItems [%.30s, %.30s]: got %v want %v", c.a, c.b, got, c.want)
+		}
+	}
+	npLimit(t, `{"uniqueItems":true}`)
+}
