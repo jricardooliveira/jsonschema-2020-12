@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #27
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #162, 2026-10-17 13:42 UTC)
 
 ## Decision
 Test-only story. The allocation guards follow the convention that allocation-limit tests live in <package>/allocs_test.go. They live in the root package because they go through the public API: Compile from raw schema bytes, decoding from raw document bytes, Validate, and basic rendering. They reuse the order fixtures in testdata/perf and the generators in internal/perfdata, the same ones bench_test.go uses. Race detection is done with two tiny build-constrained test files that declare a raceEnabled constant. The 202 follow-ups and the first-Compile re-exec test are new root files. The CLI exit-code half of item (a) is a new file in cmd/jsonschema. The peak-memory fix splits peakmem_test.go into a unix-only measurement, a non-unix stub and an unconstrained flags file. docs/benchmarks.md is the only crowded file written, and only because the story requires the limits recorded there.
