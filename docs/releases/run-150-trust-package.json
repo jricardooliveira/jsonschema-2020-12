@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "08fab066b0827daf1325f18dafbec5062cd086ac",
+    "commit": "5ba8cb7d50e80e51f532812d810f16eaf608f304",
     "base_commit": "c941ecbfe0a8d2c80baaef4047a442c5009241d9"
   },
   "tests": {
@@ -67,7 +67,7 @@
       {
         "path": "internal/eval/eval.go",
         "change": "modified",
-        "additions": 52,
+        "additions": 103,
         "deletions": 15
       },
       {
@@ -79,43 +79,43 @@
       {
         "path": "internal/keywords/registry.go",
         "change": "modified",
-        "additions": 4,
-        "deletions": 0
+        "additions": 9,
+        "deletions": 1
       },
       {
         "path": "internal/keywords/unevaluated/unevaluateditems.go",
         "change": "added",
-        "additions": 85,
+        "additions": 89,
         "deletions": 0
       },
       {
         "path": "internal/keywords/unevaluated/unevaluateditems_test.go",
         "change": "added",
-        "additions": 42,
+        "additions": 81,
         "deletions": 0
       },
       {
         "path": "internal/keywords/unevaluated/unevaluatedproperties.go",
         "change": "added",
-        "additions": 99,
+        "additions": 98,
         "deletions": 0
       },
       {
         "path": "internal/keywords/unevaluated/unevaluatedproperties_test.go",
         "change": "added",
-        "additions": 91,
+        "additions": 230,
         "deletions": 0
       },
       {
         "path": "testdata/unevaluated/unevaluatedItems.json",
         "change": "added",
-        "additions": 115,
+        "additions": 150,
         "deletions": 0
       },
       {
         "path": "testdata/unevaluated/unevaluatedProperties.json",
         "change": "added",
-        "additions": 127,
+        "additions": 163,
         "deletions": 0
       }
     ],
@@ -125,24 +125,23 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-d58315ca8e694d5bb0859da0da3b02e1/docs/architecture/adr/ADR-015-unevaluatedproperties-and-unevaluateditems-2020-12.md",
-    "summary": "Both keywords are plug-ins in their own files. They register from init() under the unevaluated vocabulary URI, with an AfterSiblings flag that defaults to false. eval.go runs flagged keywords in a sec"
+    "summary": "The implementation follows the story, the ADRs and the boundary rules. One AfterSiblings flag, defaulting to false, replaces any keyword-name list. eval.go is changed only in the dispatch loop: a two-"
   },
   "security_boundary": {
-    "overall": "warn",
-    "highest_severity": "medium",
+    "overall": "pass",
+    "highest_severity": "low",
     "breaking_changes": [],
     "findings": [
-      "F3 (medium): the boundary rule requires a test asserting that no error OR annotation output contains a sentinel instance value. The tests only scan units. The unevaluatedProperties annotation also carries the applied property names, which come from the document. ADR-014 rule 4 allows this exemption only for properties, patternProperties and additionalProperties. No test checks Annotations() for the sentinel, and unevaluatedProperties is not added to the documented exemption.",
-      "F4 (low): the fail-closed branches ('evaluated-property/item record unavailable') in unevaluatedproperties.go and unevaluateditems.go have no test. They cannot currently run, because evalNode's attachItems always sets ctx.Items. This is a note, not a live defect."
+      "Fail-closed rule (low): both keywords return an error when the evaluated-location record is missing. But EvaluatedItems.since() returns nil when the mark is out of range (internal/eval/eval.go), so an inconsistent Scope is silently read as 'nothing evaluated'. That path never passes wrongly: the document is reported invalid, or the subschema is applied to every property or item. Still, the boundary rule says an inconsistent state should return an error rather than give a result."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 3.112645,
-    "tokens_in": 2910240,
-    "tokens_out": 47510
+    "usd": 5.466782,
+    "tokens_in": 4675442,
+    "tokens_out": 81672
   },
   "assumptions": [
     {
@@ -188,6 +187,18 @@
     {
       "task": "T4",
       "text": "The cases reuse the existing shared TestSpecCases runner, which already globs testdata/*/*.json."
+    },
+    {
+      "task": "remediation",
+      "text": "Rolling back on any failing keyword, not just 'not', follows core 7.7.1 (a failed schema keeps no annotations) and keeps keyword names out of eval.go. One side effect, not asserted by any test: if a 'properties' subschema fails in the same object as unevaluatedProperties (for example {\"properties\":{\"a\":{\"type\":\"string\"}},\"unevaluatedProperties\":false} with {\"a\":1}), /a now gets an extra unevaluatedProperties error. Validity is unchanged. The full suite still passes."
+    },
+    {
+      "task": "remediation",
+      "text": "The new CoveredProperties/CoveredItems methods are in eval.go because evaluated.go and evaluated_items.go are outside this task's files. The old CoveredItems signature was changed; its only caller was unevaluateditems.go."
+    },
+    {
+      "task": "remediation",
+      "text": "The two existing unevaluated test files were extended, and run() now delegates to a new runUnits() helper. No existing assertion was removed."
     }
   ],
   "blockers": [],
