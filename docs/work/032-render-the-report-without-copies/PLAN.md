@@ -1,7 +1,7 @@
 # PLAN #32: Render the report without copies (round 3, story 5)
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #169, 2026-10-17 23:21 UTC)
 - Design: see `ADR-032-*.md` under `docs/architecture/adr/`
 
 ## Files that change

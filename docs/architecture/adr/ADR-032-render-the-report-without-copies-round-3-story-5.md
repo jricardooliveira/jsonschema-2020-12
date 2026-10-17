@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #32
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #169, 2026-10-17 23:21 UTC)
 
 ## Decision
 Both changes stay inside internal/output, the package that renders flag, basic, detailed and verbose reports. Change 1 is a fast path at the top of the existing segment-decoding function. It sits in code all shapes share, so every shape benefits and no call site changes. Change 2 puts the size-hint arithmetic in a new file, internal/output/sizehint.go, so the crowded files are touched by one line at most. The hint is applied only where the basic report buffer is created. Report-byte counting and the limit check are not touched, so the limit fails at the same byte with the same error. The hint only sets capacity and never changes content. Measurements and judgement follow docs/benchmarks.md. 'Before' is the code just before this story, on the same machine.
