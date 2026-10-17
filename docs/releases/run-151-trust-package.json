@@ -5,7 +5,7 @@
   "stage": "release",
   "verdict": "pass",
   "candidate": {
-    "commit": "0d3574491d2dfd7e349eb9bd0fcb5dbfa7e949ce",
+    "commit": "1ce71e02c885d922f47455990ee4e86e4de6db4c",
     "base_commit": "aeedd56a65d7535a591e4293b7c6d16f4b6d9955"
   },
   "tests": {
@@ -125,7 +125,7 @@
       {
         "path": "internal/compile/vocabulary.go",
         "change": "added",
-        "additions": 77,
+        "additions": 78,
         "deletions": 0
       },
       {
@@ -143,7 +143,7 @@
       {
         "path": "internal/compile/vocabulary_test.go",
         "change": "added",
-        "additions": 87,
+        "additions": 100,
         "deletions": 0
       },
       {
@@ -317,26 +317,26 @@
   },
   "adr": {
     "path": "/Users/joaooliveira/.factory/worktrees/story-52385f9f502f4a698b91713f52839157/docs/architecture/adr/ADR-013-honour-vocabulary-from-embedded-and-registry-meta.md",
-    "summary": "I recommend warn, not fail: all 12 acceptance criteria have tests, and the build, vet, test and -race gates pass. Every criterion has tests that would fail if the behaviour broke, including through th"
+    "summary": "I recommend warn: it does not block. The implementation follows the ADR and the boundary rules. Vocabulary parsing and its checks live in new files under internal/compile and fail closed. Each schema "
   },
   "security_boundary": {
     "overall": "pass",
-    "highest_severity": "medium",
+    "highest_severity": "low",
     "breaking_changes": [
       "Basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. Existing tests that expected them would need updating.",
       "Basic and detailed reports no longer contain '$schema', '$vocabulary' or '$comment' annotations. This is declared and intended. Tests that expected them must be updated in the same change, not skipped."
     ],
     "findings": [
-      "No insecure default found. ParseVocabulary fails closed: every malformed, core or unknown-required path returns an error, and only an absent '$vocabulary' means all vocabularies are active. The recognised set is the fixed list of eight standard URIs. The $schema chain is bounded by maxMetaChain and seen-set cycle detection. Meta-schemas are resolved only from the ext index (embedded plus caller registry), so nothing is fetched or read from disk. Error text carries URIs, a regex-derived draft name and an entry key bounded to 80 bytes, never instance values."
+      "Fails closed as required: every parse problem returns an error with no fallback to 'all vocabularies active', and only a missing '$vocabulary' key activates everything. The recognised set is the fixed eight URIs in internal/keywords/vocabularies.go and is not widened by registry contents. Quoted vocabulary keys go through bound() at 80 runes, and the draft name comes from a fixed regex capture. No instance values reach error messages. No network or disk reads beyond the registry were added."
     ],
     "notes": [],
     "tenant_isolation": "not_applicable",
     "authorization": "not_applicable"
   },
   "cost": {
-    "usd": 8.0649,
-    "tokens_in": 8339488,
-    "tokens_out": 92043
+    "usd": 10.115129,
+    "tokens_in": 9770357,
+    "tokens_out": 110956
   },
   "assumptions": [
     {
@@ -446,6 +446,18 @@
     {
       "task": "remediation",
       "text": "The new tests go in vocabulary_test.go, which is in scope, rather than vocabulary_apply_test.go, which is outside the reserved file list."
+    },
+    {
+      "task": "remediation",
+      "text": "I updated testdata/vocabulary/required_optional_unknown.json, a test file this story owns, to make one assertion stricter. The new expected text still contains the old 'malformed.json'. No other case changed."
+    },
+    {
+      "task": "remediation",
+      "text": "For this meta-schema, the meta-schema check runs before ParseVocabulary and reports the failure first. The message therefore gives the bad entry as a JSON Pointer with escaped characters (~1 for '/'), and the test expects exactly that text, which matches the CLI output the operator saw."
+    },
+    {
+      "task": "remediation",
+      "text": "bound() keeps at most 80 characters (maxEntryQuote) instead of 80 bytes, so for non-ASCII text the quote can now be up to about 4 times as many bytes. The existing 300-byte check in TestUnknownVocabularyErrorBounded still passes."
     }
   ],
   "blockers": [],
