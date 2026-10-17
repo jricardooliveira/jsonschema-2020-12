@@ -1,17 +1,29 @@
 # Default limits
 
 Limits stop hostile input from hanging or exhausting the validator. Exceeding
-one is an error (CLI exit code 2; in the library, `Compile`, `CompileWithOptions`
-or `Validate` return an error wrapping the module's internal
-`*jsonvalue.LimitError`), never a valid or invalid result. The error names the limit and
-its value, never the offending input.
+one is an error, never a valid or invalid result: the CLI exits with code 2,
+and the library returns a `*jsonschema.LimitError` from `Compile`,
+`CompileWithOptions`, `Validate` or `Result.Output`. The error names the limit
+and its value, never the offending input.
 
-| Limit | Default | Raise it with | Applies to |
-|-------|---------|---------------|------------|
-| Number digits | 10000 (`DefaultMaxNumberDigits`) | `Options.MaxNumberDigits`, `--max-number-digits` | every number in the schema and the document |
-| Number exponent | 10000 (`DefaultMaxNumberExponent`) | `Options.MaxNumberExponent`, `--max-number-exponent` | every number in the schema and the document |
-| Nesting depth | 10000 (`jsonvalue.MaxDepth`) | fixed for now | arrays and objects |
-| Input size | 64 MiB per input | fixed for now (CLI only) | schema file, document file, stdin |
+A zero `Options` field means the default; a negative field is an error. A CLI
+value of 0 or less is a usage error. A limit can be raised or lowered, never
+switched off.
+
+| Limit | Default | CLI flag | Library option | Applies to |
+|-------|---------|----------|----------------|------------|
+| Nesting depth | 10000 (`DefaultMaxDepth`) | `--max-depth` | `Options.MaxDepth` | arrays and objects in schemas, registry files and documents |
+| Input size | 64 MiB (`DefaultMaxInputBytes`) | `--max-input-bytes` | `Options.MaxInputBytes` | each schema, registry file and document, and stdin |
+| Reference chain | 20000 (`DefaultMaxRefChain`) | `--max-ref-chain` | `Options.MaxRefChain` | `$ref`/`$dynamicRef` jumps on one evaluation path |
+| Evaluation steps | 100000000 (`DefaultMaxSteps`) | `--max-steps` | `Options.MaxSteps` | work steps for one document |
+| Pattern size | 65536 bytes (`DefaultMaxPatternSize`) | `--max-pattern-size` | `Options.MaxPatternSize` | each regular expression |
+| Output units | 10000000 (`DefaultMaxOutputUnits`) | `--max-output-units` | `Options.MaxOutputUnits` | failure units for one document |
+| Annotations | 10000000 (`DefaultMaxAnnotations`) | `--max-annotations` | `Options.MaxAnnotations` | annotations for one document |
+| Report bytes | 256 MiB (`DefaultMaxReportBytes`) | `--max-report-bytes` | `Options.MaxReportBytes` | one rendered report |
+| Number digits | 10000 (`DefaultMaxNumberDigits`) | `--max-number-digits` | `Options.MaxNumberDigits` | every number in the schema and the document |
+| Number exponent | 10000 (`DefaultMaxNumberExponent`) | `--max-number-exponent` | `Options.MaxNumberExponent` | every number in the schema and the document |
+| Registry file size | 64 MiB (`DefaultMaxRegistryFileBytes`) | `--max-ref-file-bytes` | `Registry.MaxFileBytes` | each file supplied to the registry |
+| Registry total size | 256 MiB (`DefaultMaxRegistryTotalBytes`) | `--max-ref-total-bytes` | `Registry.MaxTotalBytes` | all registry files together |
 
 ## Number caps
 
@@ -22,18 +34,13 @@ its value, never the offending input.
   `1e-10000` pass by default, `1e10001` does not). Leading zeros in the
   exponent do not count.
 - Both are checked on the raw number text before any big-number work. Numbers
-  within the caps are kept exactly (`math/big`); comparison and equality never
-  expand a power of ten from the exponent.
-- In the library, `CompileWithOptions(schema, Options{...})` fixes the caps for
-  the schema and every later `Validate` call. A zero field means the default;
-  a negative field is an error. In the CLI, an explicit value of 0 or less is a
-  usage error.
-- Raising the caps far above the defaults lets a caller opt into more expensive
-  number work; the defaults stay safe. With absurdly raised caps an exponent
-  that no longer fits in 64 bits is still a "number exponent" limit error.
+  within the caps are kept exactly (`math/big`).
 
-## Input changes in this release
+## Fixing and rendering
 
-- A leading UTF-8 byte order mark is now accepted.
-- Invalid UTF-8, unpaired `\u` surrogate escapes and numbers over the caps are
-  now rejected as errors (exit 2). See [cli-contract.md](cli-contract.md).
+In the library, the limits are fixed when the schema is compiled and apply to
+every later `Validate` call. The step, output-unit and annotation budgets are
+fresh for each document. A limit error on stderr ends with
+`(raise with --<flag>)` naming the flag.
+
+See [cli.md](cli.md) for the flags and [library.md](library.md) for the options.
