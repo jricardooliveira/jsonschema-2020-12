@@ -3,24 +3,21 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #148 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 00:11:06 UTC · **Stopped:** 2026-10-17 00:24:12 UTC
-- **Story spend:** ~$4.10 of $35.00 (estimated at API list prices)
+- **Run:** #148 · **Status:** waiting_human · **Stage:** gate-question
+- **Started:** 2026-10-17 00:11:06 UTC · **Stopped:** 2026-10-17 00:30:33 UTC
+- **Story spend:** ~$6.44 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 148` to accept, or `factory reject 148 "<your answers>"` to send it back.
+The operator decides at gate-question: `factory approve 148` to accept, or `factory reject 148 "<your answers>"` to send it back.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — NOT READY: 2 gap(s) in the evidence:
-  >   • 1 acceptance criteria are not proven by any test the tester could see (§5.1) — verify them yourself or send the story back: ["The meta-schema check never asserts 'format', whether or not format-assertion mode is on, so enabling format assertion never makes a previously accepted schema fail."]
-  >   • Security finding (medium) not resolved: F1 (medium) A failure in a supplied schema is not always reported as InvalidSchemaError, and that error path can quote schema values. In jsonschema.go compileChecked, when compile.CompileReached fails, only the main schema is re-run through metaCheck. A reached registry schema, or a custom meta-schema, that a keyword rejects at compile time (for example {"type":"nope"} or {"minLength":-1}) is returned as the plain error 'schema: ...'. That message carries the keyword compile text, such as validation/type.go 'type: unknown type name %q', which echoes the schema value. This breaks the boundary rule that meta-schema failures never quote schema values. It also breaks the rule that a reached registry schema failing its meta-schema is an InvalidSchemaError naming the file. The test 'custom meta-schema itself invalid' in custom_metaschema.json only asserts want:"error", so it passes in this state. No test covers a reached registry schema with a compile-level meta-schema violation.; F3 (low) The meta-check uses eval.DefaultMaxAnnotations instead of the caller's MaxAnnotations (jsonschema.go metaCheck). Step limits do apply, and limit errors stay plain errors with exit 2 (fail-closed). But the boundary rule asks for the same limits as normal evaluation, annotation count included.
-  >   ◦ Release-agent note: AC7 (format assertion never asserts in meta-schema check) is not proven because format-assertion mode does not yet exist. This is a prerequisite gap: the feature must ship in a later story, and then this AC must be tested by verifying a schema with format errors still compiles.
-  >   ◦ Release-agent note: When a reached registry schema's compilation fails (not meta-schema validation, but parsing or reference errors), the error is a plain error that may echo schema content. The error safety boundary for schema values applies to InvalidSchemaError only. Verify that ResolveMetaSchema and MetaChecks never echo schema values in their error messages (they don't: both say 'not supported' and 'does not end in 2020-12', never quoting URIs). Plain compilation errors from other parts of the pipeline are outside this story's value-free contract.
-  >   ◦ Release-agent note: spec_test.go now silently skips test groups whose schema fails meta-validation. This weakens coverage of those spec sections (which can no longer be tested, since the schema does not compile). This is correct and expected: a schema that fails meta-validation is a load error, not a validation scenario. However, review existing test results to confirm no previously-passing spec group coverage is lost to an unexpected error.
-  >   → Approve to release accepting the gaps above as a known risk, or reject with what must change — it goes back to the coder, then the tester.
+- Waiting for the operator at **gate-question**:
+  > The coder asks for files the approved design does not name: Two findings need files outside this task's write scope:
+  > - F4: registry_options.go, where Registry.load builds the index and adds the supplied files. The fix is for load to take a starting index that jsonschema.go fills with ext.AddBuiltins() first (or for load to call AddBuiltins itself right after registry.Build). Then the 'Built-ins last' block in compileChecked goes, and a test shows that a supplied file equal to a built-in leaves the embedded copy indexed (Source == built-in) and a different one is refused.
+  > - F2: testdata/validation/maxItems.json and testdata/validation/minItems.json. Delete the groups 'negative maxItems cannot be met', 'fractional minItems rounds up in effect' and 'negative minItems always met'. They are already moved into testdata/metaschema/invalid_schemas.json as explicit invalid-schema cases. Not granted automatically: registry_options.go (not in the approved design and not a test); testdata/validation/maxItems.json (not in the approved design and not a test); testdata/validation/minItems.json (not in the approved design and not a test). An answer that starts with "yes" (a note may follow) approves these files for this run: the same pass runs again and may change them. An answer that starts with "no" (or a rejection) refuses them: the pass runs again without them, with your words as a finding.
+  > paths: registry_options.go, testdata/validation/maxItems.json, testdata/validation/minItems.json
 
 ## Trail
 
@@ -59,8 +56,11 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 00:23:20 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 10; findings: 5 new, 0 persistent, 0 resolved |
 | 2026-10-17 00:23:20 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 00:24:11 | agent | release-agent | ✅ warn · 51.3s · $0.0941 |
-| 2026-10-17 00:24:12 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 00:24:12 | run | run waiting_human | ⏸️ |
+| 2026-10-17 00:24:12 | gate | gate-release | ❌ REJECTED: Fix these, nothing else: (F1) any failure of a reached registry schema or custom meta-schema in compileChecked is reported as InvalidSchemaError naming the file/URI and location, never quoting schema or inst… |
+| 2026-10-17 00:25:24 | boss | authorize coder-agent:remediation | ✅ the operator's rejection at Checkpoint 3 (1 finding(s)) |
+| 2026-10-17 00:30:33 | agent | coder-agent | ✅ scope-request · remediation · 307.8s · $2.3341 |
+| 2026-10-17 00:30:33 | gate | gate-question | ⏸️ awaiting human sign-off |
+| 2026-10-17 00:30:33 | run | run waiting_human | ⏸️ |
 
 ## Warnings (recorded, not blocking)
 
