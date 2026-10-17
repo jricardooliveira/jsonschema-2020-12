@@ -13,7 +13,7 @@
 | 9 | Base URIs, anchors and local references | released | [009-base-uris-anchors-and-local-references/](009-base-uris-anchors-and-local-references/) | 143 |
 | 10 | Schema registry for external references | released | [010-schema-registry-for-external-references/](010-schema-registry-for-external-references/) | 145 |
 | 11 | Dynamic references | released | [011-dynamic-references/](011-dynamic-references/) | 146, 147 |
-| 12 | Embedded meta-schemas and schema validation | to do |  |  |
+| 12 | Embedded meta-schemas and schema validation | released | [012-embedded-meta-schemas-and-schema-validation/](012-embedded-meta-schemas-and-schema-validation/) | 148 |
 | 13 | $vocabulary handling | to do |  |  |
 | 14 | Annotation collection | released | [014-annotation-collection/](014-annotation-collection/) | 144 |
 | 15 | unevaluatedProperties and unevaluatedItems | to do |  |  |
@@ -67,7 +67,7 @@
    Add 2020-12 '$dynamicRef' and '$dynamicAnchor' with dynamic scope, as the core specification describes. A $dynamicRef whose initial target holds a matching $dynamicAnchor resolves to the outermost matching $dynamicAnchor in the dynamic scope. Otherwise it behaves like $ref. This works across embedded resources and across schemas supplied through the registry. Write spec-derived positive and negative tests, including recursive extension of a schema.
    Why: Must come before meta-schema validation, because the official meta-schemas reach every subschema through "$dynamicRef": "#meta".
 
-12. **Embedded meta-schemas and schema validation** — to do
+12. **Embedded meta-schemas and schema validation** — released
    Embed the official 2020-12 meta-schema and all of its vocabulary meta-schemas, under base https://json-schema.org/draft/2020-12/schema, in the binary so they work offline. Honour '$schema'. Before checking any document, validate every loaded schema against its meta-schema. A schema that fails is an invalid-schema error with exit code 2, never 'invalid'. This story depends on dynamic references: the official meta-schemas reach every subschema through "$dynamicRef": "#meta", so validation against them is incomplete without $dynamicRef. Only 2020-12 is supported. Write tests that use valid and invalid schemas, run through both the library and the CLI.
    Why: Placed after dynamic references so meta-schema validation is complete, and before $vocabulary, which reads these meta-schemas.
 
