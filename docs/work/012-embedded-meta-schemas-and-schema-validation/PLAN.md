@@ -1,7 +1,7 @@
 # PLAN #12: Embedded 2020-12 meta-schemas and meta-schema validation of every loaded schema
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #148, 2026-10-17 00:11 UTC)
 - Design: see `ADR-012-*.md` under `docs/architecture/adr/`
 
 ## Files that change

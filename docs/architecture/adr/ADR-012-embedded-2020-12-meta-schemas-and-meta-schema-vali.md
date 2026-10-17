@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #12
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #148, 2026-10-17 00:11 UTC)
 
 ## Decision
 The design is unchanged from the previous proposal. The only change is that the folder entry testdata/metaschema/cli/ is replaced by the seven individual fixture files the CLI tests use. Embedded meta-schemas live in internal/registry/metaschemas and are loaded through embedded.go with go:embed. registry.go gains one hook so it indexes them under their $id and enforces the built-in-address rule. internal/compile/metaschema.go resolves '$schema'. internal/compile/metacheck.go runs the existing evaluator (through its public entry point, without editing internal/eval/eval.go) against the chosen meta-schema, with format assertion forced off. compile.go calls the check once, after resolving references and before returning the Schema. invalid_schema_error.go defines the root-level InvalidSchemaError type. The CLI already maps every load error to exit code 2 and stderr, so cmd/jsonschema/main.go is not edited and only a new test file is added.
