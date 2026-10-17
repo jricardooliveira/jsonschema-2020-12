@@ -1,7 +1,7 @@
 # PLAN #18: Format assertion: mode, dates, email, hostnames, IP and UUID
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #153, 2026-10-17 02:32 UTC)
 - Design: see `ADR-018-*.md` under `docs/architecture/adr/`
 
 ## Files that change

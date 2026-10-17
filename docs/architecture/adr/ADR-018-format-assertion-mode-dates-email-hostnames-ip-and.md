@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #18
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #153, 2026-10-17 02:32 UTC)
 
 ## Decision
 Package internal/formats holds the registry: Register(name string, check func(string) bool) and Lookup(name) (check, ok). Each format file registers from init(). Because formatannotation/format.go imports internal/formats, every check is linked in without editing internal/keywords/all/all.go. The mode is decided once at compile time. Either the library option (options.go, carried into internal/compile/compile.go's compile options) or story 190's recorded required-format-assertion vocabulary flag sets an effective FormatAssert boolean for that schema resource. format.go's compile function reads that boolean and captures the looked-up check in its compiled, immutable keyword value. At evaluation time, a non-string instance or a missing check passes. A failing check produces an error unit without the value. The annotation is still collected in both modes. The meta-schema check in internal/compile/metacheck.go always compiles and evaluates meta-schemas with FormatAssert forced off, so the 'uri-reference' format on $id is never asserted. Email domain literals reuse the ipv4/ipv6 helpers. idn-hostname reuses the hostname label rules for ASCII input. Format tests are Go table tests in each format's own _test.go file, with citations to the RFC or spec section.
