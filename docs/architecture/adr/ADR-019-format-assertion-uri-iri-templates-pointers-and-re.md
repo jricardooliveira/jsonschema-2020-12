@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #19
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #154, 2026-10-17 04:53 UTC)
 
 ## Decision
 This is the reviewed design with the reviewer's four safe choices applied. Nothing else changes. Before writing it I checked these facts against the code: internal/formats/registry.go has `func Register(name string, check func(string) bool)`; ecmaregex.Translate(pattern string) (string, error) and ecmaregex.DefaultMaxPatternSize exist in internal/ecmaregex/translate.go; keywords.BytesPerStep = 64 and EvalContext.ChargeBytes are in internal/keywords/registry.go; internal/keywords/formatannotation/format.go calls ctx.ChargeBytes(len(s)) right before c.check(s), and only when a check is set (assertion mode on and a string instance); formatassertion_test.go line 64 lists the eight formats in TestFormatAssertionDeferredAndUnknownPass.
