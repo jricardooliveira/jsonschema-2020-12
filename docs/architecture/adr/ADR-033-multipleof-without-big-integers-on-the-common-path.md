@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #33
-- Status: proposed (pending architecture sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #167, 2026-10-17 22:13 UTC)
 
 ## Decision
 There are two layers. (1) internal/jsonvalue gains, in a new file number_inline.go, a method that returns (mantissa int64, exp int32, ok bool) from the number's existing inline representation without allocating. Because the method is in the same package, it reads unexported fields, so number.go needs no edit. (2) The multipleOf keyword keeps its big-form divisor and additionally stores a small form at compile time. A new file, multipleof_int64.go, holds the pure int64 decision. With instance m1·10^e1 and divisor m2·10^e2, and d = e1−e2: when d ≥ 0, reduce m2 by gcd(|m1|, |m2|), then strip up to d factors of 2 (bits.TrailingZeros64) and up to d factors of 5 (a bounded loop); the instance is a multiple only if 1 remains. When d < 0, it needs m2·10^|d| | m1, computed with overflow checks; on overflow the code falls back to the big path. MinInt64 absolute value and any overflow always fall back. evalMultipleOf tries the small path first and otherwise calls the unchanged big path. The error entry is produced exactly as today. For the differential test, both paths must be callable from tests as unexported functions in the same package.

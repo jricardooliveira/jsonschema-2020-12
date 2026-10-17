@@ -1,7 +1,7 @@
 # PLAN #33: multipleOf without big integers on the common path
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: passed gate 2 with nothing for the operator to decide (run #167, 2026-10-17 22:13 UTC)
 - Design: see `ADR-033-*.md` under `docs/architecture/adr/`
 
 ## Files that change
