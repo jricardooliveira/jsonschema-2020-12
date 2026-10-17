@@ -3,25 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #154 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 03:17:13 UTC · **Stopped:** 2026-10-17 05:16:44 UTC
+- **Run:** #154 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 03:17:13 UTC · **Stopped:** 2026-10-17 05:17:05 UTC
 - **Story spend:** ~$7.73 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 154` to accept, or `factory reject 154 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-154-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: formatassertion_test.go line 64: one-line edit removes the eight formats from a test that expected them to reject all strings in assertion mode (the old behaviour). Now that they are registered and validate strictly, that test would break. Coverage moved to assertion_mode_test.go. This is correct and documented in the architecture notes.
-  >   ◦ Release-agent note: assertion_mode_test.go (new external package formats_test): necessary because in-package test files cannot import the root package (import cycle). This is the standard Go solution and does not affect the tested code.
-  >   ◦ Release-agent note: ECMA-262 u-flag grammar is large and complex (lookahead, backreferences, named groups, class ranges, surrogates). The tester confirmed the scanner handles surrogate-pair escapes correctly, rejects hostile nesting (million unclosed parentheses) without crash, and enforces duplicate group names. The implementation uses an explicit heap stack frame per group and a flat class state, no recursion on input length.
-  >   ◦ Release-agent note: Unicode property aliases are hand-written (scriptAliases in ecma_unicode_props.go). Gaps are recorded in code. This is unavoidable with standard-library-only and is documented in the acceptance criteria.
-  >   ◦ Release-agent note: The translation step (story 182) is advisory: ecmaregex.Translate is called only after the syntax check accepts the pattern and inside recover(). Its result is ignored. A panic or error becomes 'not translatable' and does not affect the verdict. The regex format stays valid.
-  >   ◦ Security note (none): No insecure defaults found. Every check fails closed: unknown constructs, '(?i:' modifier groups, unknown \p names and invalid UTF-8 all return false. The checks are pure functions with no I/O and do not use net/url or regexp to judge validity. The property tables are filled at init and only read afterwards. Translate runs behind recover() and the DefaultMaxPatternSize cap, and regexp.Compile is never called. Format errors never quote the instance value.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -81,8 +73,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 05:16:01 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 11; findings: 0 new, 0 persistent, 7 resolved |
 | 2026-10-17 05:16:01 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 05:16:44 | agent | release-agent | ✅ pass · 42.5s · $0.0996 |
-| 2026-10-17 05:16:44 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 05:16:44 | run | run waiting_human | ⏸️ |
+| 2026-10-17 05:16:44 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-17 05:17:05 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-17 05:17:05 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
