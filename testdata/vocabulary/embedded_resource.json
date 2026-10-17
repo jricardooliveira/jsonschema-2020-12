@@ -1,0 +1,4 @@
+[
+ {"name":"inner resource uses its own vocabulary set, outer keeps its own","spec":"core 8.1.2, 8.2.1","meta":"core_applicator_only.json","schema":{"minimum":5,"properties":{"a":{"$id":"https://example.com/inner","$schema":"https://example.com/meta/core-applicator","minimum":5}}},"want":"ok","docs":[{"doc":3,"valid":false},{"doc":{"a":3},"valid":true},{"doc":7,"valid":true}]},
+ {"name":"inner resource without validation accepts a low number","spec":"core 8.1.2, 8.2.1","meta":"core_applicator_only.json","schema":{"properties":{"a":{"$id":"https://example.com/inner","$schema":"https://example.com/meta/core-applicator","minimum":5}}},"want":"ok","docs":[{"doc":{"a":3},"valid":true}]}
+]
