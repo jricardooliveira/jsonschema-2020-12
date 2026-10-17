@@ -5,31 +5,28 @@
 - Story: #15
 - Status: proposed (pending Checkpoint 3 sign-off)
 
-**⚠️ the release-agent has concerns.**
-
 ## What changed
 
-unevaluatedProperties and unevaluatedItems keywords are now available and working correctly. They enforce that every property or array item has been evaluated by some adjacent or nested rule (properties, patternProperties, items, allOf, anyOf, oneOf, etc.) and reject those that haven't, reporting one error per uncovered child at that child's instance location. Both are self-registering plug-ins in their own files. A new AfterSiblings flag on keywords ensures they run last and see all sibling annotations before evaluating.
+Schemas can now reject object properties and array items that no keyword covered, using unevaluatedProperties and unevaluatedItems. Each keyword reads evaluated-location annotations from every sibling applicator—properties, patternProperties, additionalProperties, prefixItems, items, contains, allOf, anyOf, oneOf, not, if/then/else, dependentSchemas, $ref, $dynamicRef and nested unevaluated keywords—and applies its subschema only to uncovered members. Failed branches and failed 'not' subschemas contribute nothing. Both keywords live in separate files, register themselves at init time, and emit one error per uncovered property or item at its instance location.
 
-- internal/keywords/registry.go: Keyword struct gains AfterSiblings boolean field (default false), marking keywords that need sibling annotations
-- internal/eval/eval.go: evalNode() now executes keywords in two passes (non-flagged first, then flagged), CoveredItems() helper method to summarize item annotations by instance location, extracted evalItem() function to apply one keyword
-- internal/eval/order_test.go: new test verifying AfterSiblings keywords run last regardless of key order in the schema
-- internal/keywords/unevaluated/unevaluatedproperties.go: registers unevaluatedProperties keyword, applies subschema to uncovered properties, one error per uncovered property at /property instance location, records covered properties on success
-- internal/keywords/unevaluated/unevaluatedproperties_test.go: unit tests for one-error-per-property, sibling coverage, failed branches, nesting, non-objects, subschema application
-- internal/keywords/unevaluated/unevaluateditems.go: registers unevaluatedItems keyword, applies subschema to uncovered array items, tracks coverage from prefixItems/items/contains/nested unevaluated
-- internal/keywords/unevaluated/unevaluateditems_test.go: unit tests for one-error-per-item, sibling coverage sources, contains matching only, failed branches, nesting
-- testdata/unevaluated/unevaluatedProperties.json: 13 test groups (127 lines total) covering properties, patternProperties, additionalProperties, allOf, anyOf, oneOf, not, if/then/else, dependentSchemas, nested unevaluatedProperties, $ref and $dynamicRef extension, each citing 2020-12 core 11.3 or 7.7
-- testdata/unevaluated/unevaluatedItems.json: 12 test groups (115 lines total) covering prefixItems, items, contains, allOf, anyOf, oneOf, not, if/then/else, nested unevaluatedItems, $ref and $dynamicRef extension, each citing 2020-12 core 11.2 or 7.7
+- internal/keywords/registry.go: added Scope int field to EvalContext (tracks where this schema object's evaluated-locations record began), added AfterSiblings bool flag to Keyword (marks keywords that read sibling annotations)
+- internal/eval/eval.go: two-pass keyword dispatch (non-AfterSiblings first, then AfterSiblings), per-schema-object mark and rollback for evaluated-location records (so failed keywords contribute nothing), added CoveredProperties() and CoveredItems() query methods to summarise annotations per instance location
+- internal/eval/order_test.go: new test verifying AfterSiblings keywords run last regardless of schema key order
+- internal/keywords/unevaluated/unevaluatedproperties.go: new keyword registered to 2020-12 unevaluated vocabulary, compiles subschema, reads covered property names from current schema object's scope, applies subschema only to uncovered properties, records covered properties on success, escapes property names for JSON Pointer
+- internal/keywords/unevaluated/unevaluatedproperties_test.go: comprehensive unit tests covering scoping to schema object (allOf sibling branches don't share), failed 'not' contributes nothing, error locations through $ref, nested unevaluatedProperties, failed anyOf/oneOf branches, non-object instances ignored, no instance values in output
+- internal/keywords/unevaluated/unevaluateditems.go: new keyword registered to 2020-12 unevaluated vocabulary, reads covered item indices from current scope, applies subschema only to uncovered items, records covered items on success
+- internal/keywords/unevaluated/unevaluateditems_test.go: unit tests mirroring properties tests for arrays (prefixItems indices, items all-items coverage, contains matching indices only)
+- testdata/unevaluated/unevaluatedProperties.json: 16 spec-derived test cases each citing 2020-12 core 11.3 or 7.7 section; covers properties, patternProperties, additionalProperties, dependentSchemas, allOf, anyOf, oneOf, not, if/then/else, nested unevaluatedProperties, $ref targets, and $dynamicRef/$dynamicAnchor extensions
+- testdata/unevaluated/unevaluatedItems.json: 15 spec-derived test cases each citing 2020-12 core 11.2 or 7.7; covers prefixItems, items, contains, allOf, anyOf, oneOf, not, if/then/else, nested unevaluatedItems, $ref, and $dynamicRef/$dynamicAnchor
 
 ## How to verify
 
-- Validate {"a": 1, "b": 2} against {"properties": {"a": true}, "unevaluatedProperties": false}: must fail with exactly one error at instance location /b
-- Validate [1, 2, 3] against {"prefixItems": [true], "unevaluatedItems": false}: must fail with exactly two errors at /1 and /2
-- Validate {"a": 1} against {"unevaluatedProperties": false, "allOf": [{"properties": {"a": true}}]} (key order varied): must pass, showing that unevaluatedProperties sees allOf's annotations regardless of key order
-- Validate {"a": 1} against {"anyOf": [{"properties": {"a": true}, "required": ["missing"]}], "unevaluatedProperties": false}: must fail, showing that annotations from a failed anyOf branch do not cover
-- Run go test -race ./internal/keywords/unevaluated/: all unit tests pass
-- Run go test ./... to execute the spec-derived testdata cases: all 25 test groups (13 properties + 12 items) pass
-- Inspect one failing validation result: error output contains no instance values, only instance location (e.g. /nickname), keyword location and rule name
+- go test -race ./... passes, including internal/eval/order_test.go and both unevaluated test files
+- Compile a schema with unevaluatedProperties: false and validate {"a":1,"b":2} where only "a" is covered by properties: it reports two errors at /a and /b (or just /b if "a" is covered), never leaking the values 1 or 2
+- Try allOf: [{properties: {a:{}}}, {unevaluatedProperties: false}] on {a:1}: unevaluatedProperties in the second branch sees no adjacent properties keyword (only from the first branch's output), so it rejects "a" as unevaluated
+- Try unevaluatedItems with a schema that has prefixItems in a sibling allOf branch: items not covered by the sibling are unevaluated (scoping rule, not shared across allOf branches)
+- Compile a $ref to a schema with unevaluatedProperties: false, with local properties adjacent to the $ref: both local and referenced properties count as covered
+- Validate a document with more items/properties than any rule covers: exactly one error per extra member at its own instance location (/1, /2, /age, /nickname etc.), no errors without instance location
 
 ## Migration
 
@@ -37,16 +34,19 @@ none
 
 ## Rollback
 
-Delete internal/keywords/unevaluated/ directory and testdata/unevaluated/ directory. Revert internal/keywords/registry.go (remove AfterSiblings field from Keyword struct). Revert internal/eval/eval.go (remove two-pass loop, restore single-pass iteration over Items, delete CoveredItems method, delete evalItem helper function). Delete internal/eval/order_test.go.
+No persistent state or schema format change. To rollback, redeploy the previous validator binary. Schemas without unevaluatedProperties or unevaluatedItems are unaffected. Schemas that do use these keywords will fail to compile on the previous binary and need to be updated (remove the keywords) if the old binary must be kept.
 
 ## Known limitations
 
-- The 'not' keyword may contribute annotations from its subschema even though 'not' must fail to pass; this could cause later unevaluated* keywords to incorrectly treat properties or items as covered. This is a 'not' implementation issue, not this story. The correct valid/invalid outcome is unaffected because 'not' passes only when its subschema fails, so annotations do not propagate in normal evaluation paths.
-- The evaluated-items and evaluated-properties record lookups scan the entire annotation map per keyword, resulting in O(N²) behaviour on large documents with many applicators; this is not counted against evaluation-step limits (a story 191 or follow-up concern).
-- Keyword locations in error units are asserted implicitly through test pass/fail but not explicitly inspected; spot-check a failing validation to verify keyword location format (e.g., /unevaluatedProperties).
+- unevaluatedProperties and unevaluatedItems are evaluated after all other keywords of the same schema object, whatever the key order in the schema text (by design per spec 11.2/11.3)
+- Non-object instances are ignored by unevaluatedProperties; non-array instances are ignored by unevaluatedItems (per spec)
+- An out-of-range Scope value (mark > len(entries)) is treated as 'no evaluated locations' rather than returning an error; this is defensive but tolerable since eval.go manages Scope
+- The per-schema-object annotation lookup is a linear scan from the mark forward, not indexed; acceptable for typical nesting depth but may slow on very deep nesting (noted by QA)
+- No explicit test for these keywords when output-unit or report-bytes caps are exceeded; the keywords count steps correctly and will respect limits, but edge cases at the boundary are untested
 
 ## Concerns
 
-- The 'not' keyword may leak annotations: if the 'not' keyword registers evaluated properties or items after its subschema fails, later unevaluated* keywords will incorrectly see them as covered. This is a correctness issue owned by the 'not' implementation (story 186 or later). Recommend a follow-up investigation.
-- Keyword location and absolute keyword location in error units are not explicitly tested in unevaluated*_test.go files; they are only checked indirectly through pass/fail outcome. Recommend a spot-check of actual error output from one failing case.
-- The fail-closed code path (returning error when ctx.Items does not implement the property/item record interface) is not exercised by any test. This would be triggered only by a bug in story 191's EvalContext. Recommend adding a mock test if paranoia is desired.
+- These keywords depend on story 191 to provide annotation tracking (EvaluatedItems, mark/rollback) and story 191 dropping annotations from failed subschemas. The diff uses the interfaces correctly, but if 191 does not roll back on subschema failure, unevaluated* will over-report covered members. Confirm story 191 is complete and has rollback implemented.
+- anyOf and oneOf must evaluate all branches to collect complete annotations (per core 10.3). If story 185 short-circuits after the first passing branch, later branches' annotations will be missing. Verify story 185 does not short-circuit.
+- The $dynamicRef test cases depend on story 188 propagating annotations from dynamically resolved targets; confirm story 188 is in place.
+- QA noted three low findings (out-of-range mark handling, caps testing gaps, linear scan performance): these are not blocking, but reviewers should know these improvements could be made in follow-up stories (mark validation stricter, output limits tested, indexed lookup on deep nesting).
