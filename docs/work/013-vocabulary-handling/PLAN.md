@@ -1,7 +1,7 @@
 # PLAN #13: Honour $vocabulary from embedded and registry meta-schemas
 
 - Date: 2026-10-17
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #151, 2026-10-17 01:06 UTC)
 - Design: see `ADR-013-*.md` under `docs/architecture/adr/`
 
 ## Files that change

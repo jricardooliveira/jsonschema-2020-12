@@ -2,7 +2,7 @@
 
 - Date: 2026-10-17
 - Story: #13
-- Status: proposed (pending architecture sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #151, 2026-10-17 01:06 UTC)
 
 ## Decision
 New vocabulary logic lives in new files. internal/compile/vocabulary.go holds parsing and checks. internal/compile/vocabulary_apply.go holds the per-resource set and decides whether a keyword is active. internal/compile/vocabulary_errors.go holds the error types. Recognition of vocabularies sits in a new file, internal/keywords/vocabularies.go, which reads the vocabulary URIs that keywords already give the registry and adds the format-assertion URI, which has no keyword yet. registry.go is not edited. Crowded file compile.go is touched only to call the vocabulary step when a resource with '$schema' is entered, and to route inactive-vocabulary keywords to the existing unknown-keyword handling. The root package gets two new files: vocabulary_errors.go (exported error type alias or wrapper) and vocabulary.go (read-only accessor reporting format assertion was requested). jsonschema.go is not edited. '$schema' and '$vocabulary' get no-op keyword files in internal/keywords/core. Compile keeps reading '$schema' itself as before.
