@@ -1,0 +1,352 @@
+{
+  "work_id": "US-0155",
+  "parent_story": "US-0155",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "4b1ea60950d659f8224523b6c4f3659b167c5630",
+    "base_commit": "56b588f230aad2bd139021a7831056537691470f"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "README.md states what the project is (a JSON Schema Draft 2020-12 validator: a Go library plus a CLI). It shows how to build with `go build ./cmd/jsonschema` and test with `go test ./...`, gives a quick-start command, and links to every page under docs/.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "README.md states the dependency rule: standard library only, go.mod has no require lines, and no JSON Schema validation library is a dependency.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/cli.md documents every flag the built tool defines, each with its real name, meaning and default. It covers: schema from a file path; documents from file paths or standard input; registry flags mapping files and directories to base URIs; the output-format flag (flag, basic, detailed, verbose; default basic); the format-assertion flag; every limit flag; and the line format for several documents, including how the label wraps the unchanged output object.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/cli.md states the exit codes 0 valid, 1 invalid, 2 error. It states that invalid schemas, unknown required vocabularies, unresolved references, unreadable or broken input and exceeded limits are errors (2), never invalid, and that with several documents the worst result sets the exit code.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/output-formats.md shows the exact JSON shape the built tool prints for flag, basic, detailed and verbose. It states that reports carry instance location, keyword location and absolute keyword location, never instance values, and it names any part of detailed/verbose that is only partly produced.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/limits.md lists every limit (CLI flag and library option) with its real default, read from the code. It states that exceeding a limit gives exit code 2.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/library.md documents the load-once, check-many API (compile with registry, limits and format mode fixed at compile time, then validate many documents, safe for concurrent use) with a short example. The same example exists as a Go Example function in example_test.go, and `go test` checks its `// Output:`.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/scope.md has a 'Mandatory 2020-12 behaviour' section covering every item of the brief's mandatory scope. It has a separate 'Optional features' section listing format-assertion mode (flag, option and vocabulary) and detailed/verbose output.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/deviations.md lists the ECMA-262 regex versus RE2 deviations (what the translation step handles and what is rejected as a schema error), and every partly checked format with what it misses, including idn-hostname and idn-email. Any docs file an earlier story wrote about these subjects is merged into it and removed.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/deviations.md has a 'Known differences' section that lists each place where the finished tool differs from the brief, or states that none remain. It lists the stray debug test files (dbg_test.go, internal/registry/dbg_tmp_test.go) and the duplicated spec runners (internal/speccases, spec_applicator_test.go) if they are still present. The same list is reported back in the story's completion notes.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "No page names or links to the official JSON Schema test suite or Bowtie. The docs say only that the tests are written from the 2020-12 specification text.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "An automatic test runs every CLI command example in README.md and docs/. Each example's printed output and exit code must match what the page shows, and the test fails if they differ.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "An automatic test compares the flag list in docs/cli.md with the flags the tool really defines, including every limit flag added by story 193 (--max-depth, --max-input-bytes, --max-ref-chain, --max-steps, --max-pattern-size, --max-output-units, --max-annotations, --max-report-bytes and the number and registry limit flags). It fails if either list has a flag the other lacks.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The CLI usage text in cmd/jsonschema/run.go lists all four output formats (flag|basic|detailed|verbose). This one-line text fix is the only change to non-test Go code.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "`go build ./...`, `go vet ./...` and `go test -race ./...` pass with no network access.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 15,
+    "covered": 15,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "README.md",
+        "change": "added",
+        "additions": 52,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/docs_examples_test.go",
+        "change": "added",
+        "additions": 96,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/docs_flags_test.go",
+        "change": "added",
+        "additions": 114,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "docs/cli-contract.md",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 53
+      },
+      {
+        "path": "docs/cli.md",
+        "change": "added",
+        "additions": 126,
+        "deletions": 0
+      },
+      {
+        "path": "docs/deviations.md",
+        "change": "added",
+        "additions": 141,
+        "deletions": 0
+      },
+      {
+        "path": "docs/examples/bad-schema.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "docs/examples/invalid.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "docs/examples/schema.json",
+        "change": "added",
+        "additions": 9,
+        "deletions": 0
+      },
+      {
+        "path": "docs/examples/valid.json",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "docs/formats.md",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 59
+      },
+      {
+        "path": "docs/library.md",
+        "change": "added",
+        "additions": 51,
+        "deletions": 0
+      },
+      {
+        "path": "docs/limits.md",
+        "change": "modified",
+        "additions": 33,
+        "deletions": 26
+      },
+      {
+        "path": "docs/output-formats.md",
+        "change": "added",
+        "additions": 114,
+        "deletions": 0
+      },
+      {
+        "path": "docs/references.md",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 3
+      },
+      {
+        "path": "docs/regex-deviations.md",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 72
+      },
+      {
+        "path": "docs/scope.md",
+        "change": "added",
+        "additions": 54,
+        "deletions": 0
+      },
+      {
+        "path": "example_test.go",
+        "change": "added",
+        "additions": 32,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": [
+      "docs/cli-contract.md",
+      "docs/formats.md",
+      "docs/references.md",
+      "docs/regex-deviations.md"
+    ],
+    "scope_granted": [
+      {
+        "path": "docs/cli-contract.md",
+        "granted_by": "operator",
+        "at": "gate-question #1419"
+      },
+      {
+        "path": "docs/formats.md",
+        "granted_by": "operator",
+        "at": "gate-question #1419"
+      },
+      {
+        "path": "docs/references.md",
+        "granted_by": "operator",
+        "at": "gate-question #1419"
+      },
+      {
+        "path": "docs/regex-deviations.md",
+        "granted_by": "operator",
+        "at": "gate-question #1419"
+      }
+    ]
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-a1cfb9ef559f47f280dc5c1d52cb760e/docs/architecture/adr/ADR-020-readme-and-docs-that-describe-the-finished-validat.md",
+    "summary": "Both earlier blockers are resolved. The operator told the coder to replace the merged pages with one-line pointers instead of deleting them, and that was done; README.md now links every page under doc"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 6.305933,
+    "tokens_in": 5602234,
+    "tokens_out": 52800
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "One-line text change only. No new test was added for the usage text. The task allows no other code change."
+    },
+    {
+      "task": "T2",
+      "text": "The exit-2 example is shown as a text block with the stderr line, not a sh/json pair, because it has no stdout."
+    },
+    {
+      "task": "T2",
+      "text": "Limit defaults come from the Default* constants in the code. Numeric values were read from source (64<<20, 256<<20, 2*10000, 100_000_000, 10_000_000, 64<<10) and not executed."
+    },
+    {
+      "task": "T2",
+      "text": "docs/limits.md was rewritten in full: its old text said Nesting depth and Input size were not configurable, and it linked cli-contract.md."
+    },
+    {
+      "task": "T3",
+      "text": "Page content was taken from the code and from running the CLI. For this schema the detailed and verbose outputs for a failing document are identical, and the page says so."
+    },
+    {
+      "task": "T3",
+      "text": "docs/regex-deviations.md and docs/formats.md are outside this task's allowed files and the guard blocks deletes. I merged their content into docs/deviations.md and listed both as stale in Known differences."
+    },
+    {
+      "task": "T3",
+      "text": "docs/cli-contract.md is also stale (it says one document only); it is listed in Known differences too."
+    },
+    {
+      "task": "T3",
+      "text": "For a failing document, the detailed output shown is the tool's real output. It repeats each error both flat and under its /properties/<name> node. The page shows it exactly as the tool prints it."
+    },
+    {
+      "task": "T3",
+      "text": "docs/regex-deviations.md, docs/formats.md, docs/cli-contract.md and docs/references.md are outside this task's allowed files, and deleting them is refused. Their content is merged into docs/deviations.md or replaced by the new pages, and Known differences lists them as stale, to be removed in a separate story."
+    },
+    {
+      "task": "T3",
+      "text": "This task adds no new test. The examples on these pages are checked by T5's docs example test."
+    },
+    {
+      "task": "T4",
+      "text": "The example uses the flag output format so the checked output stays short and stable. I did not run the full suite, only `go test -run Example .`."
+    },
+    {
+      "task": "T6",
+      "text": "The flag set is local to run and run.go may not change beyond the usage line, so flag names are read from the run.go source with go/parser instead of from a flag set object."
+    },
+    {
+      "task": "T6",
+      "text": "Flag names are normalised by dropping the leading dashes, so `-o` and `--output` both count."
+    },
+    {
+      "task": "T6",
+      "text": "I did not run the two tests against a deliberately broken docs/cli.md (a flag removed, a made-up flag added), so the 'fails when' half of the done-when is not checked by a run."
+    },
+    {
+      "task": "T5",
+      "text": "Examples are in-process, with stdin empty."
+    },
+    {
+      "task": "T5",
+      "text": "The stderr sample in cli.md sits in a ```text block, so it is not run."
+    },
+    {
+      "task": "remediation",
+      "text": "I added the two new tests to the existing docs_examples_test.go, which is this story's docs test file, instead of creating another file."
+    },
+    {
+      "task": "remediation",
+      "text": "I kept docs/references.md rather than deleting it, because the comment in numberlimits.go (line 39) points to it. Its stale statements should be corrected and the page linked from README. The other three stale pages can be deleted because their content is already merged into docs/deviations.md and docs/cli.md."
+    },
+    {
+      "task": "remediation",
+      "text": "The three old pages can't be deleted, so they stay as one-line pointers as the operator said, and README.md links them so it still links every page under docs/."
+    },
+    {
+      "task": "remediation",
+      "text": "The 'Accepted input' rules from the old cli-contract.md went into docs/cli.md so that nothing was lost in the merge."
+    },
+    {
+      "task": "remediation",
+      "text": "The usage-text change in run.go only adds a space; it stays the one allowed non-test Go change."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
