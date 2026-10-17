@@ -35,6 +35,21 @@ func TestEveryBuiltinResolvesOffline(t *testing.T) {
 	}
 }
 
+// As published, only the 2020-12 meta-schema declares '$vocabulary'; the
+// eight vocabulary meta-schemas do not.
+func TestOnlyRootMetaSchemaDeclaresVocabulary(t *testing.T) {
+	docs, err := Builtins()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range builtinIDs {
+		_, has := docs[id].(map[string]any)["$vocabulary"]
+		if has != (id == draft+"schema") {
+			t.Errorf("%s: has $vocabulary = %v", id, has)
+		}
+	}
+}
+
 // Core 8.2.1: an equal supplied file at a built-in address is accepted.
 func TestEqualSuppliedBuiltinAccepted(t *testing.T) {
 	idx := newIdx(t)

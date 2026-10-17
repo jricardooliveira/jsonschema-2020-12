@@ -1,6 +1,7 @@
 package compile_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/compile"
@@ -31,23 +32,46 @@ func idx(t *testing.T) *registry.Index {
 	return i
 }
 
-// firstFailure runs every check and reports whether all passed.
+var errFailed = errors.New("meta-check failed")
+
+// allPass runs every check and reports whether all passed.
 func allPass(t *testing.T, ext *registry.Index, docs []compile.Doc) bool {
 	t.Helper()
-	checks, err := compile.MetaChecks(docs, ext)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, c := range checks {
+	_, ok := firstFailure(t, ext, docs)
+	return ok
+}
+
+// firstFailure returns the source of the first failing document, or ok.
+func firstFailure(t *testing.T, ext *registry.Index, docs []compile.Doc) (string, bool) {
+	t.Helper()
+	var failed string
+	err := compile.MetaChecks(docs, ext, func(c compile.Check) error {
 		ev, err := eval.EvaluateFull(c.Meta, c.Doc.Value, 1_000_000, eval.DefaultMaxAnnotations)
 		if err != nil {
-			t.Fatal(err)
+			return err
 		}
 		if !ev.Valid {
-			return false
+			failed = c.Doc.Source
+			return errFailed
 		}
+		return nil
+	})
+	if err != nil && err != errFailed {
+		t.Fatal(err)
 	}
-	return true
+	return failed, err == nil
+}
+
+// Core 8.1.1: an invalid custom meta-schema is reported before it is used.
+func TestCustomMetaSchemaCheckedFirst(t *testing.T) {
+	ext := idx(t)
+	if err := ext.AddExternal(decode(t, `{"$id":"https://x.test/m","type":"nope"}`), "", "m.json"); err != nil {
+		t.Fatal(err)
+	}
+	src, ok := firstFailure(t, ext, []compile.Doc{{Value: decode(t, `{"$schema":"https://x.test/m"}`)}})
+	if ok || src != "m.json" {
+		t.Errorf("got ok=%v source %q, want the meta-schema m.json to fail", ok, src)
+	}
 }
 
 // Core 8.2.4.2 / 8.1.1: "$dynamicRef": "#meta" reaches nested subschemas.

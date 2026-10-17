@@ -7,6 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/neoface/jsonschema/internal/compile"
+	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/neoface/jsonschema/internal/registry"
 )
 
 type metaCase struct {
@@ -46,6 +50,58 @@ func TestMetaSchemaCases(t *testing.T) {
 		for _, c := range cases {
 			t.Run(filepath.Base(f)+"/"+c.Name, func(t *testing.T) { runMetaCase(t, c) })
 		}
+	}
+}
+
+// Core 8.1.1: the meta-check runs under the caller's limits; going over one
+// is the LimitError, never InvalidSchemaError and never a pass.
+func TestMetaCheckUsesCallerLimits(t *testing.T) {
+	schema := []byte(`{"type":"string","properties":{"a":{"title":"t"}}}`)
+	if _, err := CompileWithOptions(schema, Options{}); err != nil {
+		t.Fatalf("default limits: %v", err)
+	}
+	for name, opts := range map[string]Options{
+		"annotations":  {MaxAnnotations: 1},
+		"output units": {MaxOutputUnits: 1},
+	} {
+		bad := schema
+		if name == "output units" {
+			bad = []byte(`{"type":"nope","minLength":-1,"maxItems":-1}`)
+		}
+		_, err := CompileWithOptions(bad, opts)
+		var lim *jsonvalue.LimitError
+		if !errors.As(err, &lim) {
+			t.Errorf("%s: want *jsonvalue.LimitError, got %v", name, err)
+		}
+	}
+}
+
+// Core 8.2.1: built-ins are indexed before supplied files, so an equal copy
+// leaves the embedded one indexed and a different one is refused.
+func TestRegistryBuiltinsFirst(t *testing.T) {
+	dir := t.TempDir()
+	same := filepath.Join(dir, "same.json")
+	data, err := os.ReadFile("internal/registry/metaschemas/schema.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(same, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	idx, err := Registry{Files: []RegistryFile{{Path: same}}}.load(jsonvalue.NumberLimits{})
+	if err != nil {
+		t.Fatalf("equal copy refused: %v", err)
+	}
+	if src := idx.Resources[compile.Draft2020].Source; src != registry.BuiltinSource {
+		t.Errorf("source %q, want the embedded copy", src)
+	}
+	other := filepath.Join(dir, "other.json")
+	if err := os.WriteFile(other, []byte(`{"$id":"`+compile.Draft2020+`","type":"string"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err = Registry{Files: []RegistryFile{{Path: other}}}.load(jsonvalue.NumberLimits{})
+	if err == nil || !strings.Contains(err.Error(), compile.Draft2020) || !strings.Contains(err.Error(), "other.json") {
+		t.Errorf("want an error naming address and file, got %v", err)
 	}
 }
 

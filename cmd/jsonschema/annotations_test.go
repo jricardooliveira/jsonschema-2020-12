@@ -64,13 +64,19 @@ func TestNoInstanceValuesInAnyShape(t *testing.T) {
 }
 
 func TestMaxAnnotationsFlag(t *testing.T) {
-	schema := write(t, "s.json", `{"title":"T","description":"D"}`)
-	code, out, errOut := do([]string{"validate", "-max-annotations", "1", schema}, `1`)
+	// The cap also covers the load-time meta-schema check (core 8.1.1), so
+	// it leaves room for that; the long document then goes over it.
+	schema := write(t, "s.json", `{"items":{"title":"T"}}`)
+	code, out, errOut := do([]string{"validate", "-max-annotations", "100", schema}, `[`+strings.Repeat(`1,`, 200)+`1]`)
 	if code != exitError || out != "" || !strings.Contains(errOut, "annotations") {
 		t.Fatalf("limit exceeded: code=%d out=%q err=%q", code, out, errOut)
 	}
-	if code, _, _ := do([]string{"validate", "-max-annotations", "2", schema}, `1`); code != exitValid {
-		t.Fatalf("at limit: code=%d", code)
+	if code, _, _ := do([]string{"validate", "-max-annotations", "100", schema}, `[1]`); code != exitValid {
+		t.Fatalf("under limit: code=%d", code)
+	}
+	// A cap the schema's own meta-check exceeds is exit 2, never a result.
+	if code, out, _ := do([]string{"validate", "-max-annotations", "1", schema}, `1`); code != exitError || out != "" {
+		t.Fatalf("meta-check over limit: code=%d out=%q", code, out)
 	}
 	for _, v := range []string{"0", "-1", "x"} {
 		code, out, errOut := do([]string{"validate", "-max-annotations", v, schema}, `1`)

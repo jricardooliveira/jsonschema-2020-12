@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/neoface/jsonschema/internal/jsonvalue"
@@ -134,11 +135,13 @@ func TestAnnotationSpecCases(t *testing.T) {
 
 func TestAnnotationLimit(t *testing.T) {
 	schema := []byte(`{"title":"t","description":"d"}`)
-	s, err := CompileWithOptions(schema, Options{MaxAnnotations: 1})
+	// The cap also covers the load-time meta-schema check (core 8.1.1), so
+	// it must leave room for that; the document then goes over it.
+	s, err := CompileWithOptions([]byte(`{"items":{"title":"t"}}`), Options{MaxAnnotations: 100})
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = s.Validate([]byte(`1`))
+	_, err = s.Validate([]byte(`[` + strings.Repeat(`1,`, 200) + `1]`))
 	var le *jsonvalue.LimitError
 	if !errors.As(err, &le) || le.Limit != "annotations" {
 		t.Fatalf("want annotations LimitError, got %v", err)

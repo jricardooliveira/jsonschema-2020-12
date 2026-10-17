@@ -6,5 +6,10 @@
  {"name":"error text never quotes values","spec":"core 8.1.1","schema":{"enum":"secret-value-123"},"want":"invalid_schema","location":"/enum","errorNotContains":"secret-value-123"},
  {"name":"unreferenced invalid registry schema is ignored","spec":"core 8.1.1","schema":{"type":"string"},"registry":[{"uri":"https://x.test/unused","doc":{"$id":"https://x.test/unused","title":5}}],"want":"ok"},
  {"name":"referenced invalid registry schema fails","spec":"core 8.1.1","schema":{"$ref":"https://x.test/bad"},"registry":[{"uri":"https://x.test/bad","doc":{"$id":"https://x.test/bad","title":5}}],"want":"invalid_schema","source":"bad","location":"/title"},
+ {"name":"negative maxItems","spec":"core 8.1.1, validation 6.4.1","schema":{"maxItems":-1},"want":"invalid_schema","location":"/maxItems"},
+ {"name":"fractional minItems","spec":"core 8.1.1, validation 6.4.2","schema":{"minItems":1.5},"want":"invalid_schema","location":"/minItems"},
+ {"name":"negative minItems","spec":"core 8.1.1, validation 6.4.2","schema":{"minItems":-1},"want":"invalid_schema","location":"/minItems"},
+ {"name":"referenced registry schema a keyword rejects","spec":"core 8.1.1","schema":{"$ref":"https://x.test/neg"},"registry":[{"uri":"https://x.test/neg","doc":{"$id":"https://x.test/neg","minLength":-1}}],"want":"invalid_schema","source":"neg","location":"/minLength"},
+ {"name":"registry schema reached through another one","spec":"core 8.1.1","schema":{"$ref":"https://x.test/mid"},"registry":[{"uri":"https://x.test/mid","doc":{"$id":"https://x.test/mid","$ref":"https://x.test/deep"}},{"uri":"https://x.test/deep","doc":{"$id":"https://x.test/deep","items":{"type":"nope"}}}],"want":"invalid_schema","source":"deep","location":"/items/type"},
  {"name":"referenced valid registry schema passes","spec":"core 8.1.1","schema":{"$ref":"https://x.test/ok"},"registry":[{"uri":"https://x.test/ok","doc":{"$id":"https://x.test/ok","title":"t"}}],"want":"ok"}
 ]
