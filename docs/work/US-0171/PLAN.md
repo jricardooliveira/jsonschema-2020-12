@@ -1,7 +1,7 @@
 # PLAN US-0171: Rename the Go module path to github.com/jricardooliveira/jsonschema-2020-12
 
 - Date: 2026-10-18
-- Status: proposed (pending Checkpoint 2 sign-off)
+- Status: approved by the operator at Checkpoint 2 (run #171, 2026-10-18 10:15 UTC)
 - Design: see `ADR-US-0171-*.md` under `docs/architecture/adr/`
 
 ## Files that change
