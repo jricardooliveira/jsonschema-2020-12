@@ -1,0 +1,1624 @@
+{
+  "work_id": "US-0171",
+  "parent_story": "US-0171",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "e189cd295a0a85ca334bbe4b71ebfe14487cdf1e",
+    "base_commit": "63eedca6f6bef767e5b6de0f515561791a95cd57"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "go.mod's module line reads exactly `module github.com/jricardooliveira/jsonschema-2020-12`. go.mod's go version line is unchanged and go.mod still has no require lines.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Every Go import of the module in the repository uses github.com/jricardooliveira/jsonschema-2020-12 (with its original subpath, for example /internal/eval or /cmd/jsonschema) in place of github.com/neoface/jsonschema. Import aliases, import order and grouping are unchanged, and the root package name stays `jsonschema`.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/library.md names github.com/jricardooliveira/jsonschema-2020-12 wherever it named github.com/neoface/jsonschema, including go get and import examples, and nothing else in it changes.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Running `grep -rn \"github.com/neoface\"` over the repository finds the old path only under docs/work/, docs/releases/ and docs/architecture/adr/. Those evidence folders are byte-identical to main 02e2ce1.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "`go build ./...`, `go vet ./...`, `go test ./...` and `go test -race ./...` all pass on the renamed code.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The set of _test.go files and test functions is identical to main 02e2ce1. No new file is added anywhere, and existing test files differ from main only in their import lines.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The existing golden comparison test (cmd/jsonschema/golden_test.go) passes against the unmodified testdata/golden/ files, so the CLI's stdout, stderr and exit code match current main in flag, basic, detailed and verbose. No golden file, test expectation or testdata file is edited. If the rename would change any of them, the story stops and is held for the operator's decision.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 7,
+    "covered": 7,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "allocs_childctx_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "allocs_firstload_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "allocs_multipleof_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "allocs_objectkeys_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "allocs_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "annotations.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "annotations_ondemand_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "annotations_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "bench_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "childctx_race_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/annotations_limits_regression_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/bench_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/golden_cases_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/limitflags.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "cmd/jsonschema/output_nested_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/parse_errors_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/patternsize_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/peakmem_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/peakmem_time_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/refs_cli_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/run.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "cmd/jsonschema/run_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "dispatch_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "docs/library.md",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "example_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "first_compile_concurrency_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "firstload_count_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "firstload_timing_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "formatassertion_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "go.mod",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/bench_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/compile.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/compile_location_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/compile_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/evaluated_need.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/evaluated_need_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/limits_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/metacache.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/metacache_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/metacheck.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/metacheck_test.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 5,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/metaschema.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/compile/metaschema_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/refs.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4
+      },
+      {
+        "path": "internal/compile/refs_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/registry_refs_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/compile/vocabulary.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/vocabulary_apply.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/compile/vocabulary_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/ecmaregex/translate.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/annotation_chunks_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/annotation_record.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/eval/annotation_sink.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/eval/annotation_sink_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/annotations.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/annotations_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/budget.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/budget_test.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 5,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/collect_option.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/collect_option_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/dynamicscope.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/dynamicscope_race_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/dynamicscope_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/eval_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/evaluated.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "internal/eval/evaluated_items.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/evaluated_skip_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/evaluated_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/lazyloc_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/order_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/pathstack.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "internal/eval/pathstack_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/refguard.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "internal/eval/refguard_internal_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/refguard_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/units.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/units_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/eval/units_verbose_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/formats/assertion_mode_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/formats/regex.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/jsonvalue/bench_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/jsonvalue/retained_exact_bench_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/all/all.go",
+        "change": "modified",
+        "additions": 7,
+        "deletions": 7
+      },
+      {
+        "path": "internal/keywords/annotate.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/annotate_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/additionalproperties.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/additionalproperties_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/allof.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/allof_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/annotations_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/anyof.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/anyof_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/concurrent_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/contains.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/applicator/contains_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/dependentschemas.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/dependentschemas_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/else.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/else_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/if.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/if_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/items.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/items_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/not.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/not_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/oneof.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/oneof_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/applicator/patternproperties_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/prefixitems_test.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 5,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/properties.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/applicator/properties_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/propertynames.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/propertynames_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/applicator/subschemas.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/then.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/applicator/then_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/content/content.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/content/content_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/core/anchor.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/comment.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/core_keywords_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/core/defs.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/dynamicanchor.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/dynamicref.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/dynamicref_spec_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/core/dynamicref_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/core/id.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/ref.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/ref_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/core/schema.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/core/schema_keywords_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/core/vocabulary.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/formatannotation/assert_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/formatannotation/format.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/formatannotation/format_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/metadata/annotations.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/metadata/annotations_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/registry.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluateditems.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluatedproperties.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/unevaluated/unevaluatedproperties_test.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 6,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/const.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/const_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/dependentrequired.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/enum.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/enum_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/exclusivemaximum.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/exclusivemaximum_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/exclusiveminimum.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/exclusiveminimum_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/maxcontains.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/maxcontains_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/maximum.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/maximum_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/maxitems.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/maxitems_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/maxlength.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/maxlength_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/maxproperties.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/mincontains.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/mincontains_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/minimum.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/minitems.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/minitems_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/minlength.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/minlength_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/minproperties.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/multipleof.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/multipleof_allocs_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/multipleof_int64_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/multipleof_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/numeric.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/numeric_output_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/pattern.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3
+      },
+      {
+        "path": "internal/keywords/validation/pattern_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/required.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/keywords/validation/required_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/type.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/type_numberpath_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/type_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/keywords/validation/uniqueitems.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/keywords/validation/uniqueitems_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/basic.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/output/basic_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/detailed_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/flag.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/output/nested_limit_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/pointer_tilde_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/registry.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/output/registry_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/report_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/sizehint.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/output/sizehint_perf_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/sizehint_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/tree.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/output/units_test.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4,
+        "test_losses": []
+      },
+      {
+        "path": "internal/output/verbose_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/registry/budget_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "internal/registry/embedded.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/registry/external_index_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/registry/index.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/registry/index_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/registry/registry.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "internal/registry/sources.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "internal/registry/sources_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "internal/speccases/runner.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "jsonschema.go",
+        "change": "modified",
+        "additions": 6,
+        "deletions": 6
+      },
+      {
+        "path": "jsonschema_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "limit_names_test.go",
+        "change": "modified",
+        "additions": 5,
+        "deletions": 5,
+        "test_losses": []
+      },
+      {
+        "path": "limits.go",
+        "change": "modified",
+        "additions": 4,
+        "deletions": 4
+      },
+      {
+        "path": "metaschema_test.go",
+        "change": "modified",
+        "additions": 3,
+        "deletions": 3,
+        "test_losses": []
+      },
+      {
+        "path": "numberlimits.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "numberlimits_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "options.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "output.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "output_nested_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "output_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "patternsize_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "perf_fixtures_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "registry_option_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "registry_options.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2
+      },
+      {
+        "path": "reportbytes_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "spec_applicator_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "vocabulary_apply_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "vocabulary_errors.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1
+      },
+      {
+        "path": "vocabulary_ref_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      },
+      {
+        "path": "vocabulary_test.go",
+        "change": "modified",
+        "additions": 1,
+        "deletions": 1,
+        "test_losses": []
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/projects/jsonschema-2020-12/docs/architecture/adr/ADR-US-0171-rename-the-go-module-path-to-github-com-jricardool.md",
+    "summary": "This is a mechanical rename of the module path and it matches the story and the ADR. go.mod has the new module line, keeps `go 1.26` and has no require lines. A grep finds the old path only in the thr"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "none",
+    "breaking_changes": [
+      "The Go module import path changes from github.com/neoface/jsonschema (and its /internal/... and /cmd/jsonschema subpaths) to github.com/jricardooliveira/jsonschema-2020-12. Existing library consumers must update their imports and go get target. The package name and API are unchanged.",
+      "The Go import path changes from github.com/neoface/jsonschema (and its /internal/... and /cmd/jsonschema subpaths) to github.com/jricardooliveira/jsonschema-2020-12. Existing library consumers must update their imports and their go get target. The package name `jsonschema`, the exported API, the CLI flags, the output and the exit codes are unchanged. The operator has already accepted this break and chose to add no migration note."
+    ],
+    "findings": [],
+    "notes": [],
+    "tenant_isolation": "not_applicable",
+    "authorization": "not_applicable"
+  },
+  "cost": {
+    "usd": 5.794777,
+    "tokens_in": 7745499,
+    "tokens_out": 91147
+  },
+  "assumptions": [
+    {
+      "task": "T-0001",
+      "text": "A shell sed or gofmt -w rewrite was blocked by the write guard, so every file was edited with Edit and a prefix replace_all, which yields the same result."
+    },
+    {
+      "task": "T-0001",
+      "text": "Existing test files changed only on import lines, as the story allows."
+    },
+    {
+      "task": "T-0001",
+      "text": "The old path remains only in the evidence folders (docs/work, docs/releases, docs/architecture/adr), which were left unchanged as required."
+    },
+    {
+      "task": "T-0001",
+      "text": "The previous attempt failed only because it listed a summary string as if it were a file. This attempt lists exactly the files from git status that the rename changed."
+    },
+    {
+      "task": "T-0001",
+      "text": "The root-level _test.go files are edited only on their import lines, under the rule that test files may always be written. Without those edits the build breaks."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "release"
+}
