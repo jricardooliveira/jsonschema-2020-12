@@ -86,6 +86,7 @@ func writeList(w *Budget, valid bool, key string, n int, unit func(i int) any) e
 
 func init() {
 	RegisterReport("basic", func(r Report, w *Budget) error {
+		w.buf.Grow(sizeHint(r, w.max-w.buf.Len()))
 		if r.Valid {
 			if len(r.Annotations) == 0 {
 				return put(w, struct {

@@ -7,6 +7,17 @@ import (
 
 var unescape = strings.NewReplacer("~1", "/", "~0", "~")
 
+// DecodeSegment decodes "~1" and "~0" in one pointer segment ("~01" becomes
+// "~1"). A segment without '~' is returned as is: no Replacer call, no
+// allocation. It lives here, not in internal/output, because output's tests
+// import eval; it is the decoder every output shape's annotation order uses.
+func DecodeSegment(seg string) string {
+	if strings.IndexByte(seg, '~') < 0 {
+		return seg
+	}
+	return unescape.Replace(seg)
+}
+
 // tokens decodes a JSON Pointer into its segments (nil for the empty one).
 func tokens(p string) []string {
 	if p == "" {
@@ -14,7 +25,7 @@ func tokens(p string) []string {
 	}
 	parts := strings.Split(p[1:], "/")
 	for i, t := range parts {
-		parts[i] = unescape.Replace(t)
+		parts[i] = DecodeSegment(t)
 	}
 	return parts
 }
@@ -89,7 +100,7 @@ func appendTokens(dst []string, p string) []string {
 	s := p[1:]
 	for {
 		t, rest, more := strings.Cut(s, "/")
-		dst = append(dst, unescape.Replace(t))
+		dst = append(dst, DecodeSegment(t))
 		if !more {
 			return dst
 		}
