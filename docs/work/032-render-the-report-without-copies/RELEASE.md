@@ -3,7 +3,7 @@
 > Written by the release-agent from the story, the design, the real diff and the review. It does not decide readiness: the release gate does, and only the operator releases (Checkpoint 3).
 
 - Story: #32
-- Status: proposed (pending Checkpoint 3 sign-off)
+- Status: approved by the operator at Checkpoint 3 (run #169, 2026-10-18 00:03 UTC)
 
 **⚠️ the release-agent has concerns.**
 
