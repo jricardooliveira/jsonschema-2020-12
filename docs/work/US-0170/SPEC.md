@@ -3,7 +3,7 @@
 - Date: 2026-10-18
 - Type: tech-debt
 - Verdict: pass
-- Status: proposed (pending Checkpoint 1 sign-off)
+- Status: passed gate 1 with nothing for the operator to decide (run #170, 2026-10-18 10:06 UTC)
 
 ## Problem
 
