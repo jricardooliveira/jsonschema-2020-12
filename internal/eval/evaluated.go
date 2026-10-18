@@ -38,6 +38,10 @@ func EvaluateLimited(n *compile.Node, instance any, maxUnits, maxSteps int) (boo
 	return ok, ctx.Units(), nil
 }
 
+// Recording reports whether Record* calls are kept (false when the compiled
+// schema needs no evaluated tracking).
+func (r *EvaluatedItems) Recording() bool { return !r.skip }
+
 // RecordProperties records the member names a keyword applied a subschema to
 // for the object at instLoc. kwLoc is the keyword location. The slice is
 // copied. It shares the item log, so a failed branch's Rollback drops it too.

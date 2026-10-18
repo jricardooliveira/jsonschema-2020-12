@@ -71,6 +71,8 @@ type EvalContext struct {
 	units    []Unit
 	count    *int
 	col      *collector
+	stk      *childStack // per-call reusable child contexts; nil means allocate fresh
+	depth    int         // number of ancestors; indexes stk
 	max      int
 	evalNode func(ctx *EvalContext, node any, instance any) (bool, error)
 }
@@ -93,7 +95,7 @@ func (c *EvalContext) KeywordLoc() string {
 // NewEvalContext returns a root context. evalNode evaluates a compiled child
 // schema into the context it is given. max is the output-unit cap.
 func NewEvalContext(max int, evalNode func(ctx *EvalContext, node any, instance any) (bool, error)) *EvalContext {
-	return &EvalContext{count: new(int), col: &collector{max: DefaultMaxAnnotations}, max: max, evalNode: evalNode}
+	return &EvalContext{count: new(int), col: &collector{max: DefaultMaxAnnotations}, stk: new(childStack), max: max, evalNode: evalNode}
 }
 
 // Report appends a failure unit at the current locations and counts it. It
@@ -139,31 +141,44 @@ func (c *EvalContext) Keep(units []Unit) { c.units = append(c.units, units...) }
 // or drops them. Every unit is counted when appended, kept or not. When the
 // child fails, the item annotations it recorded are rolled back (core 7.7.1:
 // a failed schema keeps no annotations).
+//
+// Two rules: (1) the child context is reused for the next sibling at this
+// depth, so no keyword may keep it after EvalChild returns; (2) the caller
+// owns the returned units slice (see childStack). Every current caller uses
+// only EvalChild's results, so no keyword needs a fresh child context.
 func (c *EvalContext) EvalChild(node any, instance any, instLoc string) (bool, []Unit, error) {
 	var tn *TreeNode // only when the caller builds a tree
 	if c.Tree != nil {
 		tn = &TreeNode{InstanceLocation: instLoc}
 	}
-	child := &EvalContext{InstanceLocation: instLoc, count: c.count, col: c.col, max: c.max, evalNode: c.evalNode, Items: c.Items, Tree: tn}
+	var child *EvalContext
+	if c.stk != nil {
+		child = c.stk.at(c.depth)
+		child.reset(c, instLoc, tn)
+	} else { // hand-built context without a per-call stack: fresh child
+		child = &EvalContext{InstanceLocation: instLoc, count: c.count, col: c.col, max: c.max, evalNode: c.evalNode, Items: c.Items, Tree: tn}
+	}
 	rec, _ := c.Items.(ItemRecorder)
 	mark := 0
 	if rec != nil {
 		mark = rec.Mark()
 	}
-	amark := len(c.col.list)
+	amark := c.col.list.Mark()
 	ok, err := c.evalNode(child, node, instance)
 	if !ok {
 		if rec != nil {
 			rec.Rollback(mark)
 		}
-		c.col.list = c.col.list[:amark] // a failed schema keeps no annotations
-		tn.dropAnnotations()            // nor does anything below it
+		c.col.list.Truncate(amark) // a failed schema keeps no annotations
+		tn.dropAnnotations()       // nor does anything below it
 	}
 	if tn != nil {
 		tn.Valid, tn.Errors = ok, child.units
 		c.Tree.Children = append(c.Tree.Children, tn)
 	}
-	return ok, child.units, err
+	units := child.units
+	poison(child) // test binaries only: a retained child context now panics
+	return ok, units, err
 }
 
 // CompileFunc turns a keyword's schema value into compiled data. The result

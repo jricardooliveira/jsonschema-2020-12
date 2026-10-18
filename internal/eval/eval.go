@@ -42,11 +42,15 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 	if rec, ok := ctx.Items.(keywords.ItemRecorder); ok {
 		ctx.Scope = rec.Mark()
 	}
-	pf, leave, err := enterNode(ctx, n)
+	st, err := stateOf(ctx)
 	if err != nil {
 		return false, err
 	}
-	defer leave()
+	pf, err := st.enter(ctx, n)
+	if err != nil {
+		return false, err
+	}
+	defer st.exit(pf)
 	if ctx.Tree != nil {
 		ctx.Tree.KeywordLocation = pf.dynamic
 	}
@@ -54,11 +58,12 @@ func evalNode(ctx *keywords.EvalContext, node any, instance any) (bool, error) {
 		if *n.Bool {
 			return true, nil
 		}
-		ctx.Loc = &lazyLoc{pf: pf, res: n.Resource, static: n.Location}
+		pf.loc.static = n.Location
+		ctx.Loc = &pf.loc
 		return false, ctx.Report("schema is false, no value is valid")
 	}
 	valid := true
-	loc := &lazyLoc{pf: pf, res: n.Resource} // one per node; static is set per keyword
+	loc := &pf.loc // embedded in the frame; static is set per keyword
 	// Two passes: keywords flagged AfterSiblings run last, in schema order.
 	for pass := 0; pass < 2; pass++ {
 		for _, it := range n.Items {

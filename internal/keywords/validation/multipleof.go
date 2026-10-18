@@ -16,6 +16,11 @@ type multipleOfDivisor struct {
 	mant   *big.Int // mantissa with all factors of 2 and 5 removed
 	v2, v5 int64    // factors of 2 and 5 removed from the mantissa
 	exp    int64
+
+	// Small form (int64 mantissa, exponent within ±18); valid only if small.
+	small bool
+	sm    int64
+	se    int32
 }
 
 func compileMultipleOf(_ *keywords.CompileContext, value any) (any, error) {
@@ -28,6 +33,7 @@ func compileMultipleOf(_ *keywords.CompileContext, value any) (any, error) {
 		return nil, errors.New("multipleOf: value must be greater than 0")
 	}
 	d := &multipleOfDivisor{exp: exp}
+	d.sm, d.se, d.small = n.Inline()
 	d.v2 = int64(m.TrailingZeroBits())
 	m.Rsh(m, uint(d.v2))
 	d.v5 = stripFives(m)
@@ -69,8 +75,17 @@ func evalMultipleOf(ctx *keywords.EvalContext, compiled any, instance any) (bool
 	if !ok {
 		return true, nil
 	}
+	div := compiled.(*multipleOfDivisor)
+	if m, e, ok := n.Inline(); ok && div.small {
+		if multiple, decided := multipleSmall(m, e, div.sm, div.se); decided {
+			if multiple {
+				return true, nil
+			}
+			return false, ctx.Report("value is not a multiple of the multipleOf value")
+		}
+	}
 	_, ma, ea := n.Decimal()
-	if ma.Sign() == 0 || isMultiple(ma, ea, compiled.(*multipleOfDivisor)) {
+	if ma.Sign() == 0 || isMultiple(ma, ea, div) {
 		return true, nil
 	}
 	return false, ctx.Report("value is not a multiple of the multipleOf value")

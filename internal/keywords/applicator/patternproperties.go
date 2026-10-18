@@ -67,8 +67,9 @@ func evalPatternProperties(ctx *keywords.EvalContext, compiled any, instance any
 		return true, nil
 	}
 	valid := true
+	var buf memberNamesBuf
 	var applied []string
-	for _, k := range sortedKeys(obj) {
+	for _, k := range sortedMemberNames(obj, &buf) {
 		if err := ctx.ChargeBytes(len(k)); err != nil {
 			return false, err
 		}
@@ -88,6 +89,9 @@ func evalPatternProperties(ctx *keywords.EvalContext, compiled any, instance any
 			valid = valid && ok
 		}
 		if matched {
+			if applied == nil {
+				applied = make([]string, 0, len(obj))
+			}
 			applied = append(applied, k)
 		}
 	}

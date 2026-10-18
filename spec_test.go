@@ -25,8 +25,8 @@ func TestSpecCases(t *testing.T) {
 		t.Fatalf("no testdata files: %v", err)
 	}
 	for _, f := range files {
-		if d := filepath.Base(filepath.Dir(f)); d == "metaschema" || d == "vocabulary" || d == "perf" {
-			continue // own case shape and runner: metaschema_test.go, vocabulary_test.go; perf holds benchmark fixtures (internal/perfdata)
+		if d := filepath.Base(filepath.Dir(f)); d == "metaschema" || d == "vocabulary" || d == "perf" || d == "golden" || d == "reportbytes" {
+			continue // own case shape and runner: metaschema_test.go, vocabulary_test.go; perf holds benchmark fixtures (internal/perfdata); golden holds CLI golden files (cmd/jsonschema); reportbytes holds CLI boundary fixtures (cmd/jsonschema/reportbytes_boundary_test.go)
 		}
 		raw, err := os.ReadFile(f)
 		if err != nil {

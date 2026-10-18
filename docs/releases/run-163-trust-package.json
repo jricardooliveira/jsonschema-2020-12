@@ -1,0 +1,307 @@
+{
+  "work_id": "US-0163",
+  "parent_story": "US-0163",
+  "project_id": "PROJ-010",
+  "stage": "release",
+  "verdict": "pass",
+  "candidate": {
+    "commit": "0d443d6e3a831ecde384b299f4666625d77cae9f",
+    "base_commit": "d7198b7239d76bf091fb437458ed27fa08fdd8d9"
+  },
+  "tests": {
+    "passed": true,
+    "executed": true,
+    "ac_coverage": [
+      {
+        "criterion": "Before any production file is edited, golden files are captured in the run's own worktree (base d7198b7, production code identical to v1.1 f35d9e4; no git checkout or worktree is created). The golden header records 'captured from base d7198b7, production code identical to v1.1 f35d9e4'. Every case is captured twice; if any output differs between the two runs, the story stops before code changes and lists the cases. The capture program refuses to overwrite existing golden files.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The golden data covers, in flag, basic, detailed and verbose, stdout, stderr and exit code for: testdata/perf fixtures; the generated perf documents (0.5 MB, 0.33 MB with 1,000 errors, 5.5 MB) piped through stdin; every docs/examples case; and every schema and test document in the JSON case files under testdata/ (annotations, applicator, core, metaschema, registry, unevaluated, validation, vocabulary), each as its own single-document CLI call. It also includes a few stdin and multi-document cases built from existing fixtures. All cases run from the project folder with relative paths; cases that need their original relative file name keep it under the temp folder. Outputs over about 64 KB and the generated documents are stored only as byte size plus SHA-256; smaller outputs are stored in full. The data lives in at most two files under testdata/golden/.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A golden test builds the real CLI once per test run, runs every case as a separate process and compares stdout, stderr and exit code byte for byte. It runs in every normal go test ./... and under -race, takes under about 60 s without -race (grouping cases per schema if needed, with every document still covered), and never writes or updates a golden file.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Evaluation uses a per-call stack of pathFrame indexed by depth, created fresh for each Validate call and never pooled or shared between calls. lazyLoc is embedded in the frame. enterNode/leave and DynamicScope.push use explicit exit calls instead of returned closures. The invariant that a frame is valid only while its node is being evaluated, and that frames are entered and left strictly last-in first-out, is documented next to the code.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "Thin enterNode, lazyLoc and DynamicScope.push compatibility entry points (or equivalent) keep refguard_internal_test.go, lazyloc_test.go, dynamicscope_test.go and units_verbose_test.go compiling and passing unchanged. No existing test is removed or weakened.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "A new verbose-output test with nested $ref, if and allOf checks the verbose report, including instance, keyword and absolute keyword locations.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "go test ./... and go test -race ./... pass, including the golden test. Validation results, reports, library Result, error messages, limits, exit codes and goroutine safety are unchanged. Only the standard library is used, and go.mod is unchanged.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "docs/benchmarks.md records before and after medians from go test -bench -count=10 on the same machine for all in-repo benchmarks, the per-scenario slowdown judgement (reported, not asserted), the final golden case count, and the targets: Validate5_5MB at most 280 MB B/op and 4.8 M allocs/op, ValidateErrors at most 22.5 MB B/op, CompileOrder at most 1,600 allocs/op, and no scenario more than 5% slower; on other hardware these are relative to the before numbers. If a target is missed, the numbers are recorded and the story is held for the operator's decision.",
+        "covered_by": [],
+        "status": "covered"
+      },
+      {
+        "criterion": "The allocation limits in allocs_test.go are re-measured after the change and lowered on purpose to the measured count plus about 10% headroom, with the measured value recorded next to each limit and in docs/benchmarks.md.",
+        "covered_by": [],
+        "status": "covered"
+      }
+    ],
+    "command": "go test -race ./..."
+  },
+  "ac_traceability": {
+    "total": 9,
+    "covered": 9,
+    "flagged_missing": [],
+    "unassessed": []
+  },
+  "diff": {
+    "source": "git",
+    "files": [
+      {
+        "path": "allocs_test.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 9,
+        "test_losses": []
+      },
+      {
+        "path": "cmd/jsonschema/golden_capture_test.go",
+        "change": "added",
+        "additions": 129,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/golden_cases_test.go",
+        "change": "added",
+        "additions": 365,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/golden_dbg_test.go",
+        "change": "added",
+        "additions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "cmd/jsonschema/golden_test.go",
+        "change": "added",
+        "additions": 109,
+        "deletions": 0
+      },
+      {
+        "path": "docs/benchmarks.md",
+        "change": "modified",
+        "additions": 93,
+        "deletions": 6
+      },
+      {
+        "path": "internal/eval/dynamicscope.go",
+        "change": "modified",
+        "additions": 14,
+        "deletions": 2
+      },
+      {
+        "path": "internal/eval/eval.go",
+        "change": "modified",
+        "additions": 9,
+        "deletions": 4
+      },
+      {
+        "path": "internal/eval/pathstack.go",
+        "change": "added",
+        "additions": 93,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/pathstack_test.go",
+        "change": "added",
+        "additions": 91,
+        "deletions": 0
+      },
+      {
+        "path": "internal/eval/refguard.go",
+        "change": "modified",
+        "additions": 16,
+        "deletions": 53
+      },
+      {
+        "path": "spec_test.go",
+        "change": "modified",
+        "additions": 2,
+        "deletions": 2,
+        "test_losses": []
+      },
+      {
+        "path": "testdata/golden/cli_v1_1.json",
+        "change": "added",
+        "additions": 48129,
+        "deletions": 0
+      },
+      {
+        "path": "testdata/golden/cli_v1_1_large.json",
+        "change": "added",
+        "additions": 261,
+        "deletions": 0
+      },
+      {
+        "path": "verbose_nested_frames_test.go",
+        "change": "added",
+        "additions": 118,
+        "deletions": 0
+      }
+    ],
+    "scope_violations": [],
+    "design_untouched": [
+      "internal/eval/location.go"
+    ],
+    "design_unplanned": []
+  },
+  "adr": {
+    "path": "/Users/joaooliveira/.factory/worktrees/story-fa3feab457c9477b9b4cf947cf8ef4d9/docs/architecture/adr/ADR-028-golden-cli-files-from-v1-1-then-reuse-evaluation-p.md",
+    "summary": "Second pass: F1, F2, F4 and F5 are resolved, and only F3 (low) remains. The golden harness is thorough and safe: 631 cases in 4 shapes, captured twice, never overwritten, and checked against the recor"
+  },
+  "security_boundary": {
+    "overall": "pass",
+    "highest_severity": "low",
+    "breaking_changes": [],
+    "findings": [],
+    "notes": []
+  },
+  "cost": {
+    "usd": 17.329287,
+    "tokens_in": 19508644,
+    "tokens_out": 111063
+  },
+  "assumptions": [
+    {
+      "task": "T1",
+      "text": "The first capture attempt found 27 cases with different output between the two runs. The cause was the test harness, not v1.1: the CLI prints an absolute file:// path of the schema in absoluteKeywordLocation, and that path changes with the temp folder. Every case therefore runs with a fixed --base-uri https://golden.example/schema.json, recorded in each entry's args. The runner also fails if any output contains this machine's project or temp path. So absolute file:// locations are not part of the golden."
+    },
+    {
+      "task": "T1",
+      "text": "Cases built from the JSON case files in testdata/ run from a fresh temp folder with relative file names; the other cases run from the project folder. The golden entries record args and stdin but not file contents, which are rebuilt from testdata by the case enumeration."
+    },
+    {
+      "task": "T1",
+      "text": "Streams over 64 KB, or that are not valid UTF-8, are stored as size plus SHA-256. A case goes to the large file if it has generated stdin or any hashed stream."
+    },
+    {
+      "task": "T1",
+      "text": "Each testdata/vocabulary case was run once per document, or once against {} when it has no documents. Each testdata/metaschema case was run once against {}, with its registry files passed through --ref."
+    },
+    {
+      "task": "T1",
+      "text": "cmd/jsonschema/golden_dbg_test.go is a debug file I created and could not delete: rm is blocked, and git rm only works on tracked files. It now holds only 'package main'. Please remove it before commit."
+    },
+    {
+      "task": "T1",
+      "text": "Verification: go vet ./cmd/jsonschema passes. I did not run the full test suite, which is T2's job."
+    },
+    {
+      "task": "T1",
+      "text": "spec_test.go was changed only to skip testdata/golden. Those files are CLI golden data, not spec cases. This story adds the folder on purpose, so skipping it matches the existing skips for metaschema, vocabulary and perf, and every spec case still runs."
+    },
+    {
+      "task": "T1",
+      "text": "The golden files were captured in the previous attempt on the unchanged base, before any production edit. They are not regenerated or edited here."
+    },
+    {
+      "task": "T2",
+      "text": "Reuses goldenCases, goldenRun, goldenBuild and the golden file constants from the existing golden_cases_test.go and golden_capture_test.go."
+    },
+    {
+      "task": "T3",
+      "text": "enter pushes onto the DynamicScope entries slice directly and exit truncates it, because it is in the same package. DynamicScope.push is untouched. T4 can add proper enter/exit methods to dynamicscope.go."
+    },
+    {
+      "task": "T3",
+      "text": "lazyLoc stays defined in eval.go. location.go is unchanged because nothing needed it."
+    },
+    {
+      "task": "T3",
+      "text": "The frame slice holds pointers and is not pooled, so it is fresh per callState, i.e. per Validate call."
+    },
+    {
+      "task": "T4",
+      "text": "pathstack.go was already using explicit enter/exit and had no closure; it only changed to call the new DynamicScope methods. eval.go needed no change."
+    },
+    {
+      "task": "T4",
+      "text": "The existing pathstack and dynamicscope tests already cover last-in first-out enter and exit, so I added no new test."
+    },
+    {
+      "task": "T5",
+      "text": "The test reads the verbose JSON output and checks one nested error unit. It does not compare the whole report. The /b subtree is also valid and is not asserted, so frame reuse across siblings is only covered indirectly."
+    },
+    {
+      "task": "T5",
+      "text": "Only the root package test was run (with and without -race), not the full suite."
+    },
+    {
+      "task": "T6",
+      "text": "The 'before' figures are the story 203 'after' tables already in docs/benchmarks.md (count=5 medians, same machine). The before tree could not be rebuilt because git is inspection-only here. Only story 204's tests landed between them, so the benchmarked code is the same."
+    },
+    {
+      "task": "T6",
+      "text": "Golden entries: 2,512 in cli_v1_1.json plus 12 in cli_v1_1_large.json, 2,524 in total (631 base cases x 4 shapes)."
+    },
+    {
+      "task": "T6",
+      "text": "Measured after this story: Validate5_5MB 268.95 MB and 4.60 M allocs/op, ValidateErrors 21.28 MB, CompileOrder 1,490 allocs/op."
+    },
+    {
+      "task": "T6",
+      "text": "Every ns/op median is lower than before (\u221212% to \u221221%)."
+    },
+    {
+      "task": "T6",
+      "text": "The jsonvalue retained-heap rows in the docs are rounded or approximate; they are unchanged from story 203 within noise."
+    },
+    {
+      "task": "remediation",
+      "text": "spec_test.go (F3, listed for the record and not changed in this pass): it was edited earlier to skip testdata/golden, because the golden JSON files are not spec case files. Without that skip, TestSpecCases would try to read them as spec cases. Every other directory and every assertion is unchanged, so no test is weakened."
+    },
+    {
+      "task": "remediation",
+      "text": "The 'before' set used the base production code put back temporarily inside the worktree. A copy of the repository outside the worktree, or a git checkout, was not allowed in this session."
+    },
+    {
+      "task": "remediation",
+      "text": "Medians are the mean of the 5th and 6th sorted values of 10 runs, with a half rounded up."
+    },
+    {
+      "task": "remediation",
+      "text": "The allocation limits in allocs_test.go were not changed: the production code is byte-identical to what they were measured on, and the new after-run counts (for example 4,600,073 against a measured 4,600,065) agree with them."
+    },
+    {
+      "task": "remediation",
+      "text": "spec_test.go (changed earlier in this story, outside the plan's file list) is a test file. The change only adds testdata/golden to the folders the spec-case runner skips, because the golden JSON is not a spec case file. No spec case is skipped or weakened. Listed here as a justified test change; this pass did not modify it again."
+    },
+    {
+      "task": "remediation",
+      "text": "The 'before' tree kept dynamicscope.go's compatibility push. It allocates exactly as the base push did (append plus one closure), so it does not affect the before numbers."
+    },
+    {
+      "task": "remediation",
+      "text": "internal/jsonvalue does not import internal/eval, so its code is the same in both trees. It was measured once, in the same session."
+    },
+    {
+      "task": "remediation",
+      "text": "A median that lands on .5 is rounded up; the doc says so."
+    }
+  ],
+  "blockers": [],
+  "next_authorization": "none"
+}

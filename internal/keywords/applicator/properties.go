@@ -29,11 +29,11 @@ type propRecorder interface {
 // the keyword passed, annotates them (core 10.3.2). Names are already in the
 // instance location; no instance value is annotated.
 func recordProps(ctx *keywords.EvalContext, names []string, valid bool) error {
-	if rec, ok := ctx.Items.(propRecorder); ok {
+	if rec, ok := ctx.Items.(propRecorder); ok && ctx.Recording() {
 		rec.RecordProperties(ctx.InstanceLocation, ctx.KeywordLoc(), names)
 	}
 	if valid && len(names) > 0 {
-		return ctx.Annotate(append([]string(nil), names...))
+		return ctx.AnnotateNames(names) // names is heap-owned and never modified afterwards
 	}
 	return nil
 }
@@ -90,14 +90,18 @@ func evalProperties(ctx *keywords.EvalContext, compiled any, instance any) (bool
 	}
 	nodes := compiled.(map[string]any)
 	valid := true
+	var buf memberNamesBuf
 	var applied []string
-	for _, k := range sortedKeys(obj) {
+	for _, k := range sortedMemberNames(obj, &buf) {
 		if err := step(ctx); err != nil {
 			return false, err
 		}
 		n, has := nodes[k]
 		if !has {
 			continue
+		}
+		if applied == nil {
+			applied = make([]string, 0, len(nodes))
 		}
 		applied = append(applied, k)
 		ok, err := evalMember(ctx, n, obj, k)

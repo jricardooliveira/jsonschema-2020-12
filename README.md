@@ -60,9 +60,11 @@ The rules for keeping the evaluation independent:
     (tag `evaluation-candidate`).
   - Round 2, the same behaviour made faster: commit `f35d9e4000a57a7c2bdda7a4f216b648de5265b4`
     (tag `performance-round-2`).
-  - Both are the Factory's final integrated main for their round. The only commits in this
-    repository not made by the Factory are the README updates, their merge and the module-path
-    rename.
+  - **v1.2**, round 3, faster again with about a third of v1.1's memory: tag `v1.2.0`. It is the Factory's main
+    `b0202c8`, which includes the module-path rename story, merged here.
+  - Each is the Factory's final integrated main for its round. The commits in this repository not
+    made by the Factory are the README and documentation updates, the regrouping of root test
+    files, the first module-path rename, and the merges.
 
 Known gaps are listed honestly in [`docs/deviations.md`](docs/deviations.md):
 
@@ -70,11 +72,10 @@ Known gaps are listed honestly in [`docs/deviations.md`](docs/deviations.md):
 - Some formats are only partly checked.
 - `verbose` output is only partly produced.
 
-This public copy uses the Go module path `github.com/jricardooliveira/jsonschema-2020-12`. It was
-renamed after the experiment, in one commit made outside the Factory. The Factory's own repository
-and the two tagged candidates still use `github.com/neoface/jsonschema`, the path the Factory
-chose; that is also why the historical evidence under `docs/work` and `docs/releases` shows the
-old path.
+The Go module path is `github.com/jricardooliveira/jsonschema-2020-12`. Since v1.2 the Factory's
+own repository uses it too: a Factory story (US-0171) renamed it there. The two earlier tagged
+candidates still use `github.com/neoface/jsonschema`, the path the Factory first chose. That is also
+why the historical evidence under `docs/work`, `docs/releases` and the ADRs shows the old path.
 
 ```sh
 go get github.com/jricardooliveira/jsonschema-2020-12
@@ -83,7 +84,7 @@ go install github.com/jricardooliveira/jsonschema-2020-12/cmd/jsonschema@latest
 
 Or build from a clone as shown below.
 
-## Round 2: performance
+## Round 2: performance (v1.1)
 
 After round 1, the product owner benchmarked the validator against a widely used Go validator. It
 was correct but about 2× slower and used about 3× the memory, and schema compilation was about 10×
@@ -114,9 +115,43 @@ In-repo benchmarks (`go test -run '^$' -bench . -benchmem`) on an Apple M3 Max w
   other rows come from the operator's runs.
 - An output-identity check compared the round-1 and round-2 binaries over 48 runs (12 cases × 4
   output formats); stdout, stderr and exit codes were byte-identical.
-- Still open: large documents allocate about 1.5× more than the comparison validator.
-  `multipleOf` still allocates on each evaluation. The retained size of decoded documents
-  dropped only 8–11%.
+- Still open after round 2: large documents allocate about 1.5× more than the comparison
+  validator, and `multipleOf` allocates on each evaluation. Round 3 addressed both.
+
+## Round 3: memory and speed (v1.2)
+
+- **The plan:** a profiling study of v1.1, done outside the Factory, found where the allocations
+  were and prototyped each fix. The 7 changes with the highest confidence went to the Factory
+  as one brief amendment, each with measured targets:
+  - evaluation path frames reused per depth;
+  - one child evaluation context per depth;
+  - object keywords without copies;
+  - annotations collected in growing chunks;
+  - report rendering with a size hint;
+  - `multipleOf` in integer arithmetic;
+  - the built-in meta-schema index built once.
+- **The build:** the Factory delivered them as 7 stories in about 4 hours.
+- **The checks, for every story:**
+  - all tests pass, and `go test -race` passes;
+  - no test was removed;
+  - the CLI's output is byte-identical to v1.1 in all four formats (1,052 runs per story).
+
+Medians of 10 interleaved runs, same harness and documents, Apple M3 Max, Go 1.27.2:
+
+| Per operation | v1.1 | v1.2 | santhosh-tekuri v6 | v1.2 vs tekuri |
+|---|---|---|---|---|
+| Small document | 25.8 µs · 41.7 KB | **19.8 µs · 17.9 KB** | 23.7 µs · 25.9 KB | 0.84× time · 0.69× memory |
+| 500 KB valid | 22.5 ms · 35.8 MB | **16.4 ms · 12.2 MB** | 21.3 ms · 23.2 MB | 0.77× · 0.53× |
+| 5.5 MB valid | 251 ms · 369 MB | **169 ms · 125 MB** | 223 ms · 242 MB | 0.76× · 0.52× |
+| 1,000 errors | 17.0 ms · 29.3 MB | **13.0 ms · 11.6 MB** | 14.7 ms · 17.8 MB | 0.88× · 0.65× |
+| Schema compile | 111 µs · 207 KB | **95 µs · 127 KB** | 89 µs · 117 KB | 1.07× · 1.09× |
+
+- The CLI's peak memory on the 5.5 MB document fell from 198 MiB (v1.1) to 149 MiB.
+- Still open:
+  - schema compilation is 7% slower than tekuri;
+  - the memory held after decoding a document is unchanged.
+
+The method, the allocation counts and every caveat are in [`docs/performance.md`](docs/performance.md).
 
 ## Conformance
 
@@ -125,13 +160,14 @@ In-repo benchmarks (`go test -run '^$' -bench . -benchmem`) on an Apple M3 Max w
 | v1 · `09d8ec2` · tag `evaluation-candidate` | **1,302 / 1,302** | — | — | the external evaluator (reported) |
 | v1 · `09d8ec2` | **1,302 / 1,302** | 146 / 162 | 820 / 890 | post-experiment check |
 | v1.1 · `f35d9e4` · tag `performance-round-2` | **1,302 / 1,302** | 146 / 162 | 820 / 890 | post-experiment check |
+| v1.2 · tag `v1.2.0` | **1,302 / 1,302** | 146 / 162 | 820 / 890 | post-experiment check (at `02e2ce1`, before the import-path rename) |
 
 - The post-experiment check used the official [JSON-Schema-Test-Suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite) at commit `55719286` (2026-10-14), `tests/draft2020-12`, through the library API.
   - The suite's `remotes/` were served through the offline registry as `http://localhost:1234/`.
   - Optional `format/*` ran with format assertion on.
   - A schema that fails to compile counted every test in its group as failed.
 - It ran after both rounds and outside the Factory. Nothing from it was given back to the Factory.
-- v1 and v1.1 fail exactly the same optional cases:
+- v1, v1.1 and v1.2 fail exactly the same optional cases:
 
 | Optional file | Passed |
 |---|---|
