@@ -1,8 +1,8 @@
 package formatannotation
 
 import (
-	"github.com/neoface/jsonschema/internal/formats"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/formats"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // VocabularyURI is the 2020-12 format-annotation vocabulary.

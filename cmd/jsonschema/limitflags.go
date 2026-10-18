@@ -5,7 +5,7 @@ import (
 	"flag"
 	"strconv"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // maxInputBytes is the default per-input cap (schema, document, stdin).

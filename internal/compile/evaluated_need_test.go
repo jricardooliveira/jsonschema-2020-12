@@ -3,8 +3,8 @@ package compile
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 func needs(t *testing.T, schema string, ext *registry.Index) bool {

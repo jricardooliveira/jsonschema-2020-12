@@ -3,7 +3,7 @@
 // keywords only through Lookup.
 package keywords
 
-import "github.com/neoface/jsonschema/internal/jsonvalue"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 
 // CompileContext is passed to a keyword's Compile function.
 type CompileContext struct {

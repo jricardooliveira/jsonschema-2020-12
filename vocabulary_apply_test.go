@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	jsonschema "github.com/neoface/jsonschema"
+	jsonschema "github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 const vocabBase = "https://json-schema.org/draft/2020-12/vocab/"

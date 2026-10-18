@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // heapAlloc returns HeapAlloc after several GCs so the reading is stable.

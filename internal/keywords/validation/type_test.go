@@ -3,7 +3,7 @@ package validation_test
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // The testdata/validation/type.json cases run through the root TestSpecCases.

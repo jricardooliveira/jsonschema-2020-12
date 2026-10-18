@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // benchCLI times one in-process run of the CLI on a document written to a

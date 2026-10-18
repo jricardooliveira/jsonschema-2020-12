@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/keywords"
-	"github.com/neoface/jsonschema/internal/output"
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/output"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // The hint covers the whole rendered basic report for the perf documents, so

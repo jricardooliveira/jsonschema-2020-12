@@ -1,6 +1,6 @@
 # Library
 
-Package `github.com/neoface/jsonschema`. Load a schema once, then check any
+Package `github.com/jricardooliveira/jsonschema-2020-12`. Load a schema once, then check any
 number of documents with it. A compiled `*Schema` is immutable and safe for
 concurrent use by several goroutines.
 

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 const sinkSchema = `{"not":{"type":"string","x-in":1,"title":"t"},"x-out":2}`

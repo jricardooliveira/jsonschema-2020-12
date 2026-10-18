@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 var firstLoadTiming = flag.Bool("firstload", false, "measure first-Compile time, bytes and allocations (TestFirstLoadTiming)")

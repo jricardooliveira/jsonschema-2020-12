@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/neoface/jsonschema/internal/keywords"
-	"github.com/neoface/jsonschema/internal/keywords/validation"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/validation"
 )
 
 // VocabularyURI is the 2020-12 unevaluated vocabulary.

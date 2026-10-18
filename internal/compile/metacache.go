@@ -5,7 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // builtinSet is the compiled 2020-12 meta-schema and the index of the embedded

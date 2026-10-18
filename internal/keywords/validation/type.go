@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // VocabularyURI is the 2020-12 validation vocabulary.

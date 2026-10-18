@@ -1,6 +1,6 @@
 package formats
 
-import "github.com/neoface/jsonschema/internal/ecmaregex"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/ecmaregex"
 
 // ECMA-262 regular expression (u flag). The verdict comes from the strict
 // syntax check in ecma_syntax.go alone. JavaScript-only constructs that RE2

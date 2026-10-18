@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 func faValid(t *testing.T, s *jsonschema.Schema, doc string) bool {

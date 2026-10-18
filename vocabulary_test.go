@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	jsonschema "github.com/neoface/jsonschema"
+	jsonschema "github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 type vocabCase struct {

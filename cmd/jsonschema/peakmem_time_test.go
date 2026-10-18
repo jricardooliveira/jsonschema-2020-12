@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // TestCLIPeakMemoryTimeL builds the CLI into a temporary directory and runs

@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/keywords/validation"
-	"github.com/neoface/jsonschema/internal/limits"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/validation"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/limits"
 )
 
 // Limit names which limit was exceeded.

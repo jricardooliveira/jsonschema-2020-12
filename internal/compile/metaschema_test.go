@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 func metaIdx(t *testing.T, supplied map[string]string) *registry.Index {

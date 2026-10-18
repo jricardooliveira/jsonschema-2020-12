@@ -3,7 +3,7 @@ package compile
 import (
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // vocabAt returns the vocabulary set in effect at schema location loc, or nil

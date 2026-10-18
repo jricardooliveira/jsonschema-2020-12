@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 func TestBuiltinSetBuiltOnce(t *testing.T) {

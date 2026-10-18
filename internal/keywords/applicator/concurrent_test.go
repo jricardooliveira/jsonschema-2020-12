@@ -6,8 +6,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 type evalResult struct {

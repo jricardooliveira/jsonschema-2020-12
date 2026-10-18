@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 const pendingSchema = `{"properties":{"a":{"title":"A"},"b":{"title":"B"},"c":{"title":"C"}},"title":"root"}`

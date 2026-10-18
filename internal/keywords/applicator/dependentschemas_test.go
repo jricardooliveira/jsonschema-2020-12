@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 )
 
 // The testdata/applicator/dependentschemas.json cases run through the root TestSpecCases.

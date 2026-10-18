@@ -3,7 +3,7 @@ package eval
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // The loop and depth guard fails closed when the per-call record is missing.

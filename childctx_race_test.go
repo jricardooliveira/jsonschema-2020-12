@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 // Reused child contexts are per call: concurrent Validate calls on one

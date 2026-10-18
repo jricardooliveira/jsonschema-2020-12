@@ -3,7 +3,7 @@ package validation
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // TestMultipleOfSmallZeroAllocs: the yes/no decision on small numbers

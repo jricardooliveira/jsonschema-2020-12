@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/limits"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/limits"
 )
 
 // DefaultMaxPatternSize is the longest accepted pattern, in bytes of UTF-8.

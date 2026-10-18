@@ -1,8 +1,8 @@
 package eval
 
 import (
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // DynamicScope is the stack of schema nodes entered on the current

@@ -3,7 +3,7 @@ package validation
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 func mustNum(t *testing.T, s string) *jsonvalue.Number {

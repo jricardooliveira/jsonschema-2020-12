@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // Compiling recurses only over decoded values, so the decoder's depth check

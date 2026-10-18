@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 )
 
 // Valid/invalid cases live in testdata/core/dynamicRef.json and

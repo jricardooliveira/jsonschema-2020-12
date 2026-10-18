@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
 )
 
 // oldUnescape is the decode used before the '~' fast path (RFC 6901 §4:

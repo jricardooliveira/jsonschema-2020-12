@@ -3,7 +3,7 @@ package jsonschema
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // Story 210 (multipleOf without big integers): allocation limits re-measured

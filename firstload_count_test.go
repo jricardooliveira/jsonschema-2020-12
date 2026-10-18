@@ -3,7 +3,7 @@ package jsonschema
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/registry"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/registry"
 )
 
 // TestFirstLoadBuildsBuiltinIndexOnce checks, in a fresh process, that the

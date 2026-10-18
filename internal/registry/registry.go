@@ -5,7 +5,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // BuiltinSource is the source label of the embedded meta-schemas in errors.

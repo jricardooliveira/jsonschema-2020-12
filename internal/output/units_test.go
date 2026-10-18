@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/keywords"
-	_ "github.com/neoface/jsonschema/internal/keywords/all"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
+	_ "github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/all"
 )
 
 // x-out-keep is a test-only applicator: it compiles its value as a child at

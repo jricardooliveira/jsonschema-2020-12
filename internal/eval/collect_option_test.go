@@ -3,7 +3,7 @@ package eval
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
 )
 
 func TestEvaluateNoAnnotationsRecordsNone(t *testing.T) {

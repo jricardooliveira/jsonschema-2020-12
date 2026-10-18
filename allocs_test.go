@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // Allocation-count limits: the measured count (testing.AllocsPerRun, from raw

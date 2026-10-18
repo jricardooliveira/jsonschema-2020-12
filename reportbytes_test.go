@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 )
 
 // A large default under items, applied to many items, overruns a lowered

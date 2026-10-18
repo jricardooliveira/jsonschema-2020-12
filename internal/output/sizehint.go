@@ -1,6 +1,6 @@
 package output
 
-import "github.com/neoface/jsonschema/internal/jsonvalue"
+import "github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
 
 // valueSize estimates the compact JSON size of an annotation value without
 // allocating (escaping is ignored, so it is a close lower bound).

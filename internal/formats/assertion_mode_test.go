@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // assertionSamples holds one value per format that breaks it.

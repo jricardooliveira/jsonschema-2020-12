@@ -1,8 +1,8 @@
 package jsonschema
 
 import (
-	"github.com/neoface/jsonschema/internal/eval"
-	"github.com/neoface/jsonschema/internal/output"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/eval"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/output"
 )
 
 // DefaultMaxOutputUnits is the default cap on failure units one Validate may

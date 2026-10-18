@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
-	"github.com/neoface/jsonschema/internal/keywords/validation"
+	"github.com/jricardooliveira/jsonschema-2020-12"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/validation"
 )
 
 func TestPatternSizeLimit(t *testing.T) {

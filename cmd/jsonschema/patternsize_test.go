@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/keywords/validation"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords/validation"
 )
 
 func TestOversizePatternExitsTwo(t *testing.T) {

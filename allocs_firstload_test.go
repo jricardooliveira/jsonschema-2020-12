@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/perfdata"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/perfdata"
 )
 
 // allocLimitFirstLoad bounds the allocations of the first Compile of the order

@@ -3,8 +3,8 @@ package eval
 import (
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/compile"
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/compile"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 func TestSkippedRecordRecordsNothing(t *testing.T) {

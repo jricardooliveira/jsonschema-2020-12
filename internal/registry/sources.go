@@ -11,8 +11,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/neoface/jsonschema/internal/jsonvalue"
-	"github.com/neoface/jsonschema/internal/limits"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/jsonvalue"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/limits"
 )
 
 // Default caps for supplied schema files.

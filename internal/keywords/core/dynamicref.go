@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 // dynamicResolver is implemented by the per-call evaluation state. It maps the

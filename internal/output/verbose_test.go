@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema/internal/keywords"
+	"github.com/jricardooliveira/jsonschema-2020-12/internal/keywords"
 )
 
 func TestVerboseKeepsPassingNodesDetailedDrops(t *testing.T) {

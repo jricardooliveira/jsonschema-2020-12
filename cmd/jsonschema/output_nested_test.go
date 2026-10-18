@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/neoface/jsonschema"
+	"github.com/jricardooliveira/jsonschema-2020-12"
 )
 
 const nestedCLISchema = `{"$id":"http://x/r","$ref":"#/$defs/a%20b%25%C3%A9","$defs":{"a b%é":{"type":"number"}}}`
