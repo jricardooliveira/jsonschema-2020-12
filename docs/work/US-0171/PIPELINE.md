@@ -3,21 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #171 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-18 10:13:26 UTC · **Stopped:** 2026-10-18 10:27:39 UTC
+- **Run:** #171 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-18 10:13:26 UTC · **Stopped:** 2026-10-18 10:31:12 UTC
 - **Story spend:** ~$5.79 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 171` to accept, or `factory reject 171 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-171-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Breaking change: the import path is part of the public API. Existing library consumers will see go build failures until they update their imports.
-  >   ◦ Release-agent note: Every Go file in the repository is touched, so any parallel story working on Go imports will require rebase after this release.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -44,8 +40,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-18 10:26:54 | gate | gate-test | ✅ QA/security/performance passed. AC covered: 7 |
 | 2026-10-18 10:26:54 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-18 10:27:20 | agent | release-agent | ✅ pass · 23.6s · $0.0889 |
-| 2026-10-18 10:27:39 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-18 10:27:39 | run | run waiting_human | ⏸️ |
+| 2026-10-18 10:27:39 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-18 10:31:12 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-18 10:31:12 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
