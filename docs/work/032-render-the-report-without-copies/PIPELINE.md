@@ -3,23 +3,17 @@
 > Written by the factory's orchestrator (the boss) each time this story's run stops. The factory database is the live record; this is its committed snapshot. Do not hand-edit it.
 
 - **Project:** jsonschema-2020-12
-- **Run:** #169 · **Status:** waiting_human · **Stage:** gate-release-human
-- **Started:** 2026-10-17 23:21:17 UTC · **Stopped:** 2026-10-17 23:58:14 UTC
+- **Run:** #169 · **Status:** completed · **Stage:** release
+- **Started:** 2026-10-17 23:21:17 UTC · **Stopped:** 2026-10-18 00:03:54 UTC
 - **Story spend:** ~$8.26 of $35.00 (estimated at API list prices)
 
 ## Next authorized step
 
-The operator decides at gate-release: `factory approve 169` to accept, or `factory reject 169 "<your answers>"` to send it back.
+None — the story is complete. Release evidence: `docs/releases/run-169-trust-package.json`.
 
 ## Blockers
 
-- Waiting for the operator at **gate-release**:
-  > 🚀 RELEASE SIGN-OFF (Checkpoint 3) — READY: every evidence bar is met.
-  >   ◦ Release-agent note: Tester assigned 'warn' on test rigor: the reportbytes_boundary_test verifies the limit fails at size−1 but does not assert the exact error message, only exit code 2 and 'report' in stderr (F1). Reviewer should decide whether this test should be strengthened.
-  >   ◦ Release-agent note: sizeHint counts fixed JSON wrapper bytes + location string lengths + annotation value estimates (F2), covering the full rendered size. This exceeds AC2 wording ('location lengths') but is operator-approved and safe; the B/op drop is measured evidence.
-  >   ◦ Release-agent note: Valid document render (no errors) lacks an explicit alloc-count test after pre-sizing (F3); however, B/op and allocs/op drops (21% and 37.5%) are measured on the perf documents, providing confidence.
-  >   ◦ Release-agent note: All targets are measured on Apple M3 Max, Go 1.27.2. On other hardware, compare relative to the before numbers in docs/benchmarks.md.
-  >   → Approve to release, or reject with what must change — it goes back to the coder, then the tester.
+- none
 
 ## Trail
 
@@ -68,8 +62,9 @@ Every boss authorization (`boss`), agent verdict (`agent`) and gate verdict (`ga
 | 2026-10-17 23:57:23 | gate | gate-test | ✅ QA/security/performance passed (with warnings). AC covered: 8; findings: 3 new, 0 persistent, 0 resolved |
 | 2026-10-17 23:57:23 | boss | authorize release-agent | ✅ gate-test passed |
 | 2026-10-17 23:58:13 | agent | release-agent | ✅ warn · 49.2s · $0.0868 |
-| 2026-10-17 23:58:14 | gate | gate-release | ⏸️ awaiting human sign-off |
-| 2026-10-17 23:58:14 | run | run waiting_human | ⏸️ |
+| 2026-10-17 23:58:14 | gate | gate-release | ✅ APPROVED: Approved by human reviewer |
+| 2026-10-18 00:03:54 | boss | authorize release | ✅ the operator's approval at Checkpoint 3 |
+| 2026-10-18 00:03:54 | run | run completed | ✅ |
 
 ## Warnings (recorded, not blocking)
 
